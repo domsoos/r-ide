@@ -14,10 +14,28 @@
   ],
   "main": "./extension.js",
   "contributes": {
-    "commands": [{
-      "command": "r-ide.helloWorld",
-      "title": "Hello World"
-    }]
+    "commands": [
+      {
+        "command": "r-ide.createNewNode",
+        "title": "Create a new ROS node"
+      },
+      {
+        "command": "r-ide.createNewMsg",
+        "title": "Create a new ROS message"
+      },
+      {
+        "command": "r-ide.createNewSrv",
+        "title": "Create a new ROS service"
+      },
+      {
+        "command": "r-ide.recordBag",
+        "title": "Record a ROS bag"
+      },
+      {
+        "command": "r-ide.replayBag",
+        "title": "Replay a ROS bag"
+      }
+    ]
   },
   "scripts": {
     "lint": "eslint .",
@@ -33,6 +51,7 @@
     "glob": "^8.0.3",
     "mocha": "^10.1.0",
     "typescript": "^4.8.4",
-    "@vscode/test-electron": "^2.2.0"
+    "@vscode/test-electron": "^2.2.0",
+    "vscode-ros": "^2.0.0"
   }
 }

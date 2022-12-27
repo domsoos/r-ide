@@ -20,4 +20,14 @@ async function main() {
 	}
 }
 
+async function testCreateNewROSNode() {
+	// Use the extension's functionality to create a new ROS node
+	const nodeName = "test_node";
+	createNewNode(nodeName);
+  
+	// Verify that the node has been created and is functional
+	assert(checkNodeExists(nodeName), `Node ${nodeName} was not created.`);
+	assert(checkNodeIsFunctional(nodeName), `Node ${nodeName} is not functional.`);
+  }
+
 main();
