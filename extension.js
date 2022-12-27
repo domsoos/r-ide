@@ -2,35 +2,47 @@
 // Import the module and reference it with the alias vscode in your code below
 const vscode = require('vscode');
 
-// This method is called when your extension is activated
-// Your extension is activated the very first time the command is executed
-
-/**
- * @param {vscode.ExtensionContext} context
- */
+// This function is called when the extension is activated
 function activate(context) {
+  console.log('Congratulations, your extension "my-extension" is now active!');
 
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "r-ide" is now active!');
+  // Create a new ROS node button
+  let newNodeButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
+  newNodeButton.command = 'extension.createNewNode';
+  newNodeButton.text = 'Create new ROS node';
+  newNodeButton.show();
 
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with  registerCommand
-	// The commandId parameter must match the command field in package.json
-	let disposable = vscode.commands.registerCommand('r-ide.helloWorld', function () {
-		// The code you place here will be executed every time your command is executed
+  // Create a new ROS msg button
+  let newMsgButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 90);
+  newMsgButton.command = 'extension.createNewMsg';
+  newMsgButton.text = 'Create new ROS msg';
+  newMsgButton.show();
 
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from r-ide!');
-	});
+  // Create a new ROS srv button
+  let newSrvButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 80);
+  newSrvButton.command = 'extension.createNewSrv';
+  newSrvButton.text = 'Create new ROS srv';
+  newSrvButton.show();
 
-	context.subscriptions.push(disposable);
+  // Create a button for recording ROS bags
+  let recordBagsButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 70);
+  recordBagsButton.command = 'extension.recordBags';
+  recordBagsButton.text = 'Record ROS bags';
+  recordBagsButton.show();
+
+  // Register commands for each button
+  context.subscriptions.push(vscode.commands.registerCommand('extension.createNewNode', () => {
+    // Add code here to create a new ROS node
+  }));
+  context.subscriptions.push(vscode.commands.registerCommand('extension.createNewMsg', () => {
+    // Add code here to create a new ROS msg
+  }));
+  context.subscriptions.push(vscode.commands.registerCommand('extension.createNewSrv', () => {
+    // Add code here to create a new ROS srv
+  }));
+  context.subscriptions.push(vscode.commands.registerCommand('extension.recordBags', () => {
+    // Add code here to record ROS bags
+  }));
 }
 
-// This method is called when your extension is deactivated
-function deactivate() {}
-
-module.exports = {
-	activate,
-	deactivate
-}
+exports.activate = activate;
