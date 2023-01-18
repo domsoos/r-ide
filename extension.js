@@ -6,11 +6,13 @@ const vscode = require('vscode');
 function activate(context) {
   console.log('Congratulations, your extension "my-extension" is now active!');
 
+  /*
   // Create a new ROS node button
   let newNodeButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
   newNodeButton.command = 'extension.createNewNode';
   newNodeButton.text = 'Create new ROS node';
   newNodeButton.show();
+  */
 
   // Create a new ROS msg button
   let newMsgButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 90);
