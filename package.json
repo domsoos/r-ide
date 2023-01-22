@@ -19,7 +19,7 @@
         {
           "id": "ride-sidebar-view",
           "title": "R-IDE",
-          "icon": "media/hubot.svg"
+          "icon": "src/media/hubot.svg"
         }
       ]
     },
@@ -27,10 +27,31 @@
       "ride-sidebar-view": [
         {
           "type": "webview",
-          "id": "ride-sidebar",
-          "name": "R-IDE",
-          "icon": "media/hubot.svg",
-          "contextualTitle": "R-IDE"
+          "id": "sidebar-wizards",
+          "name": "Wizards",
+          "contextualTitle": "Wizards",
+          "visibility": "visible"
+        },
+        {
+          "type": "webview",
+          "id": "sidebar-bags",
+          "name": "ROS Bags",
+          "contextualTitle": "ROS Bags",
+          "visibility": "visible"
+        },
+        {
+          "type": "webview",
+          "id": "sidebar-visuals",
+          "name": "Visualization Tools",
+          "contextualTitle": "Visualization Tools",
+          "visibility": "visible"
+        },
+        {
+          "type": "webview",
+          "id": "sidebar-topics",
+          "name": "ROS Topics",
+          "contextualTitle": "ROS Topics",
+          "visibility": "visible"
         }
       ]
     },
