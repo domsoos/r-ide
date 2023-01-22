@@ -85,10 +85,37 @@ export class SidebarWizardsProvider implements vscode.WebviewViewProvider {
       <div class="dropdown">
         <button id="create-new-btn">Create New</button>
         <div class="dropdown-content" id="dropdown-content">
-          <button>ROS Node</button>
-          <button>ROS Msg</button>
-          <button>ROS Srv</button>
+          <button id="ros-node-btn">ROS Node</button>
+          <button id="ros-msg-btn">ROS Msg</button>
+          <button id="ros-srv-btn">ROS Srv</button>
         </div>
+      </div>
+      <div class="wizard-container" id="wizard-container">
+        <h3 style="text-align: center;" id="wizard-title">Creation Wizard</h3>
+        <hr>
+        <label for="wizard-file-type">File type:</label>
+        <br>
+        <select name="wizard-file-type" id="wizard-file-type" class="width-100 margin-top-5">
+          <option value="cplusplus">C++</option>
+          <option value="python">Python</option>
+        </select>
+        <br>
+        <br>
+        <label for="wizard-node-name">Node name:</label>
+        <input type="text" id="wizard-node-name" class="margin-top-5">
+        <br>
+        <label for="wizard-node-location">Node location:</label>
+        <input type="text" id="wizard-node-location" class="margin-top-5" value="C:\\">
+        <br>
+        <input type="checkbox" name="publisher" id="publisher">
+        <label for="wizard-node-publisher">Publisher</label>
+        <br>
+        <input type="checkbox" name="subscriber" id="subscriber" class="margin-top-5">
+        <label for="wizard-node-publisher">Subscriber</label>
+        <br>
+        <br>
+        <button class="cancel-btn" id="cancel-btn">Cancel</button>
+        <button class="next-btn" id="next-btn">Next</button>
       </div>
 
 			<script nonce="${nonce}" src="${scriptUri}"></script>

@@ -1,13 +1,37 @@
 .dropdown {
     display: block;
     position: relative;
-  }
+}
 
-  .dropdown-content {
-    display: none;
-    position: absolute;
-    width: 100%;
-    overflow: auto;
-    margin-top: 2px;
-    box-shadow: 0px 10px 10px 0px rgba(0,0,0,0.4);
-  }
+.dropdown-content {
+  display: none;
+  position: absolute;
+  width: 100%;
+  overflow: auto;
+  margin-top: 2px;
+  box-shadow: 0px 10px 10px 0px rgba(0,0,0,0.4);
+}
+
+.wizard-container{
+  width: 100%;
+  margin-top: 10px;
+  display: none;
+}
+
+.width-100{
+  width: 100%;
+}
+
+.margin-top-5{
+  margin-top: 5px;
+}
+
+.cancel-btn{
+  width: 75px;
+  float: left;
+}
+
+.next-btn{
+  width: 75px;
+  float: right;
+}

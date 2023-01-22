@@ -30,28 +30,32 @@
           "id": "sidebar-wizards",
           "name": "Wizards",
           "contextualTitle": "Wizards",
-          "visibility": "visible"
+          "visibility": "visible",
+          "initialSize": 3
         },
         {
           "type": "webview",
           "id": "sidebar-bags",
           "name": "ROS Bags",
           "contextualTitle": "ROS Bags",
-          "visibility": "visible"
+          "visibility": "visible",
+          "initialSize": 1
         },
         {
           "type": "webview",
           "id": "sidebar-visuals",
           "name": "Visualization Tools",
           "contextualTitle": "Visualization Tools",
-          "visibility": "visible"
+          "visibility": "visible",
+          "initialSize": 1
         },
         {
           "type": "webview",
           "id": "sidebar-topics",
           "name": "ROS Topics",
           "contextualTitle": "ROS Topics",
-          "visibility": "visible"
+          "visibility": "visible",
+          "initialSize": 1
         }
       ]
     },
