@@ -1,67 +1,47 @@
-# r-ide README
+# R-IDE - A VSCode extension for ROS developers
 
-This is the README for your extension "r-ide". After writing up a brief description, we recommend including the following sections.
+R-IDE is a powerful Visual Studio Code extension that is designed for developers working with ROS. Users can use its tools and features to quickly set up a ROS environment and develop ROS applications using our features.
+  
+Check out our website for [more information](https://jpete020.github.io/team-orange/#/).
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
-
-For example if there is an image subfolder under your extension project workspace:
-
-\!\[feature X\]\(images/feature-x.png\)
-
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+* Simplified Graphical User Interface
+* Quick Environment Setup
+* Wizards for creating ROS nodes, msg and srv files
+* Autocomplete code patterns
+* Start, stop and play back ROS bag
+* Visualization Tools with Rviz and Node Graph
+* ROS Topic monitor and publisher support
+* Usage Analytics
 
 ## Requirements
+# Hardware  
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+A device is required that meets the hardware requirements for VSCode, ROS and Rviz.  
 
-## Extension Settings
+# Software
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+* ROS 1/ROS 2  
+* VSCode  
+* ROS 1 requires a Linux environment (can use WSL or Virtual Machine) - older than Ubuntu 20.04 for ROS 1  
 
-For example:
+## Installation
 
-This extension contributes the following settings:
-
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
-
-## Known Issues
-
-Calling out known issues can help limit users opening duplicate issues against your extension.
+1. Open Visual Studio Code  
+2. Click on the Extensions button on the left sidebar or press Ctrl+Shift+X (Cmd+Shift+X on macOS)  
+3. Search for "r-ide" and click on the extension  
+4. Click the Install button  
+5. Click the Reload button to activate the extension
 
 ## Release Notes
 
-Users appreciate release notes as you update your extension.
+Release notes as developers update the extension.
 
-### 1.0.0
+### 1.0.0 - Prototype
 
-Initial release of ...
+Initial release of R-IDE to VS-Code marketplace in late April
 
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
----
-
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
 
 ## For more information
 

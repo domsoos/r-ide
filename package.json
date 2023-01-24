@@ -10,7 +10,8 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:r-ide.helloWorld"
+    "onCommand:r-ide.helloWorld",
+    "onCommand:r-ide.create-file-from-template"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -63,6 +64,10 @@
       {
         "command": "r-ide.helloWorld",
         "title": "Hello World"
+      },
+      {
+        "command": "r-ide.create-file-from-template",
+        "title": "Create File From Template"
       }
     ]
   },
