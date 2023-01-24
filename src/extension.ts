@@ -35,13 +35,11 @@ export function activate(context: vscode.ExtensionContext) {
 		),
 		vscode.commands.registerCommand(
 			"r-ide.create-file-from-template",
-			() => {
-				// TODO: Replace these with proper parameters
-				const fileLocation = '/home/dak79/catkin_ws/mynode.txt';
-				const template = 'placeholder';
-				vscode.window.showInformationMessage(fileLocation);
-				vscode.workspace.fs.writeFile(vscode.Uri.file(fileLocation), new TextEncoder().encode(template));
-				vscode.workspace.openTextDocument(vscode.Uri.file(fileLocation));
+			async (path: string, text: Uint8Array) => {
+				const uri = vscode.Uri.file(path);
+				vscode.window.showInformationMessage(uri.path);
+				await vscode.workspace.fs.writeFile(uri, text);
+				vscode.workspace.openTextDocument(uri);
 			}
 		)
 	  );

@@ -37,6 +37,10 @@ export class SidebarWizardsProvider implements vscode.WebviewViewProvider {
           vscode.window.showErrorMessage(data.value);
           break;
         }
+        case "r-ide.command": {
+          vscode.commands.executeCommand(data.value.command, ...data.value.args);
+          break;
+        }
       }
     });
   }
@@ -61,6 +65,7 @@ export class SidebarWizardsProvider implements vscode.WebviewViewProvider {
       vscode.Uri.joinPath(this._extensionUri, "src", "styles/sidebarwizards.css")
     );
 
+    // TODO: Handle 0 or 2+ folder workspaces open
     const workspaceDirectory = vscode.workspace.workspaceFolders?.map(folder => folder.uri.path);
     
 
