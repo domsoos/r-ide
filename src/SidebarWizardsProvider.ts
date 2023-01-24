@@ -102,10 +102,10 @@ export class SidebarWizardsProvider implements vscode.WebviewViewProvider {
         <br>
         <br>
         <label for="wizard-node-name">Node name:</label>
-        <input type="text" id="wizard-node-name" class="margin-top-5">
+        <input type="text" id="wizard-node-name" class="margin-top-5" style="border:solid 1px black">
         <br>
         <label for="wizard-node-location">Node location:</label>
-        <input type="text" id="wizard-node-location" class="margin-top-5" value="C:\\">
+        <input type="text" id="wizard-node-location" class="margin-top-5" value="C:\\" style="border:solid 1px black">
         <br>
         <input type="checkbox" name="publisher" id="publisher">
         <label for="wizard-node-publisher">Publisher</label>
