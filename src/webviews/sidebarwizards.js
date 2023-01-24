@@ -10,6 +10,10 @@
     const cancelButton = document.getElementById('cancel-btn');
     const nextButton = document.getElementById('next-btn');
     const wizardTitle = document.getElementById('wizard-title');
+    // const fileLocation = document.getElementById('wizard-node-location').value;
+    // const nodeName = document.getElementById('wizard-node-name');
+    // const nodeLanguage = document.getElementById('wizard-file-type');
+    // const fileURI = Uri.file(fileLocation + nodeName + '.' + nodeLanguage);
 
     let isDropdownOpen = false;
     let isWizardOpen = false;
@@ -41,6 +45,15 @@
         wizardTitle.innerText = 'Creation Wizard';
         wizardContainer.style.display = 'none';
         isWizardOpen = false;
+    });
+
+    nextButton.addEventListener('click', () => {
+        createNewButton.style.display = 'block';
+        wizardTitle.innerText = 'Creation Wizard';
+        wizardContainer.style.display = 'none';
+        isWizardOpen = false;
+        // TODO BUG: Non functional command, find where to fix
+        vscode.executeCommand("r-ide.create-file-from-template");
     });
 
 

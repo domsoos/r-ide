@@ -1,5 +1,6 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
+import { TextEncoder } from 'util';
 import * as vscode from 'vscode';
 import { SidebarBagsProvider } from './SidebarBagsProvider';
 import { SidebarTopicsProvider } from './SidebarTopicsProvider';
@@ -31,6 +32,17 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.window.registerWebviewViewProvider(
 			"sidebar-topics",
 			sidebarTopicsProvider
+		),
+		vscode.commands.registerCommand(
+			"r-ide.create-file-from-template",
+			() => {
+				// TODO: Replace these with proper parameters
+				const fileLocation = '/home/dak79/catkin_ws/mynode.txt';
+				const template = 'placeholder';
+				vscode.window.showInformationMessage(fileLocation);
+				vscode.workspace.fs.writeFile(vscode.Uri.file(fileLocation), new TextEncoder().encode(template));
+				vscode.workspace.openTextDocument(vscode.Uri.file(fileLocation));
+			}
 		)
 	  );
 }

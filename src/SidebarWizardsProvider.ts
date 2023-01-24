@@ -14,6 +14,7 @@ export class SidebarWizardsProvider implements vscode.WebviewViewProvider {
     webviewView.webview.options = {
       // Allow scripts in the webview
       enableScripts: true,
+      enableCommandUris: true,
 
       localResourceRoots: [this._extensionUri],
     };
@@ -59,6 +60,8 @@ export class SidebarWizardsProvider implements vscode.WebviewViewProvider {
     const styleMainUri = webview.asWebviewUri(
       vscode.Uri.joinPath(this._extensionUri, "src", "styles/sidebarwizards.css")
     );
+
+    const workspaceDirectory = vscode.workspace.workspaceFolders?.map(folder => folder.uri.path);
     
 
 
@@ -105,7 +108,7 @@ export class SidebarWizardsProvider implements vscode.WebviewViewProvider {
         <input type="text" id="wizard-node-name" class="margin-top-5">
         <br>
         <label for="wizard-node-location">Node location:</label>
-        <input type="text" id="wizard-node-location" class="margin-top-5" value="C:\\">
+        <input type="text" id="wizard-node-location" class="margin-top-5" value="${workspaceDirectory}">
         <br>
         <input type="checkbox" name="publisher" id="publisher">
         <label for="wizard-node-publisher">Publisher</label>
