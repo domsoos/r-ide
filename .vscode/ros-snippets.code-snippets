@@ -27,4 +27,30 @@
 		],
 		"description": "def listener"
 	  }
+	  
+	  "def talker": {
+		"prefix": "",
+		"body": [
+		  "def obs_gen():",
+		  "    pub = rospy.Publisher('obs_gen_talker', String, queue_size=10)",
+		  "    rospy.init_node('talker', anonymous=True)",
+		  "    rate = rospy.Rate(0.5)",
+		  "",
+		  "    gen_rand_bool = lambda: 't' if random.choice([True,False]) else 'f'",
+		  "    while not rospy.is_shutdown():",
+		  "        obs = ','.join([gen_rand_bool() for _ in range(OBS_VARS)])",
+		  "        obs = \"{} at {}\".format(obs, rospy.get_time())",
+		  "        rospy.loginfo(obs)",
+		  "        pub.publish(obs)",
+		  "        rate.sleep()",
+		  "",
+		  "if __name__ == '__main__':",
+		  "    try:",
+		  "        obs_gen()",
+		  "    except rospy.ROSInterruptException:",
+		  "        pass"
+		],
+		"description": ""
+	  }
+
 }
