@@ -41,6 +41,12 @@ export class SidebarWizardsProvider implements vscode.WebviewViewProvider {
           vscode.commands.executeCommand(data.value.command, ...data.value.args);
           break;
         }
+        case "getWorkspace": {
+          webviewView.webview.postMessage({
+            type: 'setWorkspace',
+            value: vscode.workspace.workspaceFolders?.map(folder => folder.uri.path).toString(),
+          });
+        }
       }
     });
   }
@@ -57,8 +63,13 @@ export class SidebarWizardsProvider implements vscode.WebviewViewProvider {
         vscode.Uri.joinPath(this._extensionUri, "src", "styles/vscode.css")
     );
 
+    /*
     const scriptUri = webview.asWebviewUri(
       vscode.Uri.joinPath(this._extensionUri, "src", "webviews/sidebarwizards.js")
+    );
+    */
+    const scriptUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(this._extensionUri, "out", "compiled/sidebarwizards.js")
     );
 
     const styleMainUri = webview.asWebviewUri(
@@ -66,8 +77,7 @@ export class SidebarWizardsProvider implements vscode.WebviewViewProvider {
     );
 
     // TODO: Handle 0 or 2+ folder workspaces open
-    const workspaceDirectory = vscode.workspace.workspaceFolders?.map(folder => folder.uri.path);
-    
+    //const workspaceDirectory = vscode.workspace.workspaceFolders?.map(folder => folder.uri.path);
 
 
     // Use a nonce to only allow a specific script to be run.
@@ -87,46 +97,11 @@ export class SidebarWizardsProvider implements vscode.WebviewViewProvider {
 				<meta name="viewport" content="width=device-width, initial-scale=1.0">
 				<link href="${styleResetUri}" rel="stylesheet">
 				<link href="${styleVSCodeUri}" rel="stylesheet">
-        <link href="${styleMainUri}" rel="stylesheet">  
+        <link href="${styleMainUri}" rel="stylesheet"> 
 		    </head>
       <body>
-      <div class="dropdown">
-        <button id="create-new-btn">Create New</button>
-        <div class="dropdown-content" id="dropdown-content">
-          <button id="ros-node-btn">ROS Node</button>
-          <button id="ros-msg-btn">ROS Msg</button>
-          <button id="ros-srv-btn">ROS Srv</button>
-        </div>
-      </div>
-      <div class="wizard-container" id="wizard-container">
-        <h3 style="text-align: center;" id="wizard-title">Creation Wizard</h3>
-        <hr>
-        <label for="wizard-file-type">File type:</label>
-        <br>
-        <select name="wizard-file-type" id="wizard-file-type" class="width-100 margin-top-5">
-          <option value="cplusplus">C++</option>
-          <option value="python">Python</option>
-        </select>
-        <br>
-        <br>
-        <label for="wizard-node-name">Node name:</label>
-        <input type="text" id="wizard-node-name" class="margin-top-5" style="border:solid 1px black">
-        <br>
-        <label for="wizard-node-location">Node location:</label>
-        <input type="text" id="wizard-node-location" class="margin-top-5" value="${workspaceDirectory}" style="border:solid 1px black">
-        <br>
-        <input type="checkbox" name="publisher" id="publisher">
-        <label for="wizard-node-publisher">Publisher</label>
-        <br>
-        <input type="checkbox" name="subscriber" id="subscriber" class="margin-top-5">
-        <label for="wizard-node-publisher">Subscriber</label>
-        <br>
-        <br>
-        <button class="cancel-btn" id="cancel-btn">Cancel</button>
-        <button class="next-btn" id="next-btn">Next</button>
-      </div>
-
-			<script nonce="${nonce}" src="${scriptUri}"></script>
+			<script nonce="${nonce}" src="${scriptUri}">
+      </script>
 			</body>
 			</html>`;
   }
