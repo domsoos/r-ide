@@ -27,9 +27,9 @@
 		],
 		"description": "def listener"
 	  }
-	  
+
 	  "def talker": {
-		"prefix": "",
+		"prefix": "def talker",
 		"body": [
 		  "def obs_gen():",
 		  "    pub = rospy.Publisher('obs_gen_talker', String, queue_size=10)",
@@ -50,7 +50,6 @@
 		  "    except rospy.ROSInterruptException:",
 		  "        pass"
 		],
-		"description": ""
+		"description": "def talker"
 	  }
-
 }
