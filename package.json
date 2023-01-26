@@ -78,7 +78,7 @@
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src --ext ts",
     "test": "node ./out/test/runTest.js",
-    "rollup" : "rollup -c -w"
+    "rollup": "rollup -c -w"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^24.0.1",

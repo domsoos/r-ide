@@ -1,6 +1,21 @@
 <script>
 	const vscode = acquireVsCodeApi();
+
+	let isMenuOpen = false;
+	let isWizardOpen = false;
+
 	let workspaceDirectory;
+
+	let nodeName = '';
+	let fileLocation = '';
+	console.log(fileLocation);
+	let nodeLanguage = {};
+	let isPublisher = false;
+	let isSubscriber = false;
+	let options = [
+		{id: 1, value: 'cpp', text:'C++'},
+		{id: 2, value: 'py', text: 'Python'}
+	]
 
 	vscode.postMessage({
                 type: 'getWorkspace'
@@ -11,12 +26,36 @@
 		switch (message.type) {
 			case 'setWorkspace':
 				workspaceDirectory = message.value;
+				fileLocation = message.value;
 				break;
 		}
 	});
 
-	let isMenuOpen = false;
-	let isWizardOpen = false;
+
+
+	function nextButtonFunction() {
+		// TODO: Currently overwrites without warning, should ask for confirmation for overwrites
+
+		// TODO: Currently isSubscriber and isPublisher do nothing
+
+        if (nodeName === '') {
+            // No given name
+            vscode.postMessage({
+                type: 'onError',
+                value: 'The node must have a name'
+            });
+        } else {
+            // Success!
+			console.log(nodeLanguage);
+            vscode.postMessage({
+                type: 'r-ide.command',
+                value: {
+                    command: 'r-ide.create-file-from-template',
+                    args: [fileLocation + '/' + nodeName + '.' + nodeLanguage.value, new TextEncoder().encode('placeholder text')]
+                }
+            });
+        }
+	}
 </script>
 
 {#if !isWizardOpen}
@@ -34,30 +73,46 @@
 
 {#if isWizardOpen}
 	<div class="wizard-container">
+		<!-- Title -->
 		<h3 style="text-align: center;" id="wizard-title">Creation Wizard</h3>
 		<hr>
 		<label for="wizard-file-type">File type:</label>
 		<br>
-		<select name="wizard-file-type" id="wizard-file-type" class="width-100 margin-top-5">
-			<option value="cplusplus">C++</option>
-			<option value="python">Python</option>
+
+		<!-- File type -->
+		<select name="wizard-file-type" id="wizard-file-type" class="width-100 margin-top-5" bind:value={nodeLanguage}>
+			{#each options as option}
+				<option value={option}>
+					{option.text}
+				</option>
+			{/each}
 		</select>
 		<br>
 		<br>
+
+		<!-- Node Name -->
 		<label for="wizard-node-name">Node name:</label>
-		<input type="text" id="wizard-node-name" class="margin-top-5" style="border:solid 1px black">
+		<input type="text" id="wizard-node-name" class="margin-top-5" bind:value={nodeName} style="border:solid 1px black">
 		<br>
+
+		<!-- File Location -->
 		<label for="wizard-node-location">Node location:</label>
-		<input type="text" id="wizard-node-location" class="margin-top-5" value="{workspaceDirectory}" style="border:solid 1px black">
+		<input type="text" id="wizard-node-location" class="margin-top-5" bind:value={fileLocation} style="border:solid 1px black">
 		<br>
-		<input type="checkbox" name="publisher" id="publisher">
+
+		<!-- Is Publisher -->
+		<input type="checkbox" name="publisher" id="publisher" bind:value={isPublisher}>
 		<label for="wizard-node-publisher">Publisher</label>
 		<br>
-		<input type="checkbox" name="subscriber" id="subscriber" class="margin-top-5">
-		<label for="wizard-node-publisher">Subscriber</label>
+
+		<!-- Is subscriber -->
+		<input type="checkbox" name="subscriber" id="subscriber" class="margin-top-5" bind:value={isSubscriber}>
+		<label for="wizard-node-subscriber">Subscriber</label>
 		<br>
 		<br>
-		<button class="cancel-btn" id="cancel-btn" on:click={() =>{isWizardOpen = false}}>Cancel</button>
-		<button class="next-btn" id="next-btn" on:click={() =>{isWizardOpen = false}}>Next</button>
+
+		<!-- Cancel and Next buttons -->
+		<button class="cancel-btn" id="cancel-btn" on:click={() =>{isWizardOpen = false;}}>Cancel</button>
+		<button class="next-btn" id="next-btn" on:click={() => {isWizardOpen = false; nextButtonFunction();}}>Next</button>
 	</div>
 {/if}
