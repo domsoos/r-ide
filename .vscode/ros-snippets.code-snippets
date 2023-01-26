@@ -17,6 +17,7 @@
 	// }
 
 	"def listener": {
+		"scope": "python",
 		"prefix": "def listener",
 		"body": [
 		  "def listener():",
@@ -25,10 +26,12 @@
 		  "    # spin() simply keeps python from exiting until this node is stopped",
 		  "    rospy.spin()"
 		],
-		"description": "def listener"
-	  }
+		"description": "def listener",
+		"isFileTemplate": true,
+	  },
 
 	  "def talker": {
+		"scope": "python",
 		"prefix": "def talker",
 		"body": [
 		  "def obs_gen():",
@@ -50,6 +53,7 @@
 		  "    except rospy.ROSInterruptException:",
 		  "        pass"
 		],
-		"description": "def talker"
+		"description": "def talker",
+		"isFileTemplate": true,
 	  }
 }
