@@ -42,7 +42,7 @@ export class SidebarWizardsProvider implements vscode.WebviewViewProvider {
           break;
         }
         case "getWorkspace": {
-
+          // TODO: 0 or 2+ workspaces breaks this
           webviewView.webview.postMessage({
             type: 'setWorkspace',
             value: vscode.workspace.workspaceFolders?.map(folder => folder.uri.path).toString(),
