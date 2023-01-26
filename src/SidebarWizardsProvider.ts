@@ -42,10 +42,23 @@ export class SidebarWizardsProvider implements vscode.WebviewViewProvider {
           break;
         }
         case "getWorkspace": {
+
           webviewView.webview.postMessage({
             type: 'setWorkspace',
             value: vscode.workspace.workspaceFolders?.map(folder => folder.uri.path).toString(),
           });
+          break;
+        }
+        case "openFileExplorer" :{
+          vscode.window.showOpenDialog({canSelectFiles: false, canSelectFolders: true, canSelectMany: false}).then((result) =>{
+            if(result && result[0].path){
+              webviewView.webview.postMessage({
+                type: 'setWorkspace',
+                value: result[0].path,
+              });
+            }
+          });
+          break;
         }
       }
     });

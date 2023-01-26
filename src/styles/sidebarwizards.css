@@ -35,3 +35,17 @@
   width: 75px;
   float: right;
 }
+
+.location-input{
+
+  border: 1px solid black;
+  width: 88%!important;
+  margin-bottom: 5px;
+  display: inline!important;
+}
+
+.location-btn{
+  width: 10%;
+}
+
+
