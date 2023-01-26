@@ -1,6 +1,5 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
-import { TextEncoder } from 'util';
 import * as vscode from 'vscode';
 import { SidebarBagsProvider } from './SidebarBagsProvider';
 import { SidebarTopicsProvider } from './SidebarTopicsProvider';
@@ -39,7 +38,7 @@ export function activate(context: vscode.ExtensionContext) {
 				const uri = vscode.Uri.file(path);
 				vscode.window.showInformationMessage(uri.path);
 				await vscode.workspace.fs.writeFile(uri, text);
-				vscode.workspace.openTextDocument(uri);
+				vscode.window.showTextDocument(uri);
 			}
 		)
 	  );
