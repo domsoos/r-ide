@@ -1,5 +1,6 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
+import { TextEncoder } from 'util';
 import * as vscode from 'vscode';
 import { SidebarBagsProvider } from './SidebarBagsProvider';
 import { SidebarTopicsProvider } from './SidebarTopicsProvider';
@@ -34,11 +35,34 @@ export function activate(context: vscode.ExtensionContext) {
 		),
 		vscode.commands.registerCommand(
 			"r-ide.create-file-from-template",
-			async (path: string, text: Uint8Array) => {
+			async (path: string, options: any) => {
 				const uri = vscode.Uri.file(path);
 				vscode.window.showInformationMessage(uri.path);
-				await vscode.workspace.fs.writeFile(uri, text);
-				vscode.window.showTextDocument(uri);
+				// await vscode.workspace.fs.writeFile(uri, new TextEncoder().encode('Placeholder Text'));
+				let document = await vscode.workspace.openTextDocument(uri);
+				document.save();
+				vscode.window.showTextDocument(document);
+
+				switch (options.language) {
+					case ('python'): {
+						if (options.isPublisher) {
+							let publisherSnippet = new vscode.SnippetString('isPublisher\n');
+							vscode.window.activeTextEditor?.insertSnippet(publisherSnippet);
+						}
+						if (options.isSubscriber) {
+							let subscriberSnippet = new vscode.SnippetString('isSubscriber\n');
+							vscode.window.activeTextEditor?.insertSnippet(subscriberSnippet);
+						}
+						break;
+					}
+					case ('cpp'): {
+
+						break;
+					}
+
+				}
+
+				document.save();
 			}
 		)
 	  );

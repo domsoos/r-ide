@@ -64,10 +64,6 @@
       {
         "command": "r-ide.helloWorld",
         "title": "Hello World"
-      },
-      {
-        "command": "r-ide.create-file-from-template",
-        "title": "Create File From Template"
       }
     ],
     "snippets": [

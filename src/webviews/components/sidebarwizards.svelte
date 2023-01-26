@@ -48,13 +48,20 @@
 			// Success!
 			wizardTitle = 'Creation Wizard';
 			isWizardOpen = false;
-			let generatedText = getWizardText();
+			// let generatedText = getWizardText();
 
 			vscode.postMessage({
 				type: 'r-ide.command',
 				value: {
 					command: 'r-ide.create-file-from-template',
-					args: [workspaceDirectory + '/' + nodeName + selectedLanguage.value, new TextEncoder().encode(generatedText)]
+					args: [
+						workspaceDirectory + '/' + nodeName + selectedLanguage.value, 
+						{
+							language: selectedLanguage.id,
+							isPublisher: isPublisher,
+							isSubscriber: isSubscriber,
+						}
+					]
 				}
 			});
 			selectedLanguage = languages[0];
