@@ -1,0 +1,5 @@
+(function () {
+    const vscode = acquireVsCodeApi();
+
+
+}());
