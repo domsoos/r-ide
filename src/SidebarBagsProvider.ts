@@ -54,7 +54,7 @@ export class SidebarBagsProvider implements vscode.WebviewViewProvider {
     );
 
     const scriptUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, "src", "webviews/sidebarbags.js")
+      vscode.Uri.joinPath(this._extensionUri, "out", "compiled/sidebarbags.js")
     );
 
     const styleMainUri = webview.asWebviewUri(

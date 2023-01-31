@@ -27,7 +27,7 @@
 	let nodeName = '';
 	let wizardTitle = 'Creation Wizard';
 	let languages = [
-		{id: 'c++', text: 'C++' , value: ".cpp"},
+		{id: 'cpp', text: 'C++' , value: ".cpp"},
 		{id: 'py', text: 'Python', value: ".py"}
 	];
 	let selectedLanguage = languages[0];

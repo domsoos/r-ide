@@ -38,13 +38,12 @@ export function activate(context: vscode.ExtensionContext) {
 			async (path: string, options: any) => {
 				const uri = vscode.Uri.file(path);
 				vscode.window.showInformationMessage(uri.path);
-				// await vscode.workspace.fs.writeFile(uri, new TextEncoder().encode('Placeholder Text'));
-				let document = await vscode.workspace.openTextDocument(uri);
-				document.save();
-				vscode.window.showTextDocument(document);
+				await vscode.workspace.fs.writeFile(uri, new TextEncoder().encode(''));
+				//let document = await vscode.workspace.openTextDocument(vscode.Uri.file(uri.path).with({ scheme: 'untitled'}));
+				await vscode.window.showTextDocument(uri);
 
 				switch (options.language) {
-					case ('python'): {
+					case ('py'): {
 						if (options.isPublisher) {
 							let publisherSnippet = new vscode.SnippetString('isPublisher\n');
 							vscode.window.activeTextEditor?.insertSnippet(publisherSnippet);
@@ -61,8 +60,13 @@ export function activate(context: vscode.ExtensionContext) {
 					}
 
 				}
-
-				document.save();
+				vscode.window.activeTextEditor?.document.save();
+				/*
+				document.save().then( (result) => {
+					vscode.window.showTextDocument(uri);
+				});
+				*/
+				
 			}
 		)
 	  );
