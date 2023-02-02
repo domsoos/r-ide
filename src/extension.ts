@@ -45,12 +45,10 @@ export function activate(context: vscode.ExtensionContext) {
 				switch (options.language) {
 					case ('py'): {
 						if (options.isPublisher) {
-							let publisherSnippet = new vscode.SnippetString('isPublisher\n');
-							vscode.window.activeTextEditor?.insertSnippet(publisherSnippet);
+							vscode.commands.executeCommand("editor.action.insertSnippet", { langId: "python", name: "def talker" });
 						}
 						if (options.isSubscriber) {
-							let subscriberSnippet = new vscode.SnippetString('isSubscriber\n');
-							vscode.window.activeTextEditor?.insertSnippet(subscriberSnippet);
+							vscode.commands.executeCommand("editor.action.insertSnippet", { langId: "python", name: "def listener" });
 						}
 						break;
 					}
@@ -69,6 +67,18 @@ export function activate(context: vscode.ExtensionContext) {
 				
 			}
 		)
+		// vscode.commands.registerCommand(
+		// 	"r-ide.update-cmake-lists-txt.python", 
+		// 	() => {
+		// 		const editor = vscode.window.activeTextEditor;
+		// 		if (!editor) {
+		// 			return;
+		// 		}
+
+		// 		const document = editor.document;
+		// 		console.log(document.languageId);
+		// 	}
+		// )
 	  );
 }
 
