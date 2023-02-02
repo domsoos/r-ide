@@ -127,7 +127,7 @@
 		<!-- File Location -->
 		<label for="wizard-node-location">{selectedWizardType} location:</label>
 		<input type="text" class="margin-top-5 location-input" value="{workspaceDirectory}" style="border:solid 1px black; width:88%">
-		<button class="location-btn" on:click={() => {vscode.postMessage({type: 'openFileExplorer'})}}>...</button>
+		<button class="location-btn" on:click={() => {vscode.postMessage({type: 'openFileExplorer', value:workspaceDirectory})}}>...</button>
 		<br>
 
 		<!-- Is Publisher -->
