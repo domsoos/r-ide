@@ -22,7 +22,6 @@
 				break;
 		}
 	});
-	//
 
 	let nodeName = '';
 	let wizardTitle = 'Creation Wizard';
@@ -66,8 +65,8 @@
 						workspaceDirectory + '/' + nodeName + selectedLanguage.value, 
 						{
 							language: selectedLanguage,
-							isPublisher: selectedWizardType === 'Node' && isPublisher,
-							isSubscriber: selectedWizardType === 'Node' && isSubscriber,
+							isPublisher: isPublisher,
+							isSubscriber: isSubscriber,
 						}
 					]
 				}
@@ -114,7 +113,6 @@
 		<br>
 		<br>
 
-
 		<!-- Node Name -->	
 		<label for="wizard-node-name">{selectedWizardType} name:</label>
 		<input type="text" bind:value={nodeName} class="margin-top-5" style="border:solid 1px black">
@@ -128,16 +126,17 @@
 
 		{#if selectedWizardType === 'Node'}
 			<!-- Is Publisher -->
-				<input type="checkbox" name="publisher" id="wizard-node-publisher" bind:value={isPublisher}>
-				<label for="wizard-node-publisher">Publisher</label>
-				<br>
+			<input type="checkbox" name="publisher" id="wizard-node-publisher" bind:checked={isPublisher}>
+			<label for="wizard-node-publisher">Publisher</label>
+			<br>
 
-				<!-- Is subscriber -->
-				<input type="checkbox" name="subscriber" id="wizard-node-subscriber" class="margin-top-5" bind:value={isSubscriber}>
-				<label for="wizard-node-subscriber">Subscriber</label>
-				<br>
-				<br>
+			<!-- Is subscriber -->
+			<input type="checkbox" name="subscriber" id="wizard-node-subscriber" class="margin-top-5" bind:checked={isSubscriber}>
+			<label for="wizard-node-subscriber">Subscriber</label>
+			<br>
+			<br>
 		{/if}
+		
 		
 		<!-- Cancel and Next buttons -->
 		<button class="cancel-btn" on:click={() =>{isWizardOpen = false; wizardTitle = 'Creation Wizard'}}>Cancel</button>
