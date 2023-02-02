@@ -26,10 +26,21 @@
 
 	let nodeName = '';
 	let wizardTitle = 'Creation Wizard';
-	let languages = [
-		{id: 'cpp', text: 'C++' , value: ".cpp"},
-		{id: 'py', text: 'Python', value: ".py"}
-	];
+
+	let languages = {
+		"Node": [
+			{id: 'cpp', text: 'C++' , value: ".cpp"},
+			{id: 'py', text: 'Python', value: ".py"}],
+
+		"Srv": [
+			{id: 'srv', text: 'Service File', value: ".srv"}
+		],
+
+		"Msg": [
+			{id: 'msg', text: 'Message File', value: ".msg"}
+		]
+	};
+
 	let selectedLanguage = languages[0];
 	let selectedWizardType = '';
 
@@ -54,15 +65,14 @@
 					args: [
 						workspaceDirectory + '/' + nodeName + selectedLanguage.value, 
 						{
-							language: selectedLanguage.id,
-							wizardType: selectedWizardType,
-							isPublisher: isPublisher,
-							isSubscriber: isSubscriber,
+							language: selectedLanguage,
+							isPublisher: selectedWizardType === 'Node' && isPublisher,
+							isSubscriber: selectedWizardType === 'Node' && isSubscriber,
 						}
 					]
 				}
 			});
-			selectedLanguage = languages[0];
+			selectedLanguage = languages[selectedWizardType][0];
 		}
 	}
 
@@ -97,12 +107,13 @@
 
 		<!-- File type -->
 		<select name="wizard-file-type" class="width-100 margin-top-5" bind:value={selectedLanguage}>
-			{#each languages as language}
+			{#each languages[selectedWizardType] as language}
 				<option value="{language}">{language.text}</option>
 			{/each}
 		</select>
 		<br>
 		<br>
+
 
 		<!-- Node Name -->	
 		<label for="wizard-node-name">{selectedWizardType} name:</label>
@@ -115,16 +126,19 @@
 		<button class="location-btn" on:click={() => {vscode.postMessage({type: 'openFileExplorer', value:workspaceDirectory})}}>...</button>
 		<br>
 
-		<!-- Is Publisher -->
-		<input type="checkbox" name="publisher" id="wizard-node-publisher" bind:value={isPublisher}>
-		<label for="wizard-node-publisher">Publisher</label>
-		<br>
+		{#if selectedWizardType === 'Node'}
+			<!-- Is Publisher -->
+				<input type="checkbox" name="publisher" id="wizard-node-publisher" bind:value={isPublisher}>
+				<label for="wizard-node-publisher">Publisher</label>
+				<br>
 
-		<!-- Is subscriber -->
-		<input type="checkbox" name="subscriber" id="wizard-node-subscriber" class="margin-top-5" bind:value={isSubscriber}>
-		<label for="wizard-node-subscriber">Subscriber</label>
-		<br>
-		<br>
+				<!-- Is subscriber -->
+				<input type="checkbox" name="subscriber" id="wizard-node-subscriber" class="margin-top-5" bind:value={isSubscriber}>
+				<label for="wizard-node-subscriber">Subscriber</label>
+				<br>
+				<br>
+		{/if}
+		
 		<!-- Cancel and Next buttons -->
 		<button class="cancel-btn" on:click={() =>{isWizardOpen = false; wizardTitle = 'Creation Wizard'}}>Cancel</button>
 		<button class="next-btn" on:click={nextButtonClicked}>Next</button>
