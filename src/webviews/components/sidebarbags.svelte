@@ -87,7 +87,7 @@
             <br>
             <div class="buttons-flex">
                 <button class="bag-buttons" on:click={() => {isOpen = false;selectedBag = null; isBagManagerOpen = false; isCloneMenuOpen = false}}>Cancel</button>
-                <button class="bag-buttons" on:click={() => {isCloneMenuOpen = true;}}>Submit</button>
+                <button class="bag-buttons" on:click={() => {isCloneMenuOpen = true;}}>Clone</button>
             </div>
         {/if}
     {/if}
