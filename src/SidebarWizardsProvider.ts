@@ -50,7 +50,7 @@ export class SidebarWizardsProvider implements vscode.WebviewViewProvider {
           break;
         }
         case "openFileExplorer" :{
-          vscode.window.showOpenDialog({canSelectFiles: false, canSelectFolders: true, canSelectMany: false}).then((result) =>{
+          vscode.window.showOpenDialog({canSelectFiles: false, canSelectFolders: true, canSelectMany: false, defaultUri: vscode.Uri.file(data.value)}).then((result) =>{
             if(result && result[0].path){
               webviewView.webview.postMessage({
                 type: 'setWorkspace',
