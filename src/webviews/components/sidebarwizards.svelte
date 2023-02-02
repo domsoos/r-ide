@@ -36,8 +36,6 @@
 	function nextButtonClicked(){
 		// TODO: Currently overwrites without warning, should ask for confirmation for overwrites
 
-		// TODO: Currently isSubscriber and isPublisher do nothing
-
 		if (nodeName === '') {
 		// No given name
 		vscode.postMessage({
@@ -48,7 +46,6 @@
 			// Success!
 			wizardTitle = 'Creation Wizard';
 			isWizardOpen = false;
-			// let generatedText = getWizardText();
 
 			vscode.postMessage({
 				type: 'r-ide.command',
@@ -58,6 +55,7 @@
 						workspaceDirectory + '/' + nodeName + selectedLanguage.value, 
 						{
 							language: selectedLanguage.id,
+							wizardType: selectedWizardType,
 							isPublisher: isPublisher,
 							isSubscriber: isSubscriber,
 						}
@@ -73,19 +71,6 @@
 		isWizardOpen = true; 
 		isMenuOpen = false; 
 		wizardTitle = 'ROS ' + wizardType + ' Wizard';
-	}
-
-	function getWizardText(){
-		switch (selectedWizardType){
-			case "Node":
-				return "Created ROS Node - Placeholder Text";
-			case "Msg":
-				return "Created Msg Node - Placeholder Text";
-			case "Srv":
-				return "Created Srv Node - Placeholder Text";
-			default:
-				return "Place holder text";
-		}
 	}
 </script>
 
