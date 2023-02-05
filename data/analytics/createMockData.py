@@ -91,13 +91,13 @@ def saveToJSON(file_name):
         extension = 'json'
 
     with open(name + '-wizards.' + extension, 'w') as wizardFile:
-        wizardFile.write(json.dumps(wizards))
+        wizardFile.write(json.dumps(wizards, indent=4))
 
     with open(name + '-templates.' + extension, 'w') as templateFile:
-        templateFile.write(json.dumps(templates))
+        templateFile.write(json.dumps(templates, indent=4))
 
     with open(name + '-events.' + extension, 'w') as eventsFile:
-        eventsFile.write(json.dumps(events))
+        eventsFile.write(json.dumps(events, indent=4))
 
 
 if __name__ == '__main__':

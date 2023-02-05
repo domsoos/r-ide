@@ -1,0 +1,29 @@
+{
+    "99bf2c4b-29ca-406f-b7a6-23bf82460255": {
+        "shipment_id": "99bf2c4b-29ca-406f-b7a6-23bf82460255",
+        "wizard_id": "a2296e46-d5c9-4b73-bf01-1b248139d603",
+        "parent_id": null,
+        "template_id": "6f9bcfea-029f-4b43-afef-94b580e0982b",
+        "event_type": "Zcu^vtkTMnrKvW^RHJOl",
+        "event_action": "Rs`[JGfQgZKUjDioyCDphAvXhvnLutWT\\i_pB\\LlMa",
+        "event_action_time": 1675614087.830119
+    },
+    "d2f70b09-3d1f-4502-9cd0-7a52e622dbb8": {
+        "shipment_id": "d2f70b09-3d1f-4502-9cd0-7a52e622dbb8",
+        "wizard_id": "bc81797d-9155-47f7-8152-e7f05c1b8630",
+        "parent_id": null,
+        "template_id": "d160bdb3-ad8a-4d22-8671-8c69de20d856",
+        "event_type": "r^mMj_bLiFvXgQA\\wrj\\tJ",
+        "event_action": "VOAbGNTfBa",
+        "event_action_time": 1675631095.830213
+    },
+    "d05185dc-a08a-487f-92a1-74b0a2ffd0d6": {
+        "shipment_id": "d05185dc-a08a-487f-92a1-74b0a2ffd0d6",
+        "wizard_id": "a2296e46-d5c9-4b73-bf01-1b248139d603",
+        "parent_id": null,
+        "template_id": "6f9bcfea-029f-4b43-afef-94b580e0982b",
+        "event_type": "AV[KAc^MQeRPkFNW]jbvVTSeYgT`ZpIT]uCKFbNcT",
+        "event_action": "qsgz_zD\\`H_RKHWCw]]UM",
+        "event_action_time": 1675612315.830309
+    }
+}
