@@ -4,8 +4,8 @@
     import { slide } from "svelte/transition";
 
     /* Accordion Code */
-    let isOpen = false
-	const toggle = () => isOpen = !isOpen
+    let isAccordionOpen = false
+	const toggle = () => isAccordionOpen = !isAccordionOpen
     let topics = [{value:"geometry_msgs/Twist"},{value:"geometry_msgs/PoseStamped"},{value:"rosgraph_msgs/Log"},{value:"turtlesim/Pose"}];
     /* Accordion Code END*/
 
@@ -24,10 +24,11 @@
 		switch (message.type) {
 			case 'setSelectedBag':{
                 selectedBagPath = message.value;
-                // TODO: Regex for forward and backslash
-                //let regex = new RegExp("/\\|\//");
-                let pathToArr = selectedBagPath.split("/");
-                selectedBag = pathToArr[pathToArr.length - 1];
+                //let regex = /\\|\//;
+                //let pathToArr = selectedBagPath.split(regex);
+                //selectedBag = pathToArr[pathToArr.length - 1];
+                selectedBag = selectedBagPath.substring(selectedBagPath.lastIndexOf('/'));
+                cloneBagPath = selectedBagPath.substring(0, selectedBagPath.lastIndexOf('/'))
 				break;
             }
             case 'setCloneBagPath':{
@@ -49,7 +50,7 @@
         <button on:click={() => {isRecording = false;}}>Stop Recording</button>
     {/if}
 {:else}
-    <button on:click={() => {vscode.postMessage({type: 'getSelectedBag'})}}>{selectedBag == null? 'Select Bag..': 'Selected Bag: .../' + selectedBag}</button>
+    <button on:click={() => {vscode.postMessage({type: 'getSelectedBag'})}}>{selectedBag == null? 'Select Bag..': 'Selected Bag: ...' + selectedBag}</button>
     {#if selectedBag === null}
         <button on:click={() => {isBagManagerOpen = false}}>Cancel</button>
     {/if}
@@ -72,11 +73,15 @@
             <button class="location-btn" on:click={() => {vscode.postMessage({type: 'getCloneBagPath', value:cloneBagPath ? cloneBagPath : selectedBagPath})}}>...</button>
             <br>
             <br>
-            <b>Trim from:</b> {range[0]} - {range[1]}
+            <b>Trim clone:</b>
+            <div class="buttons-flex">
+                <input type="number" bind:value={range[0]} style="width: 50px">
+                <input type="number" bind:value={range[1]} style="width: 50px">
+            </div> 
             <Slider max="100" step="1" bind:value={range} range order style="margin-right:20px"/>
 
-            <button class="accordion-button" on:click={toggle} aria-expanded={isOpen}><svg style="tran"  width="20" height="20" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 30 10" stroke="currentColor"><path d="M9 5l7 7-7 7"></path></svg><b>Filter Topics</b></button>
-            {#if isOpen}
+            <button class="accordion-button" on:click={toggle} aria-expanded={isAccordionOpen}><svg style="tran"  width="20" height="20" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 30 10" stroke="currentColor"><path d="M9 5l7 7-7 7"></path></svg><b>Filter Topics</b></button>
+            {#if isAccordionOpen}
                 <ul style="list-style: none" transition:slide={{ duration: 300 }}>
                     {#each topics as item}
                         <li><input type=checkbox>{item.value}</li>
@@ -86,7 +91,7 @@
 
             <br>
             <div class="buttons-flex">
-                <button class="bag-buttons" on:click={() => {isOpen = false;selectedBag = null; isBagManagerOpen = false; isCloneMenuOpen = false}}>Cancel</button>
+                <button class="bag-buttons" on:click={() => {isAccordionOpen = false;selectedBag = null; isBagManagerOpen = false; isCloneMenuOpen = false}}>Cancel</button>
                 <button class="bag-buttons" on:click={() => {isCloneMenuOpen = true;}}>Clone</button>
             </div>
         {/if}
