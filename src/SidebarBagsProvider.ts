@@ -21,6 +21,7 @@ export class SidebarBagsProvider implements vscode.WebviewViewProvider {
     webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
 
     webviewView.webview.onDidReceiveMessage(async (data) => {
+      console.log(data);
       switch (data.type) {
         case "onInfo": {
           if (!data.value) {
@@ -34,6 +35,28 @@ export class SidebarBagsProvider implements vscode.WebviewViewProvider {
             return;
           }
           vscode.window.showErrorMessage(data.value);
+          break;
+        }
+        case "getSelectedBag" :{
+          vscode.window.showOpenDialog({canSelectFiles: true, canSelectFolders: false, canSelectMany: false}).then((result) =>{
+            if(result && result[0].path){
+              webviewView.webview.postMessage({
+                type: 'setSelectedBag',
+                value: result[0].path,
+              });
+            }
+          });
+          break;
+        }
+        case "getCloneBagPath" :{
+          vscode.window.showOpenDialog({canSelectFiles: false, canSelectFolders: true, canSelectMany: false, defaultUri: vscode.Uri.file(data.value)}).then((result) =>{
+            if(result && result[0].path){
+              webviewView.webview.postMessage({
+                type: 'setCloneBagPath',
+                value: result[0].path,
+              });
+            }
+          });
           break;
         }
       }
@@ -53,7 +76,7 @@ export class SidebarBagsProvider implements vscode.WebviewViewProvider {
     );
 
     const scriptUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, "src", "webviews/sidebarbags.js")
+      vscode.Uri.joinPath(this._extensionUri, "out", "compiled/sidebarbags.js")
     );
 
     const styleMainUri = webview.asWebviewUri(
@@ -82,8 +105,6 @@ export class SidebarBagsProvider implements vscode.WebviewViewProvider {
                 <link href="${styleMainUri}" rel="stylesheet">  
 		    </head>
         <body>
-            <button>Record Bag</button>
-            <button>Open Bag</button>
             <script nonce="${nonce}" src="${scriptUri}"></script>
         </body>
         </html>`;

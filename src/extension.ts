@@ -6,6 +6,11 @@ import { SidebarBagsProvider } from './SidebarBagsProvider';
 import { SidebarTopicsProvider } from './SidebarTopicsProvider';
 import { SidebarVisualsProvider } from './SidebarVisualsProvider';
 import { SidebarWizardsProvider } from './SidebarWizardsProvider';
+import { 
+	createFileFromTemplate,
+	createMessage,
+	createSrv
+} from './commands/commands';
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -35,12 +40,15 @@ export function activate(context: vscode.ExtensionContext) {
 		),
 		vscode.commands.registerCommand(
 			"r-ide.create-file-from-template",
-			async (path: string, text: Uint8Array) => {
-				const uri = vscode.Uri.file(path);
-				vscode.window.showInformationMessage(uri.path);
-				await vscode.workspace.fs.writeFile(uri, text);
-				vscode.workspace.openTextDocument(uri);
-			}
+			createFileFromTemplate
+		),
+		vscode.commands.registerCommand(
+			"r-ide.create-msg", 
+			createMessage
+		),
+		vscode.commands.registerCommand(
+			"r-ide.create-srv",
+			createSrv
 		)
 	  );
 }

@@ -4,7 +4,7 @@
 }
 
 .dropdown-content {
-  display: none;
+  display: block;
   position: absolute;
   width: 100%;
   overflow: auto;
@@ -15,7 +15,7 @@
 .wizard-container{
   width: 100%;
   margin-top: 10px;
-  display: none;
+  display: block;
 }
 
 .width-100{
@@ -35,3 +35,16 @@
   width: 75px;
   float: right;
 }
+
+.location-input{
+  border: 1px solid black;
+  width: 88%!important;
+  margin-bottom: 5px;
+  display: inline!important;
+}
+
+.location-btn{
+  width: 10%;
+}
+
+
