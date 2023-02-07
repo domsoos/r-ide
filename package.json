@@ -10,7 +10,6 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:r-ide.helloWorld",
     "onCommand:r-ide.create-file-from-template"
   ],
   "main": "./out/extension.js",
@@ -62,8 +61,8 @@
     },
     "commands": [
       {
-        "command": "r-ide.helloWorld",
-        "title": "Hello World"
+        "command": "r-ide.create-msg",
+        "title": "R-IDE: Create Message File"
       }
     ],
     "snippets": [
