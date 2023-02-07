@@ -41,7 +41,7 @@
 	  },
 
 	  "srv example": {
-		"scope": "source.ros.msg",
+		"scope": "ros.msg",
 		"prefix": "srv example",
 		"body": [
 		  "#request constants",
@@ -64,7 +64,7 @@
 	  },
 
 	  "msg example": {
-		"scope": "source.ros.msg",
+		"scope": "ros.msg",
 		"prefix": "msg example",
 		"body": [
 		  "int32 X=123",
