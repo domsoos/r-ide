@@ -50,42 +50,7 @@ export async function createMessage(path: string) {
     // Update package.xml
     // TODO: Assumes that msg is placed in ./msg/*.msg, and that the package is at ./package.xml relative to the root of the project
     let packageLocation = vscode.Uri.joinPath(vscode.Uri.file(path), '../../package.xml');
-    vscode.workspace.openTextDocument(packageLocation).then(document => {
-        vscode.window.showTextDocument(document, 1, true).then(editor => {
-            // Regex used
-            const dependTag = /<.*?_depend>.*?<\/.*?_depend>/sg;
-            let edit = '';
-
-            // XML document
-            let text = document.getText();
-
-            // Assumes some depend tags already exist
-            let lastDepend = 0;
-            while (dependTag.exec(text) !== null) {
-                lastDepend = dependTag.lastIndex;
-            }
-
-            // Check if build exists
-            const buildRegEx: RegExp = /(?<!<!--.*?)<build_depend>message_generation<\/build_depend>/;
-            if (!buildRegEx.test(text)) {
-                // Add the text 
-                edit += '\n  <build_depend>message_generation<\/build_depend>';
-            }
-
-            // Check if runtime exists
-            const runRegEx: RegExp = /(?<!<!--.*?)<run_depend>message_runtime<\/run_depend>/;
-            if (!runRegEx.test(text)) {
-                // Add the text
-                edit += '\n  <run_depend>message_runtime</run_depend>';
-            }
-
-            editor.edit(editBuilder => {
-                editBuilder.insert(document.positionAt(lastDepend), edit);
-            });
-
-            editor.document.save();
-        });
-    });
+    updatePackageXml(packageLocation);
 }
 
 export async function createSrv(path: string) {
@@ -103,6 +68,19 @@ export async function createSrv(path: string) {
     // Update package.xml
     // TODO: Assumes that srv is placed in ./srv/*.srv, and that the package is at ./package.xml relatively
     let packageLocation = vscode.Uri.joinPath(vscode.Uri.file(path), '../../package.xml');
+    await updatePackageXml(packageLocation);
+    
+}
+
+async function updatePackageXml(packagePath: string | vscode.Uri) {
+
+    let packageLocation;
+    if (!(packagePath instanceof vscode.Uri)) {
+        packageLocation = vscode.Uri.file(packagePath);
+    } else {
+        packageLocation = packagePath;
+    }
+    
     vscode.workspace.openTextDocument(packageLocation).then(document => {
         vscode.window.showTextDocument(document, 1, true).then(editor => {
             // Regex used
@@ -139,5 +117,4 @@ export async function createSrv(path: string) {
             editor.document.save();
         });
     });
-    
 }

@@ -63,6 +63,10 @@
       {
         "command": "r-ide.create-msg",
         "title": "R-IDE: Create Message File"
+      },
+      {
+        "command": "r-ide.create-srv",
+        "title": "R-IDE: Create Service File"
       }
     ],
     "snippets": [
