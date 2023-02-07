@@ -57,20 +57,53 @@
 			wizardTitle = 'Creation Wizard';
 			isWizardOpen = false;
 
-			vscode.postMessage({
-				type: 'r-ide.command',
-				value: {
-					command: 'r-ide.create-file-from-template',
-					args: [
-						workspaceDirectory + '/' + nodeName + selectedLanguage.value, 
-						{
-							language: selectedLanguage,
-							isPublisher: isPublisher,
-							isSubscriber: isSubscriber,
+			switch (selectedWizardType) {
+				case ("Node"): {
+					vscode.postMessage({
+						type: 'r-ide.command',
+						value: {
+							command: 'r-ide.create-file-from-template',
+							args: [
+								workspaceDirectory + '/' + nodeName + selectedLanguage.value, 
+								{
+									language: selectedLanguage,
+									isPublisher: isPublisher,
+									isSubscriber: isSubscriber,
+								}
+							]
 						}
-					]
+					});
+					break;
 				}
-			});
+
+				case ("Msg"): {
+					vscode.postMessage({
+						type: 'r-ide.command',
+						value: {
+							command: 'r-ide.create-msg',
+							args: [
+								workspaceDirectory + '/' + nodeName + selectedLanguage.value
+							]
+						}
+					});
+					break;
+				}
+
+				case ("Srv"): {
+					vscode.postMessage({
+						type: 'r-ide.command',
+						value: {
+							command: 'r-ide.create-srv',
+							args: [
+								workspaceDirectory + '/' + nodeName + selectedLanguage.value
+							]
+						}
+					});
+					break;
+				}
+			};
+
+			
 			selectedLanguage = languages[selectedWizardType][0];
 		}
 	}
