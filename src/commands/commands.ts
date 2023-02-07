@@ -26,16 +26,16 @@ export async function createFileFromTemplate(path: string, options: any) {
 
             break;
         }
-        // TODO: Find proper value for langID for ros message and service files
-        case ("srv"): {
-            vscode.commands.executeCommand("editor.action.insertSnippet", { langId: "ros.msg", name: "srv example"});
-            break;
-        }
     }
     vscode.window.activeTextEditor?.document.save();
 }
 
 export async function createMessage(path: string) {
+    // Update package.xml
+    // TODO: Assumes that msg is placed in ./msg/*.msg, and that the package is at ./package.xml relative to the root of the project
+    let packageLocation = vscode.Uri.joinPath(vscode.Uri.file(path), '../../package.xml');
+    await updatePackageXml(packageLocation);
+
     // Create Msg File
     const uri = vscode.Uri.file(path);
     vscode.window.showInformationMessage(uri.path);
@@ -46,14 +46,15 @@ export async function createMessage(path: string) {
     vscode.commands.executeCommand("editor.action.insertSnippet", { langId: "ros.msg", name: "msg example"});
 
     vscode.window.activeTextEditor?.document.save();
-
-    // Update package.xml
-    // TODO: Assumes that msg is placed in ./msg/*.msg, and that the package is at ./package.xml relative to the root of the project
-    let packageLocation = vscode.Uri.joinPath(vscode.Uri.file(path), '../../package.xml');
-    updatePackageXml(packageLocation);
+    
 }
 
 export async function createSrv(path: string) {
+    // Update package.xml
+    // TODO: Assumes that srv is placed in ./srv/*.srv, and that the package is at ./package.xml relatively
+    let packageLocation = vscode.Uri.joinPath(vscode.Uri.file(path), '../../package.xml');
+    await updatePackageXml(packageLocation);
+
     // Create Srv File
     const uri = vscode.Uri.file(path);
     vscode.window.showInformationMessage(uri.path);
@@ -64,11 +65,6 @@ export async function createSrv(path: string) {
     vscode.commands.executeCommand("editor.action.insertSnippet", { langId: "ros.msg", name: "srv example"});
 
     vscode.window.activeTextEditor?.document.save();
-
-    // Update package.xml
-    // TODO: Assumes that srv is placed in ./srv/*.srv, and that the package is at ./package.xml relatively
-    let packageLocation = vscode.Uri.joinPath(vscode.Uri.file(path), '../../package.xml');
-    await updatePackageXml(packageLocation);
     
 }
 

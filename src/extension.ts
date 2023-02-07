@@ -8,7 +8,8 @@ import { SidebarVisualsProvider } from './SidebarVisualsProvider';
 import { SidebarWizardsProvider } from './SidebarWizardsProvider';
 import { 
 	createFileFromTemplate,
-	createMessage 
+	createMessage,
+	createSrv
 } from './commands/commands';
 
 // This method is called when your extension is activated
@@ -44,6 +45,10 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.commands.registerCommand(
 			"r-ide.create-msg", 
 			createMessage
+		),
+		vscode.commands.registerCommand(
+			"r-ide.create-srv",
+			createSrv
 		)
 	  );
 }
