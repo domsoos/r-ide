@@ -1,22 +1,6 @@
 {
-	// Place your r-ide workspace snippets here. Each snippet is defined under a snippet name and has a scope, prefix, body and 
-	// description. Add comma separated ids of the languages where the snippet is applicable in the scope field. If scope 
-	// is left empty or omitted, the snippet gets applied to all languages. The prefix is what is 
-	// used to trigger the snippet and the body will be expanded and inserted. Possible variables are: 
-	// $1, $2 for tab stops, $0 for the final cursor position, and ${1:label}, ${2:another} for placeholders. 
-	// Placeholders with the same ids are connected.
-	// Example:
-	// "Print to console": {
-	// 	"scope": "javascript,typescript",
-	// 	"prefix": "log",
-	// 	"body": [
-	// 		"console.log('$1');",
-	// 		"$2"
-	// 	],
-	// 	"description": "Log output to console"
-	// }
-
 	"def listener": {
+		"scope": "python",
 		"prefix": "def listener",
 		"body": [
 		  "def listener():",
@@ -25,10 +9,12 @@
 		  "    # spin() simply keeps python from exiting until this node is stopped",
 		  "    rospy.spin()"
 		],
-		"description": "def listener"
-	  }
+		"description": "def listener",
+		"isFileTemplate": true
+	  },
 
 	  "def talker": {
+		"scope": "python",
 		"prefix": "def talker",
 		"body": [
 		  "def obs_gen():",
@@ -50,34 +36,59 @@
 		  "    except rospy.ROSInterruptException:",
 		  "        pass"
 		],
-		"description": "def talker"
-	  }
+		"description": "def talker",
+		"isFileTemplate": true
+	  },
 
-	  "def ros_talker": {
-		"prefix": "def ros_talker",
+	  "srv example": {
+		"prefix": "srv example",
 		"body": [
-		  "int main(int argc, char **argv)",
-		  "{",
-		  "  ros::init(argc, argv, \"talker\");",
-		  "  ros::NodeHandle n;",
-		  "  ros::Publisher chatter_pub = n.advertise<std_msgs::String>(\"chatter\", 1000);",
-		  "  ros::Rate loop_rate(10);",
-		  "  int count = 0;",
-		  "  while (ros::ok())",
-		  "  {",
-		  "    std_msgs::String msg;",
-		  "    std::stringstream ss;",
-		  "    ss << \"hello world \" << count;",
-		  "    msg.data = ss.str();",
-		  "    ROS_INFO(\"%s\", msg.data.c_str());",
-		  "    chatter_pub.publish(msg);",
-		  "    ros::spinOnce();",
-		  "    loop_rate.sleep();",
-		  "    ++count;",
-		  "  }",
-		  "  return 0;",
-		  "}"
+		  "#request constants",
+		  "int8 FOO=1",
+		  "int8 BAR=2",
+		  "#request fields",
+		  "int8 foobar",
+		  "another_pkg/AnotherMessage msg",
+		  "---",
+		  "#response constants",
+		  "uint32 SECRET=123456",
+		  "#response fields",
+		  "another_pkg/YetAnotherMessage val",
+		  "CustomMessageDefinedInThisPackage value",
+		  "uint32 an_integer",
+		  "reference: http://wiki.ros.org/srv"
 		],
-		"description": "https://github.com/ros/ros_tutorials/blob/noetic-devel/roscpp_tutorials/talker/talker.cpp"
+		"description": "srv example",
+		"isFileTemplate": true
+	  },
+
+	  "msg example": {
+		"prefix": "msg example",
+		"body": [
+		  "int32 X=123",
+		  "int32 Y=-123",
+		  "string FOO=foo",
+		  "string EXAMPLE=\"#comments\" are ignored, and leading and trailing whitespace removed",
+		  "reference: http://wiki.ros.org/msg"
+		],
+		"description": "msg example",
+		"isFileTemplate": true
+	  },
+
+	  "urdf example": {
+		"prefix": "urdf example",
+		"body": [
+		  "<?xml version=\"1.0\"?>",
+		  "   <robot name=\"myfirst\">",
+		  "      <link name=\"base_link\">",
+		  "        <visual>",
+		  "          <geometry>",
+		  "            <cylinder length=\"0.6\" radius=\"0.2\"/>",
+		  "          </geometry>",
+		  "        </visual>",
+		  "      </link>",
+		  "   </robot>"
+		],
+		"description": "urdf example",
+		"isFileTemplate": true
 	  }
-}
