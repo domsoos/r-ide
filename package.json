@@ -10,7 +10,6 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:r-ide.helloWorld",
     "onCommand:r-ide.create-file-from-template"
   ],
   "main": "./out/extension.js",
@@ -62,8 +61,12 @@
     },
     "commands": [
       {
-        "command": "r-ide.helloWorld",
-        "title": "Hello World"
+        "command": "r-ide.create-msg",
+        "title": "R-IDE: Create Message File"
+      },
+      {
+        "command": "r-ide.create-srv",
+        "title": "R-IDE: Create Service File"
       }
     ],
     "snippets": [
@@ -107,5 +110,8 @@
     "svelte-check": "^3.0.3",
     "svelte-preprocess": "^5.0.1",
     "typescript": "^4.9.3"
-  }
+  },
+  "extensionDependencies": [
+    "ms-iot.vscode-ros"
+  ]
 }

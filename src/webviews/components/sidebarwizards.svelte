@@ -22,21 +22,29 @@
 				break;
 		}
 	});
-	//
 
 	let nodeName = '';
 	let wizardTitle = 'Creation Wizard';
-	let languages = [
-		{id: 'cpp', text: 'C++' , value: ".cpp"},
-		{id: 'py', text: 'Python', value: ".py"}
-	];
+
+	let languages = {
+		"Node": [
+			{id: 'cpp', text: 'C++' , value: ".cpp"},
+			{id: 'py', text: 'Python', value: ".py"}],
+
+		"Srv": [
+			{id: 'srv', text: 'Service File', value: ".srv"}
+		],
+
+		"Msg": [
+			{id: 'msg', text: 'Message File', value: ".msg"}
+		]
+	};
+
 	let selectedLanguage = languages[0];
 	let selectedWizardType = '';
 
 	function nextButtonClicked(){
 		// TODO: Currently overwrites without warning, should ask for confirmation for overwrites
-
-		// TODO: Currently isSubscriber and isPublisher do nothing
 
 		if (nodeName === '') {
 		// No given name
@@ -48,23 +56,55 @@
 			// Success!
 			wizardTitle = 'Creation Wizard';
 			isWizardOpen = false;
-			// let generatedText = getWizardText();
 
-			vscode.postMessage({
-				type: 'r-ide.command',
-				value: {
-					command: 'r-ide.create-file-from-template',
-					args: [
-						workspaceDirectory + '/' + nodeName + selectedLanguage.value, 
-						{
-							language: selectedLanguage.id,
-							isPublisher: isPublisher,
-							isSubscriber: isSubscriber,
+			switch (selectedWizardType) {
+				case ("Node"): {
+					vscode.postMessage({
+						type: 'r-ide.command',
+						value: {
+							command: 'r-ide.create-file-from-template',
+							args: [
+								workspaceDirectory + '/' + nodeName + selectedLanguage.value, 
+								{
+									language: selectedLanguage,
+									isPublisher: isPublisher,
+									isSubscriber: isSubscriber,
+								}
+							]
 						}
-					]
+					});
+					break;
 				}
-			});
-			selectedLanguage = languages[0];
+
+				case ("Msg"): {
+					vscode.postMessage({
+						type: 'r-ide.command',
+						value: {
+							command: 'r-ide.create-msg',
+							args: [
+								workspaceDirectory + '/' + nodeName + selectedLanguage.value
+							]
+						}
+					});
+					break;
+				}
+
+				case ("Srv"): {
+					vscode.postMessage({
+						type: 'r-ide.command',
+						value: {
+							command: 'r-ide.create-srv',
+							args: [
+								workspaceDirectory + '/' + nodeName + selectedLanguage.value
+							]
+						}
+					});
+					break;
+				}
+			};
+
+			
+			selectedLanguage = languages[selectedWizardType][0];
 		}
 	}
 
@@ -73,19 +113,6 @@
 		isWizardOpen = true; 
 		isMenuOpen = false; 
 		wizardTitle = 'ROS ' + wizardType + ' Wizard';
-	}
-
-	function getWizardText(){
-		switch (selectedWizardType){
-			case "Node":
-				return "Created ROS Node - Placeholder Text";
-			case "Msg":
-				return "Created Msg Node - Placeholder Text";
-			case "Srv":
-				return "Created Srv Node - Placeholder Text";
-			default:
-				return "Place holder text";
-		}
 	}
 </script>
 
@@ -114,7 +141,7 @@
 
 		<!-- File type -->
 		<select name="wizard-file-type" class="width-100 margin-top-5" bind:value={selectedLanguage}>
-			{#each languages as language}
+			{#each languages[selectedWizardType] as language}
 				<option value="{language}">{language.text}</option>
 			{/each}
 		</select>
@@ -132,16 +159,20 @@
 		<button class="location-btn" on:click={() => {vscode.postMessage({type: 'openFileExplorer', value:workspaceDirectory})}}>...</button>
 		<br>
 
-		<!-- Is Publisher -->
-		<input type="checkbox" name="publisher" id="wizard-node-publisher" bind:value={isPublisher}>
-		<label for="wizard-node-publisher">Publisher</label>
-		<br>
+		{#if selectedWizardType === 'Node'}
+			<!-- Is Publisher -->
+			<input type="checkbox" name="publisher" id="wizard-node-publisher" bind:checked={isPublisher}>
+			<label for="wizard-node-publisher">Publisher</label>
+			<br>
 
-		<!-- Is subscriber -->
-		<input type="checkbox" name="subscriber" id="wizard-node-subscriber" class="margin-top-5" bind:value={isSubscriber}>
-		<label for="wizard-node-subscriber">Subscriber</label>
-		<br>
-		<br>
+			<!-- Is subscriber -->
+			<input type="checkbox" name="subscriber" id="wizard-node-subscriber" class="margin-top-5" bind:checked={isSubscriber}>
+			<label for="wizard-node-subscriber">Subscriber</label>
+			<br>
+			<br>
+		{/if}
+		
+		
 		<!-- Cancel and Next buttons -->
 		<button class="cancel-btn" on:click={() =>{isWizardOpen = false; wizardTitle = 'Creation Wizard'}}>Cancel</button>
 		<button class="next-btn" on:click={nextButtonClicked}>Next</button>

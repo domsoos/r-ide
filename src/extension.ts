@@ -6,6 +6,11 @@ import { SidebarBagsProvider } from './SidebarBagsProvider';
 import { SidebarTopicsProvider } from './SidebarTopicsProvider';
 import { SidebarVisualsProvider } from './SidebarVisualsProvider';
 import { SidebarWizardsProvider } from './SidebarWizardsProvider';
+import { 
+	createFileFromTemplate,
+	createMessage,
+	createSrv
+} from './commands/commands';
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -35,39 +40,15 @@ export function activate(context: vscode.ExtensionContext) {
 		),
 		vscode.commands.registerCommand(
 			"r-ide.create-file-from-template",
-			async (path: string, options: any) => {
-				const uri = vscode.Uri.file(path);
-				vscode.window.showInformationMessage(uri.path);
-				await vscode.workspace.fs.writeFile(uri, new TextEncoder().encode(''));
-				//let document = await vscode.workspace.openTextDocument(vscode.Uri.file(uri.path).with({ scheme: 'untitled'}));
-				await vscode.window.showTextDocument(uri);
-
-				switch (options.language) {
-					case ('py'): {
-						if (options.isPublisher) {
-							let publisherSnippet = new vscode.SnippetString('isPublisher\n');
-							vscode.window.activeTextEditor?.insertSnippet(publisherSnippet);
-						}
-						if (options.isSubscriber) {
-							let subscriberSnippet = new vscode.SnippetString('isSubscriber\n');
-							vscode.window.activeTextEditor?.insertSnippet(subscriberSnippet);
-						}
-						break;
-					}
-					case ('cpp'): {
-
-						break;
-					}
-
-				}
-				vscode.window.activeTextEditor?.document.save();
-				/*
-				document.save().then( (result) => {
-					vscode.window.showTextDocument(uri);
-				});
-				*/
-				
-			}
+			createFileFromTemplate
+		),
+		vscode.commands.registerCommand(
+			"r-ide.create-msg", 
+			createMessage
+		),
+		vscode.commands.registerCommand(
+			"r-ide.create-srv",
+			createSrv
 		)
 	  );
 }
