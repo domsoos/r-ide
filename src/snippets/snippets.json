@@ -166,7 +166,7 @@
 
 
 	"Cursor Location1": {
-		"scope": "java",
+		"scope": "python",
 		"prefix": "cursorloc",
 		"body": [
 			"cursor = ${1:0}, ${2:0}",
@@ -176,7 +176,7 @@
 	},
 
 	"Cursor Location2": {
-		"scope": "python",
+		"scope": "java",
 		"prefix": "cursorloc",
 		"body": [
 			"Point cursor = new Point(${1:0}, ${2:0});",
