@@ -26,16 +26,13 @@ def readFile(file_name):
     if "events.json" in file_name:
         # we know the file to read is an event
         for line in data:
-            shipmentid = line[0]
-            wizardid = line[1]
-            parentid = line[2]
-            templateid = line[3]
             query = "INSERT INTO Event (shipmentid, wizardid, templateid, type, action, actiondate) VALUES(%s, %s, %s, %s, %s, %s)"
             values = (int(line['shipment_id']), int(line['wizard_id']), line['template_id'], line[3], line[4], line[5]                                 )
             cursor = getCursor(query, values)
     elif "templates.json" in file_name:
-        pass
         # it is a template file
+        for line in data.values():
+            templateid = line['template_id']
     elif "wizards.json" in file_name:
         # it is a wizard to read
         
@@ -47,11 +44,12 @@ def readFile(file_name):
             wtype = line['type']
             #print(f"wizardi: {wizardid} templateid: {templateid} type: {wtype}")
             if templateid and wtype:
-                query = "INSERT INTO Wizards (wizardid, templateid, type) VALUES(%s, %s, %s)"
-                values = (wizardid, templateid, wtype)
+                query = "INSERT INTO Wizards (wizardid, templateid) VALUES(%s, %s)"
+                values = (wizardid, templateid)
                 connection = mysql.connector.connect(
                     host='localhost',
                     user="root",
+                    port = 3306,
                     password=config.password,
                     database="ridedb"
                 )
