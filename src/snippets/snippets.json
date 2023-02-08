@@ -162,6 +162,27 @@
 		"   */"
 	  ],
 	  "description": "client node example"
+	},
+
+
+	"Cursor Location1": {
+		"scope": "java",
+		"prefix": "cursorloc",
+		"body": [
+			"cursor = ${1:0}, ${2:0}",
+			"view.setCursorLocation(cursor)"
+		],
+		"description": "Set the cursor location in the active view."
+	},
+
+	"Cursor Location2": {
+		"scope": "python",
+		"prefix": "cursorloc",
+		"body": [
+			"Point cursor = new Point(${1:0}, ${2:0});",
+			"view.setCursorLocation(cursor);"
+		],
+		"description": "Set the cursor location in the active view."
 	}
 
 	  
