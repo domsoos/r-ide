@@ -97,7 +97,7 @@
 
 
 	"service node example": {
-	  //"scope": "C++"
+	  "scope": "C++",
 	  "prefix": "service node example",
 	  "body": [
 		"bool add(beginner_tutorials::AddTwoInts::Request  &req,",
@@ -128,6 +128,7 @@
 	},
 
 	"client node example": {
+	  "scope": "C++",
 	  "prefix": "client node example",
 	  "body": [
 		"int main(int argc, char **argv)",
