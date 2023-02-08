@@ -10,7 +10,7 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:r-ide.helloWorld"
+    "onCommand:r-ide.create-file-from-template"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -19,7 +19,7 @@
         {
           "id": "ride-sidebar-view",
           "title": "R-IDE",
-          "icon": "media/hubot.svg"
+          "icon": "src/media/hubot.svg"
         }
       ]
     },
@@ -27,17 +27,52 @@
       "ride-sidebar-view": [
         {
           "type": "webview",
-          "id": "ride-sidebar",
-          "name": "R-IDE",
-          "icon": "media/hubot.svg",
-          "contextualTitle": "R-IDE"
+          "id": "sidebar-wizards",
+          "name": "Wizards",
+          "contextualTitle": "Wizards",
+          "visibility": "visible",
+          "initialSize": 3
+        },
+        {
+          "type": "webview",
+          "id": "sidebar-bags",
+          "name": "ROS Bags",
+          "contextualTitle": "ROS Bags",
+          "visibility": "visible",
+          "initialSize": 1
+        },
+        {
+          "type": "webview",
+          "id": "sidebar-visuals",
+          "name": "Visualization Tools",
+          "contextualTitle": "Visualization Tools",
+          "visibility": "visible",
+          "initialSize": 1
+        },
+        {
+          "type": "webview",
+          "id": "sidebar-topics",
+          "name": "ROS Topics",
+          "contextualTitle": "ROS Topics",
+          "visibility": "visible",
+          "initialSize": 1
         }
       ]
     },
     "commands": [
       {
-        "command": "r-ide.helloWorld",
-        "title": "Hello World"
+        "command": "r-ide.create-msg",
+        "title": "R-IDE: Create Message File"
+      },
+      {
+        "command": "r-ide.create-srv",
+        "title": "R-IDE: Create Service File"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "python",
+        "path": "./src/snippets/snippets.json"
       }
     ]
   },
@@ -47,19 +82,36 @@
     "watch": "tsc -watch -p ./",
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src --ext ts",
-    "test": "node ./out/test/runTest.js"
+    "test": "node ./out/test/runTest.js",
+    "rollup": "rollup -c -w"
   },
   "devDependencies": {
-    "@types/vscode": "^1.74.0",
-    "@types/glob": "^8.0.0",
+    "@bulatdashiev/svelte-slider": "^1.0.3",
+    "@rollup/plugin-commonjs": "^24.0.1",
+    "@rollup/plugin-node-resolve": "^15.0.1",
+    "@rollup/plugin-terser": "^0.4.0",
+    "@rollup/plugin-typescript": "^11.0.0",
+    "@tsconfig/svelte": "^3.0.0",
+    "@types/glob": "^8.0.1",
     "@types/mocha": "^10.0.1",
     "@types/node": "16.x",
-    "@typescript-eslint/eslint-plugin": "^5.45.0",
-    "@typescript-eslint/parser": "^5.45.0",
+    "@types/vscode": "^1.74.0",
+    "@typescript-eslint/eslint-plugin": "^5.49.0",
+    "@typescript-eslint/parser": "^5.49.0",
+    "@vscode/test-electron": "^2.2.0",
+    "concurrently": "^7.6.0",
     "eslint": "^8.28.0",
     "glob": "^8.0.3",
     "mocha": "^10.1.0",
-    "typescript": "^4.9.3",
-    "@vscode/test-electron": "^2.2.0"
-  }
+    "rollup": "^2.79.1",
+    "rollup-plugin-svelte": "^7.1.0",
+    "rollup-plugin-terser": "^7.0.2",
+    "svelte": "^3.55.1",
+    "svelte-check": "^3.0.3",
+    "svelte-preprocess": "^5.0.1",
+    "typescript": "^4.9.3"
+  },
+  "extensionDependencies": [
+    "ms-iot.vscode-ros"
+  ]
 }

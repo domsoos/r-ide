@@ -1,0 +1,99 @@
+{
+	"def listener": {
+		"scope": "python",
+		"prefix": "def listener",
+		"body": [
+		  "def listener():",
+		  "    rospy.init_node('listener', anonymous=True)",
+		  "    rospy.Subscriber(\"chatter\", String, callback)",
+		  "    # spin() simply keeps python from exiting until this node is stopped",
+		  "    rospy.spin()"
+		],
+		"description": "def listener",
+		"isFileTemplate": true
+	  },
+
+	  "def talker": {
+		"scope": "python",
+		"prefix": "def talker",
+		"body": [
+		  "def obs_gen():",
+		  "    pub = rospy.Publisher('obs_gen_talker', String, queue_size=10)",
+		  "    rospy.init_node('talker', anonymous=True)",
+		  "    rate = rospy.Rate(0.5)",
+		  "",
+		  "    gen_rand_bool = lambda: 't' if random.choice([True,False]) else 'f'",
+		  "    while not rospy.is_shutdown():",
+		  "        obs = ','.join([gen_rand_bool() for _ in range(OBS_VARS)])",
+		  "        obs = \"{} at {}\".format(obs, rospy.get_time())",
+		  "        rospy.loginfo(obs)",
+		  "        pub.publish(obs)",
+		  "        rate.sleep()",
+		  "",
+		  "if __name__ == '__main__':",
+		  "    try:",
+		  "        obs_gen()",
+		  "    except rospy.ROSInterruptException:",
+		  "        pass"
+		],
+		"description": "def talker",
+		"isFileTemplate": true
+	  },
+
+	  "srv example": {
+		"scope": "ros.msg",
+		"prefix": "srv example",
+		"body": [
+		  "#request constants",
+		  "int8 FOO=1",
+		  "int8 BAR=2",
+		  "#request fields",
+		  "int8 foobar",
+		  "another_pkg/AnotherMessage msg",
+		  "---",
+		  "#response constants",
+		  "uint32 SECRET=123456",
+		  "#response fields",
+		  "another_pkg/YetAnotherMessage val",
+		  "CustomMessageDefinedInThisPackage value",
+		  "uint32 an_integer",
+		  "reference: http://wiki.ros.org/srv"
+		],
+		"description": "srv example",
+		"isFileTemplate": true
+	  },
+
+	  "msg example": {
+		"scope": "ros.msg",
+		"prefix": "msg example",
+		"body": [
+		  "int32 X=123",
+		  "int32 Y=-123",
+		  "string FOO=foo",
+		  "string EXAMPLE=\"#comments\" are ignored, and leading and trailing whitespace removed",
+		  "reference: http://wiki.ros.org/msg"
+		],
+		"description": "msg example",
+		"isFileTemplate": true
+	  },
+
+	  "urdf example": {
+		"prefix": "urdf example",
+		"body": [
+		  "<?xml version=\"1.0\"?>",
+		  "   <robot name=\"myfirst\">",
+		  "      <link name=\"base_link\">",
+		  "        <visual>",
+		  "          <geometry>",
+		  "            <cylinder length=\"0.6\" radius=\"0.2\"/>",
+		  "          </geometry>",
+		  "        </visual>",
+		  "      </link>",
+		  "   </robot>"
+		],
+		"description": "urdf example",
+		"isFileTemplate": true
+	  }
+
+	  
+}
