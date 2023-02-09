@@ -2,21 +2,21 @@ CREATE DATABASE IF NOT EXISTS `ridedb`;
 USE `ridedb`;
 
 CREATE TABLE IF NOT EXISTS Wizards (
-    wizardid int PRIMARY KEY,
-    templateid int NULL,
-    type varchar(50) NOT NULL
+    wizardid INT PRIMARY KEY AUTO_INCREMENT,
+    templateid INT DEFAULT 0 UNIQUE NULL,
+    type VARCHAR(50) DEFAULT 'Node' NOT NULL
 );
 CREATE TABLE IF NOT EXISTS Template (
-    templateid int PRIMARY KEY,
-    type varchar(50) NOT NULL,
-    wizardid int NOT NULL
+    templateid INT PRIMARY KEY AUTO_INCREMENT,
+    wizardid INT DEFAULT 0 UNIQUE NOT NULL,
+    type VARCHAR(50) NOT NULL
 );
 CREATE TABLE IF NOT EXISTS Events (
-    eventid int PRIMARY KEY,
-    wizardid int NULL,
-    templateid int NOT NULL,
-    type varchar(50) NOT NULL,
-    action varchar(50) NOT NULL,
+    eventid INT PRIMARY KEY,
+    wizardid int DEFAULT 0 UNIQUE NOT NULL,
+    templateid INT DEFAULT 0 UNIQUE NOT NULL,
+    type VARCHAR(50) DEFAULT 'button click' NOT NULL,
+    action VARCHAR(50) DEFAULT 'start ROS bag' NOT NULL,
     actiondate datetime NOT NULL
 );
 ALTER TABLE Events ADD FOREIGN KEY (wizardid) REFERENCES Wizards(wizardid);
