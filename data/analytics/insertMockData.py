@@ -4,20 +4,27 @@ import mysql.connector
 
 import config
 
-def getCursor():
+def getConnection():
     connection = mysql.connector.connect(
         host='localhost',
         user="root",
+        port = 3306,
         password=config.password,
-        #unix_socket = config.socket,
         database="ridedb"
     )
     if connection:
         print("Connection established")
     else:
         print("No connection..")
+    return connection
+
+def execute(connection, query, values):
     cursor = connection.cursor()
-    return cursor
+    cursor.execute(query, values)
+    connection.commit()
+    print("Insert successful")
+    cursor.close()
+    connection.close()
 
 def readFile(file_name):
     dataToRead = []
@@ -25,50 +32,54 @@ def readFile(file_name):
         data = json.load(in_file)
     if "events.json" in file_name:
         # we know the file to read is an event
-        for line in data:
-            query = "INSERT INTO Event (shipmentid, wizardid, templateid, type, action, actiondate) VALUES(%s, %s, %s, %s, %s, %s)"
-            values = (int(line['shipment_id']), int(line['wizard_id']), line['template_id'], line[3], line[4], line[5]                                 )
-            cursor = getCursor(query, values)
+        for line in data.values():
+            wizardid = int(line['wizard_id'])
+            templateid = int(line['template_id'])
+            if wizardid:
+                query = "INSERT INTO Wizards (wizardid, templateid) VALUES(%s, %s)"
+                values = (wizardid, templateid)
+                connection = getConnection()
+                execute(connection, query, values)
+
+                query = "INSERT INTO Events (eventid, wizardid, templateid, type, action, actiondate) VALUES(%s, %s, %s, %s, %s, NOW())"
+                values = (int(line['shipment_id']), int(line['wizard_id']), 1, str(line['event_type']), str(line['event_action']))
+                connection = getConnection()
+                execute(connection, query, values)
+
+            else:
+                if templateid:
+                    query = "INSERT INTO Events (eventid, templateid, type, action, actiondate) VALUES(%s, %s, %s, %s, NOW())"
+                    values = (int(line['shipment_id']), templateid, str(line['event_type']), str(line['event_action']))
+                    connection = getConnection()
+                    execute(connection, query, values)
+                else:
+                    query = "INSERT INTO Events (eventid, type, action, actiondate) VALUES(%s, %s, %s, NOW())"
+                    values = (int(line['shipment_id']), str(line['event_type']), str(line['event_action']))
+                    connection = getConnection()
+                    execute(connection, query, values)
     elif "templates.json" in file_name:
-        # it is a template file
         for line in data.values():
-            templateid = line['template_id']
+            query = "INSERT INTO Template (templateid, type) VALUES(%s, %s)"
+            values = (int(line['template_id']), str(line['type']))
+            connection = getConnection()
+            execute(connection, query, values)
     elif "wizards.json" in file_name:
-        # it is a wizard to read
-        
-        #print(data)
         for line in data.values():
-            #print(line)
             wizardid = line['wizard_id']
             templateid = line['template_id']
             wtype = line['type']
             #print(f"wizardi: {wizardid} templateid: {templateid} type: {wtype}")
-            if templateid and wtype:
-                query = "INSERT INTO Wizards (wizardid, templateid) VALUES(%s, %s)"
-                values = (wizardid, templateid)
-                connection = mysql.connector.connect(
-                    host='localhost',
-                    user="root",
-                    port = 3306,
-                    password=config.password,
-                    database="ridedb"
-                )
-                if connection:
-                    print("Connection established")
+            if templateid:
+                if wtype:
+                    query = "INSERT INTO Wizards (wizardid, templateid, type) VALUES(%s, %s, %s)"
+                    values = (int(wizardid), 1, wtype)
+                    connection = getConnection()
+                    execute(connection, query, values)
                 else:
-                    print("No connection..")
-                cursor = connection.cursor()
-                #cursor.execute("SHOW TABLES")
-                #cursor.commit()
-                #results = cursor.fetchall()
-                #for result in results:
-                #    print(result[0])
-                cursor.execute(query, values)
-                cursor.commit()
-                cursor.close()
-                connection.close()
+                    query = "INSERT INTO Wizards (wizardid, templateid) VALUES(%s, %s)"
+                    values = (int(wizardid), 1)
+                    connection = getConnection()
+                    execute(connection, query, values)
 
 if __name__ == '__main__':
-    if len(sys.argv) > 1:
-        readFile(sys.argv(1))
-    readFile("mock-wizards.json")
+    readFile("mock-events.json")

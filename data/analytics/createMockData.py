@@ -27,10 +27,10 @@ def createTemplateData(template_id, wizard_id, template_type):
     return template
 
 
-def createEventData(shipment_id, template_id, event_type, event_action, event_action_time, wizard_id=None,
+def createEventData(event_id, template_id, event_type, event_action, event_action_time, wizard_id=None,
                     parent_id=None):
     event = {
-        'shipment_id': shipment_id,
+        'event_id': event_id,
         'wizard_id': wizard_id,
         'parent_id': parent_id,
         'template_id': template_id,
@@ -42,8 +42,9 @@ def createEventData(shipment_id, template_id, event_type, event_action, event_ac
 
 
 def generateMockWizards(total):
+    wizardList = ["message node", "service node", "ROS Topic","ROS subscriber", "ROS monitor"]
     for _ in range(total):
-        wizard = createWizardData(str(uuid4()), ''.join(chr(random.randrange(65, 123)) for _ in range(random.randrange(10, 45))))
+        wizard = createWizardData(random.randint(1,4),random.choice(wizardList), random.randint(1,5))
         wizards[wizard['wizard_id']] = wizard
 
 
@@ -54,7 +55,7 @@ def generateMockTemplates(total):
         newTemplate = createTemplateData(str(uuid4()), pick, ''.join(chr(random.randrange(65, 123)) for _ in range(random.randrange(10, 45))))
         wizards[pick]['template_id'] = newTemplate['template_id']
         templates[newTemplate['template_id']] = newTemplate
-
+ 
 
 def generateMockEvents(total):
     for _ in range(total):
