@@ -78,6 +78,7 @@
 	  },
 
 	  "urdf example": {
+		"scope": "urdf",
 		"prefix": "urdf example",
 		"body": [
 		  "<?xml version=\"1.0\"?>",
