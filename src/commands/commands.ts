@@ -30,16 +30,43 @@ export async function createFileFromTemplate(path: string, options: any) {
     vscode.window.activeTextEditor?.document.save();
 }
 
-export async function createMessage(path: string) {
+export async function createMessage(path?: string | vscode.Uri) {
+    if (!path) {
+        path = await vscode.window.showSaveDialog({
+            // eslint-disable-next-line @typescript-eslint/naming-convention
+            filters: {"Text Files": ['msg']},
+            // TODO: This default Uri should be smarter
+            defaultUri: vscode.Uri.file(vscode.workspace.workspaceFolders?.map(folder => folder.uri.path).toString() + "/src/untitled.msg")
+        });
+
+        // Check the user provided a path
+        if (!path) {
+            return;
+        }
+    }
+
+    let uri;
+
+    if (!(path instanceof vscode.Uri)) {
+        uri = vscode.Uri.file(path);
+    } else {
+        uri = path;
+    }
+    
+    
+
     // Update package.xml
     // TODO: Assumes that msg is placed in ./msg/*.msg, and that the package is at ./package.xml relative to the root of the project
-    let packageLocation = vscode.Uri.joinPath(vscode.Uri.file(path), '../../package.xml');
-    await updatePackageXml(packageLocation);
+    let packageLocation = vscode.Uri.joinPath(uri, '../../package.xml');
+    updatePackageXml(packageLocation);
+
+    // Update CMakeLists.txt
+    let cmakeLocation = vscode.Uri.joinPath(uri, '../../CMakeLists.txt');
+    updateCMakeLists(cmakeLocation);
 
     // Create Msg File
-    const uri = vscode.Uri.file(path);
+    
     vscode.window.showInformationMessage(uri.path);
-
     await vscode.workspace.fs.writeFile(uri, new TextEncoder().encode(''));
     await vscode.window.showTextDocument(uri);
 
@@ -49,14 +76,38 @@ export async function createMessage(path: string) {
     
 }
 
-export async function createSrv(path: string) {
+export async function createSrv(path?: string | vscode.Uri) {
+    if (!path) {
+        path = await vscode.window.showSaveDialog({
+            // eslint-disable-next-line @typescript-eslint/naming-convention
+            filters: {"Text Files": ['msg']},
+            // TODO: This default Uri should be smarter
+            defaultUri: vscode.Uri.file(vscode.workspace.workspaceFolders?.map(folder => folder.uri.path).toString() + "/src/untitled.msg")
+        });
+
+        // Check the user provided a path
+        if (!path) {
+            return;
+        }
+    }
+
+    let uri;
+
+    if (!(path instanceof vscode.Uri)) {
+        uri = vscode.Uri.file(path);
+    } else {
+        uri = path;
+    }
+
     // Update package.xml
     // TODO: Assumes that srv is placed in ./srv/*.srv, and that the package is at ./package.xml relatively
-    let packageLocation = vscode.Uri.joinPath(vscode.Uri.file(path), '../../package.xml');
-    await updatePackageXml(packageLocation);
+    let packageLocation = vscode.Uri.joinPath(uri, '../../package.xml');
+    updatePackageXml(packageLocation);
+
+    let cmakeLocation = vscode.Uri.joinPath(uri, '../../CMakeLists.txt');
+    updateCMakeLists(cmakeLocation);
 
     // Create Srv File
-    const uri = vscode.Uri.file(path);
     vscode.window.showInformationMessage(uri.path);
 
     await vscode.workspace.fs.writeFile(uri, new TextEncoder().encode(''));
@@ -79,7 +130,6 @@ async function updatePackageXml(packagePath: string | vscode.Uri) {
     
     vscode.workspace.openTextDocument(packageLocation).then(document => {
         vscode.window.showTextDocument(document, 1, true).then(editor => {
-            // Regex used
             const dependTag = /<.*?_depend>.*?<\/.*?_depend>/sg;
             let edit = '';
 
@@ -113,4 +163,37 @@ async function updatePackageXml(packagePath: string | vscode.Uri) {
             editor.document.save();
         });
     });
+}
+
+async function updateCMakeLists(cmakePath: string | vscode.Uri) {
+    let cmakeLocation;
+    if (!(cmakePath instanceof vscode.Uri)) {
+        cmakeLocation = vscode.Uri.file(cmakePath);
+    } else {
+        cmakeLocation = cmakePath;
+    }
+
+    vscode.workspace.openTextDocument(cmakeLocation).then(document => {
+        vscode.window.showTextDocument(document, 1, true).then(editor => {
+            let text = document.getText();
+            let edits = [];
+            
+            // find_package function
+            let findPackageRegEx = /find_package\(catkin REQUIRED COMPONENTS\n(?:[^)]*?\n)*\)/;
+            let findPackageFunc = findPackageRegEx.exec(text);
+            console.log(findPackageFunc);
+            if (!findPackageFunc) {
+                // Build function
+            } else if (!/message_generation/.test(findPackageFunc[0])) {
+                // Add value
+                edits.push({
+                    'location': findPackageRegEx.lastIndex,
+                    'text': '\n  message_generation'
+                });
+            } // else already exists
+        
+            editor.document.save();
+        });
+    });
+    
 }
