@@ -10,6 +10,17 @@ export class RosProject {
     constructor(directory: vscode.Uri) {
         RosProject.projects.set(directory.fsPath, this);
         this.rootDirectory = directory;
+        this.msgWatcher = vscode.workspace.createFileSystemWatcher(this.rootDirectory.fsPath + '/**/*.msg');
+        // this.srvWatcher = vscode.workspace.createFileSystemWatcher(this.rootDirectory.fsPath + '/**/*.srv');
+
+        this.msgWatcher.onDidCreate(async uri => {
+            this.addMsg(uri);
+        });
+
+        this.msgWatcher.onDidDelete(async uri => {
+            this.msg.delete(uri.fsPath);
+            this.updateCmake('msg');
+        });
 
         return this;
     }
@@ -21,6 +32,11 @@ export class RosProject {
     srv = new Set<string>();
     actions = new Set<string>();
     nodes = new Map();
+
+    // File System Watchers
+    msgWatcher: vscode.FileSystemWatcher;
+    // srvWatcher: vscode.FileSystemWatcher;
+
 
     rootDirectory;
     cMakeVersion = '';
@@ -34,7 +50,6 @@ export class RosProject {
         for (let p of path) {
             this.msg.add(p.fsPath);
         }
-        console.log(this.msg);
         this.updateCmake('msg');
     }
 
@@ -76,7 +91,7 @@ export class RosProject {
         this.nodes.set(node.path, node);
     }
 
-    public updateCmake(partition: string) {
+    public async updateCmake(partition: string) {
         vscode.workspace.openTextDocument(vscode.Uri.joinPath(this.rootDirectory, './CMakeLists.txt')).then(document => {
             let text = document.getText();
 
@@ -93,16 +108,22 @@ export class RosProject {
                             });
 
                             let match = text.match(/# START MSG.*?# END MSG/s);
-                            let replaceText = `# START MSG
-${disclaimer}
-
-add_message_files(
-    DIRECTORY msg
-    FILES 
-    ${files.join('\n    ')}
-)
-
-# END MSG`;
+                            let replaceText: string;
+                            
+                            if (this.msg.size !== 0) {
+                                replaceText =  '# START MSG\n' +
+                                `${disclaimer}\n\n` + 
+                                'add_message_files(\n' +
+                                '    DIRECTORY msg\n' + 
+                                '    FILES\n' + 
+                                `    ${files.join('\n    ')}\n` + 
+                                ')\n\n' +
+                                '# END MSG';
+                            } else {
+                                replaceText =  '# START MSG\n' +
+                                `${disclaimer}\n\n` + 
+                                '# END MSG';
+                            }
 
                             if (match?.index) {
                                 
@@ -137,16 +158,9 @@ add_message_files(
 
     private generateMsg() {
         if (this.msg.size === 0) {
-            return `# START MSG
-${disclaimer}
-
-# add_message_files(
-#     FILES
-#     Message1.msg
-#     Message2.msg
-# )
-
-# END MSG`;
+            return '# START MSG\n' +
+            `${disclaimer}\n` + 
+            '# END MSG';
         }
         // TODO: Assumes that messages are placed in the msg directory, this might not be the case
         let directory = './msg';
@@ -156,40 +170,40 @@ ${disclaimer}
             files.push(relative(vscode.Uri.joinPath(this.rootDirectory, directory).fsPath, msg));
         }
 
-        return `# START MSG
-${disclaimer}
-
-add_message_files(
-    DIRECTORY ${directory.substring(2)}
-    FILES 
-    ${files.join('\n    ')}
-)
-
-# END MSG`;
+        return '# START MSG\n' +
+        `${disclaimer}\n\n` + 
+        'add_message_files(\n' +
+        '    DIRECTORY msg\n' + 
+        '    FILES\n' + 
+        `    ${files.join('\n    ')}\n` + 
+        ')\n\n' +
+        '# END MSG';
     }
 
     private generateSrv() {
-        return `# START SRV
-${disclaimer}
+        return `
+        # START SRV
+        ${disclaimer}
 
-add_service_files(
-    DIRECTORY <directory_1>
-    FILES <service_files_1>
-)
+        add_service_files(
+            DIRECTORY <directory_1>
+            FILES <service_files_1>
+        )
 
-# END SRV`;
+        # END SRV`;
     }
 
     private generateAction() {
-        return `# START ACTION
-${disclaimer}
+        return `
+        # START ACTION
+        ${disclaimer}
 
-add_action_files(
-    DIRECTORY <directory_1>
-    FILES <action_files_1>
-)
+        add_action_files(
+            DIRECTORY <directory_1>
+            FILES <action_files_1>
+        )
 
-# END ACTION`;
+        # END ACTION`;
     }
 
     private generateMessagesFunc() {
@@ -217,48 +231,38 @@ add_action_files(
      * @returns Returns the text of the CMakeLists.txt
      */
     public generateCMakeLists() {
-        return `# http://wiki.ros.org/catkin/CMakeLists.txt
-        
-cmake_minimnum_required(${this.cMakeVersion})
-project(${this.projectName})
-
-
-# Find Packages
-${this.generateFindPackage()}
-
-
-# Enable Python Module Support
-${this.setupPythonSupport()}
-
-
-# Add Msg, Srv, and Action files
-${this.generateMsg()}
-
-${this.generateSrv()}
-
-${this.generateAction()}
-
-
-# Generate messages
-${this.generateMessagesFunc()}
-
-
-# Specify Package Build Info
-${this.generateCatkinPackage()}
-
-
-# Add libraries and executables
-${this.addLibrariesAndExecutables()}
-
-
-# Tests to build
-${this.addTests()}
-
-
-# Install rules
-${this.installRules()}
-
-        `;
+        return '# http://wiki.ros.org/catkin/CMakeLists.txt\n' +
+        '\n' +
+        `cmake_minimnum_required(${this.cMakeVersion})\n` +
+        `project(${this.projectName})\n` +
+        '\n\n' +
+        '# Find Packages\n' + 
+        `${this.generateFindPackage()}\n` +
+        '\n\n' +
+        '# Enable Python Module Support\n' +
+        `${this.setupPythonSupport()}\n` +
+        '\n\n' +
+        '# Add Msg, Srv, and Action files\n' +
+        `${this.generateMsg()}\n` +
+        '\n' +
+        `${this.generateSrv()}\n` +
+        '\n' +
+        `${this.generateAction()}\n` +
+        '\n\n' +
+        '# Generate messages\n' +
+        `${this.generateMessagesFunc()}\n` +
+        '\n\n' +
+        '# Specify Package Build Info\n' +
+        `${this.generateCatkinPackage()}\n` +
+        '\n\n' +
+        '# Add libraries and executables\n' +
+        `${this.addLibrariesAndExecutables()}\n` +
+        '\n\n' +
+        '# Tests to build\n' +
+        `${this.addTests()}\n` +
+        '\n\n' +
+        '# Install rules\n' +
+        `${this.installRules()}\n`;
     }
 
     /**
