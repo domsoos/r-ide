@@ -1,5 +1,4 @@
 import * as vscode from "vscode";
-import { TextEncoder } from "util";
 
 export async function createFileFromTemplate(path: string, options: any) {
     // DEBUG
@@ -9,7 +8,7 @@ export async function createFileFromTemplate(path: string, options: any) {
     const uri = vscode.Uri.file(path);
     vscode.window.showInformationMessage(uri.path);
 
-    await vscode.workspace.fs.writeFile(uri, new TextEncoder().encode(''));
+    await vscode.workspace.fs.writeFile(uri, Buffer.from(''));
     await vscode.window.showTextDocument(uri);
 
     switch (options.language.id) {
@@ -60,14 +59,10 @@ export async function createMessage(path?: string | vscode.Uri) {
     let packageLocation = vscode.Uri.joinPath(uri, '../../package.xml');
     updatePackageXml(packageLocation);
 
-    // Update CMakeLists.txt
-    let cmakeLocation = vscode.Uri.joinPath(uri, '../../CMakeLists.txt');
-    updateCMakeLists(cmakeLocation);
-
     // Create Msg File
     
     vscode.window.showInformationMessage(uri.path);
-    await vscode.workspace.fs.writeFile(uri, new TextEncoder().encode(''));
+    await vscode.workspace.fs.writeFile(uri, Buffer.from(''));
     await vscode.window.showTextDocument(uri);
 
     vscode.commands.executeCommand("editor.action.insertSnippet", { langId: "ros.msg", name: "msg example"});
@@ -104,13 +99,10 @@ export async function createSrv(path?: string | vscode.Uri) {
     let packageLocation = vscode.Uri.joinPath(uri, '../../package.xml');
     updatePackageXml(packageLocation);
 
-    let cmakeLocation = vscode.Uri.joinPath(uri, '../../CMakeLists.txt');
-    updateCMakeLists(cmakeLocation);
-
     // Create Srv File
     vscode.window.showInformationMessage(uri.path);
 
-    await vscode.workspace.fs.writeFile(uri, new TextEncoder().encode(''));
+    await vscode.workspace.fs.writeFile(uri, Buffer.from(''));
     await vscode.window.showTextDocument(uri);
 
     vscode.commands.executeCommand("editor.action.insertSnippet", { langId: "ros.msg", name: "srv example"});
@@ -163,37 +155,4 @@ async function updatePackageXml(packagePath: string | vscode.Uri) {
             editor.document.save();
         });
     });
-}
-
-async function updateCMakeLists(cmakePath: string | vscode.Uri) {
-    let cmakeLocation;
-    if (!(cmakePath instanceof vscode.Uri)) {
-        cmakeLocation = vscode.Uri.file(cmakePath);
-    } else {
-        cmakeLocation = cmakePath;
-    }
-
-    vscode.workspace.openTextDocument(cmakeLocation).then(document => {
-        vscode.window.showTextDocument(document, 1, true).then(editor => {
-            let text = document.getText();
-            let edits = [];
-            
-            // find_package function
-            let findPackageRegEx = /find_package\(catkin REQUIRED COMPONENTS\n(?:[^)]*?\n)*\)/;
-            let findPackageFunc = findPackageRegEx.exec(text);
-            console.log(findPackageFunc);
-            if (!findPackageFunc) {
-                // Build function
-            } else if (!/message_generation/.test(findPackageFunc[0])) {
-                // Add value
-                edits.push({
-                    'location': findPackageRegEx.lastIndex,
-                    'text': '\n  message_generation'
-                });
-            } // else already exists
-        
-            editor.document.save();
-        });
-    });
-    
 }
