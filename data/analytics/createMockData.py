@@ -8,6 +8,9 @@ wizards = {}
 templates = {}
 events = {}
 
+wizardList = ["message node", "service node", "ROS Topic","ROS subscriber", "ROS monitor"]
+templateList = ["service", "ROS topic", "ROS node", "urdf"]
+
 
 def createWizardData(wizard_id, wizard_type, template_id=None):
     wizard = {
@@ -18,21 +21,21 @@ def createWizardData(wizard_id, wizard_type, template_id=None):
     return wizard
 
 
-def createTemplateData(template_id, wizard_id, template_type):
+
+def createTemplateData(template_id, template_type):
     template = {
         'template_id': template_id,
-        'wizard_id': wizard_id,
         'type': template_type
     }
     return template
 
 
-def createEventData(shipment_id, template_id, event_type, event_action, event_action_time, wizard_id=None,
+def createEventData(event_id, template_id, event_type, event_action, event_action_time, wizard_id=None,
                     parent_id=None):
     event = {
-        'shipment_id': shipment_id,
+        'event_id': event_id,
         'wizard_id': wizard_id,
-        'parent_id': parent_id,
+        #'parent_id': parent_id,
         'template_id': template_id,
         'event_type': event_type,
         'event_action': event_action,
@@ -40,22 +43,46 @@ def createEventData(shipment_id, template_id, event_type, event_action, event_ac
     }
     return event
 
-
 def generateMockWizards(total):
     for _ in range(total):
-        wizard = createWizardData(str(uuid4()), ''.join(chr(random.randrange(65, 123)) for _ in range(random.randrange(10, 45))))
+        wizard = createWizardData(random.randint(1,4),random.choice(wizardList), random.randint(1,5))
         wizards[wizard['wizard_id']] = wizard
 
 
 def generateMockTemplates(total):
-    unmergedWizards = set(w for w in wizards if wizards[w]['template_id'] is None)
-    for _ in range(total):
-        pick = random.choice(tuple(unmergedWizards))
-        newTemplate = createTemplateData(str(uuid4()), pick, ''.join(chr(random.randrange(65, 123)) for _ in range(random.randrange(10, 45))))
-        wizards[pick]['template_id'] = newTemplate['template_id']
+    for i in range(total):
+        newTemplate = createTemplateData(i+1, random.choice(wizardList))
         templates[newTemplate['template_id']] = newTemplate
+"""
+def generateMockTemplates(total):
+    for i in range(total):
+        newTemplate = createTemplateData(i+1, random.choice(wizardList))
+        templates.append(newTemplate)
+"""
+
+def generateMockEvents(total):
+    for i in range(total):
+        event_id = i
+        template_id = random.randint(5, 8)
+        wizard_id = random.randint(6, 10)
+        event_type = ''.join(chr(random.randrange(65, 123)) for _ in range(random.randrange(10, 45)))
+        action = ''.join(chr(random.randrange(65, 123)) for _ in range(random.randrange(10, 45)))
+        event_action = ''.join(chr(random.randrange(65, 123)) for _ in range(random.randrange(10, 45)))
+        action_date = datetime.now()
+        event_time = datetime.now()
+
+        events[event_id] = createEventData(
+            event_id,
+            template_id,
+            event_type,
+            event_action,
+            event_time,
+            wizard_id
+            #parent_id
+        )
 
 
+"""
 def generateMockEvents(total):
     for _ in range(total):
         shipment_id = str(uuid4())
@@ -81,7 +108,7 @@ def generateMockEvents(total):
             wizard,
             parent_id
         )
-
+"""
 
 def saveToJSON(file_name):
     try:
@@ -91,13 +118,13 @@ def saveToJSON(file_name):
         extension = 'json'
 
     with open(name + '-wizards.' + extension, 'w') as wizardFile:
-        wizardFile.write(json.dumps(wizards))
+        wizardFile.write(json.dumps(wizards, indent=4))
 
     with open(name + '-templates.' + extension, 'w') as templateFile:
-        templateFile.write(json.dumps(templates))
+        templateFile.write(json.dumps(templates, indent=4))
 
     with open(name + '-events.' + extension, 'w') as eventsFile:
-        eventsFile.write(json.dumps(events))
+        eventsFile.write(json.dumps(events, indent=4))
 
 
 if __name__ == '__main__':

@@ -1,0 +1,10 @@
+{
+    "1": {
+        "template_id": 1,
+        "type": "ROS subscriber"
+    },
+    "2": {
+        "template_id": 2,
+        "type": "ROS monitor"
+    }
+}
