@@ -36,25 +36,30 @@ def readFile(file_name):
             wizardid = int(line['wizard_id'])
             templateid = int(line['template_id'])
             if wizardid:
+                query = "INSERT INTO Template (templateid, type) VALUES(%s, %s)"
+                values = (templateid, "ROS monitor")
+                connection = getConnection()
+                execute(connection, query, values)
+
                 query = "INSERT INTO Wizards (wizardid, templateid) VALUES(%s, %s)"
                 values = (wizardid, templateid)
                 connection = getConnection()
                 execute(connection, query, values)
 
                 query = "INSERT INTO Events (eventid, wizardid, templateid, type, action, actiondate) VALUES(%s, %s, %s, %s, %s, NOW())"
-                values = (int(line['shipment_id']), int(line['wizard_id']), 1, str(line['event_type']), str(line['event_action']))
+                values = (int(line['event_id']), int(line['wizard_id']), 1, str(line['event_type']), str(line['event_action']))
                 connection = getConnection()
                 execute(connection, query, values)
 
             else:
                 if templateid:
                     query = "INSERT INTO Events (eventid, templateid, type, action, actiondate) VALUES(%s, %s, %s, %s, NOW())"
-                    values = (int(line['shipment_id']), templateid, str(line['event_type']), str(line['event_action']))
+                    values = (int(line['event_id']), templateid, str(line['event_type']), str(line['event_action']))
                     connection = getConnection()
                     execute(connection, query, values)
                 else:
                     query = "INSERT INTO Events (eventid, type, action, actiondate) VALUES(%s, %s, %s, NOW())"
-                    values = (int(line['shipment_id']), str(line['event_type']), str(line['event_action']))
+                    values = (int(line['event_id']), str(line['event_type']), str(line['event_action']))
                     connection = getConnection()
                     execute(connection, query, values)
     elif "templates.json" in file_name:
