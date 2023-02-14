@@ -291,7 +291,7 @@ export async function createRosPackage() {
         return;
     }
 
-    name = name.replace('/ /g', '_').toLowerCase();
+    name = name.replace(/\s/g, '_').toLowerCase();
 
     let directory: any = await vscode.window.showOpenDialog({
         title: "Where should the directory be placed?",
