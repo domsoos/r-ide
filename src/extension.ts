@@ -11,8 +11,8 @@ import {
 	createSrv
 } from './commands/commands';
 import { 
-	addMsgToProject, addSrvToProject, createRosProject, loadProjects, registerProject
-} from './commands/RosProject';
+	addMsgToPackage, addSrvToPackage, createRosPackage, loadPackages, registerPackage
+} from './commands/RosPackage';
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -23,7 +23,7 @@ export function activate(context: vscode.ExtensionContext) {
 	const sidebarVisualsProvider = new SidebarVisualsProvider(context.extensionUri);
 	const sidebarTopicsProvider = new SidebarTopicsProvider(context.extensionUri);
 
-	loadProjects();
+	loadPackages();
 
 	context.subscriptions.push(
 		// Webviews
@@ -53,7 +53,7 @@ export function activate(context: vscode.ExtensionContext) {
 		),
 		vscode.commands.registerCommand(
 			"r-ide.create-package",
-			createRosProject
+			createRosPackage
 		),
 		vscode.commands.registerCommand(
 			"r-ide.create-msg", 
@@ -64,18 +64,18 @@ export function activate(context: vscode.ExtensionContext) {
 			createSrv
 		),
 
-		// Register files and projects
+		// Register files and packages
 		vscode.commands.registerCommand(
-			"r-ide.register-project",
-			registerProject
+			"r-ide.register-package",
+			registerPackage
 		),
 		vscode.commands.registerCommand(
 			"r-ide.register-msg",
-			addMsgToProject
+			addMsgToPackage
 		),
 		vscode.commands.registerCommand(
 			"r-ide.register-srv",
-			addSrvToProject
+			addSrvToPackage
 		),
 
 		// Workspace listener

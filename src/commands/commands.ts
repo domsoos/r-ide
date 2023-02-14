@@ -55,7 +55,7 @@ export async function createMessage(path?: string | vscode.Uri) {
     
 
     // Update package.xml
-    // TODO: Assumes that msg is placed in ./msg/*.msg, and that the package is at ./package.xml relative to the root of the project
+    // TODO: Assumes that msg is placed in ./msg/*.msg, and that the package is at ./package.xml relative to the root of the package
     let packageLocation = vscode.Uri.joinPath(uri, '../../package.xml');
     updatePackageXml(packageLocation);
 

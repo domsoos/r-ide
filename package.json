@@ -99,23 +99,23 @@
         ]
       },
       {
-        "command": "r-ide.register-project",
-        "title": "R-IDE: Register a project",
+        "command": "r-ide.register-package",
+        "title": "R-IDE: Register a package",
         "arguments": [
           {
-            "name": "projectDirectory",
-            "description": "Select the project direcotry",
+            "name": "packageDirectory",
+            "description": "Select the package direcotry",
             "type": "workspaceFolder"
           }
         ]
       },
       {
         "command": "r-ide.register-msg",
-        "title": "R-IDE: Register a message file with a project",
+        "title": "R-IDE: Register a message file with a package",
         "arguments": [
           {
-            "name": "project",
-            "description": "Select the project to register",
+            "name": "package",
+            "description": "Select the package to register",
             "type": "workspaceFolder"
           },
           {
@@ -127,11 +127,11 @@
       }, 
       {
         "command": "r-ide.register-srv",
-        "title": "R-IDE: Register a service file with a project",
+        "title": "R-IDE: Register a service file with a package",
         "arguments": [
           {
-            "name": "project",
-            "description": "Select the project to register",
+            "name": "package",
+            "description": "Select the package to register",
             "type": "workspaceFolder"
           },
           {
