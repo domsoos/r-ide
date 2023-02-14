@@ -22,10 +22,13 @@ export class RosProject {
             this.updateCmake('msg');
         });
 
+        const config = vscode.workspace.getConfiguration('r-ide');
+        config.update('RosProject.projects', RosProject.projects);
+
         return this;
     }
 
-    static projects = new Map();
+    static projects = new Map<string, RosProject>();
     
 
     msg = new Set<string>();
@@ -490,4 +493,22 @@ export async function registerProject(directory? : vscode.Uri) {
     }
 
     new RosProject(directory);
+}
+
+export async function deregisterProject(directory : vscode.Uri) {
+    RosProject.projects.delete(directory.fsPath);
+    const config = vscode.workspace.getConfiguration('r-ide');
+    config.update('RosProject.projects', RosProject.projects);
+}
+
+export async function loadProjects() {
+    const config = vscode.workspace.getConfiguration('r-ide');
+    let p = config.get<Map<string, RosProject>>('RosProject.projects');
+
+    if (p) {
+        for (let entry of p) {
+            RosProject.projects.set(entry[0], entry[1]);
+        }
+    }
+    
 }

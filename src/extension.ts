@@ -11,9 +11,8 @@ import {
 	createSrv
 } from './commands/commands';
 import { 
-	addMsgToProject, addSrvToProject, createRosProject, registerProject, RosProject
+	addMsgToProject, addSrvToProject, createRosProject, loadProjects, registerProject
 } from './commands/RosProject';
-import { identity } from 'svelte/internal';
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -23,6 +22,8 @@ export function activate(context: vscode.ExtensionContext) {
 	const sidebarBagsProvider = new SidebarBagsProvider(context.extensionUri);
 	const sidebarVisualsProvider = new SidebarVisualsProvider(context.extensionUri);
 	const sidebarTopicsProvider = new SidebarTopicsProvider(context.extensionUri);
+
+	loadProjects();
 
 	context.subscriptions.push(
 		// Webviews
