@@ -59,6 +59,12 @@
     cursor: pointer;
     background: var(--vscode-button-hoverBackground);
   }
+
+  button:disabled{
+    background-color: #A9A9A9;
+    opacity: .7;
+    cursor: not-allowed;
+  }
   
   button:focus {
     outline-color: var(--vscode-focusBorder);

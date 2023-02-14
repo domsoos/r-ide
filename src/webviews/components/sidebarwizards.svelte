@@ -117,6 +117,8 @@
 </script>
 
 {#if !isWizardOpen}
+	<h3 style="text-align:center;margin: 10px 0px;">ROS Creation Wizard</h3>
+	<hr style="margin-bottom:10px">
 	<div class="dropdown">
 		<button on:click={() =>{isMenuOpen = !isMenuOpen}}>Create New</button>
 		{#if isMenuOpen}
