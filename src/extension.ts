@@ -2,9 +2,11 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import { SidebarBagsProvider } from './SidebarBagsProvider';
-import { SidebarTopicsProvider } from './SidebarTopicsProvider';
+import { SBTP } from './SidebarTopicsProvider';
 import { SidebarVisualsProvider } from './SidebarVisualsProvider';
 import { SidebarWizardsProvider } from './SidebarWizardsProvider';
+import { TopicMonitorProvider } from './TopicMonitorProvider';
+import * as dbcontroller from './database/dbcontroller';
 import { 
 	createFileFromTemplate,
 	createMessage,
@@ -17,13 +19,16 @@ import {
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
-	
+	dbcontroller.connectToDB();
+
 	const sidebarWizardsProvider = new SidebarWizardsProvider(context.extensionUri);
 	const sidebarBagsProvider = new SidebarBagsProvider(context.extensionUri);
 	const sidebarVisualsProvider = new SidebarVisualsProvider(context.extensionUri);
-	const sidebarTopicsProvider = new SidebarTopicsProvider(context.extensionUri);
+	//const sidebarTopicsProvider = new SBTP.SidebarTopicsProvider(context.extensionUri);
+	const topicTree = new SBTP.tree_view();
 
 	loadPackages();
+	
 
 	context.subscriptions.push(
 		// Webviews
@@ -39,6 +44,7 @@ export function activate(context: vscode.ExtensionContext) {
 			"sidebar-visuals",
 			sidebarVisualsProvider
 		),
+		/*
 		vscode.window.registerWebviewViewProvider(
 			"sidebar-topics",
 			sidebarTopicsProvider
@@ -47,6 +53,7 @@ export function activate(context: vscode.ExtensionContext) {
 		// Commands
 
 		// Create templates and directories
+		*/
 		vscode.commands.registerCommand(
 			"r-ide.create-file-from-template",
 			createFileFromTemplate
@@ -99,7 +106,14 @@ export function activate(context: vscode.ExtensionContext) {
 				}
 			}
 		}),
+		/*
+		vscode.commands.registerCommand("r-ide.open-topic-monitor", () => {
+			TopicMonitorProvider.createOrShow(context.extensionUri);
+		}),
+		*/
+		vscode.window.registerTreeDataProvider('topic-tree-view', topicTree)
 	  );
+	  topicTree.refresh();
 }
 
 // This method is called when your extension is deactivated
