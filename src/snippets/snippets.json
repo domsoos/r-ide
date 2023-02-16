@@ -95,7 +95,6 @@
 		"isFileTemplate": true
 	},
 
-	// 3 insertion points for replace the placeholder with the desired name for the service node.
 	"service node example": {
 		"scope": "C++",
 		"prefix": "service node example",
@@ -128,7 +127,6 @@
 	},
 	
 	
-// $1 is added in the line where the service name is passed to the serviceClient method
 	"client node example": {
 		"scope": "C++",
 		"prefix": "client node example",
