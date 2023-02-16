@@ -30,7 +30,7 @@
           "id": "sidebar-wizards",
           "name": "Wizards",
           "contextualTitle": "Wizards",
-          "visibility": "visible",
+          "visibility": "collapsed",
           "initialSize": 3
         },
         {
@@ -38,7 +38,7 @@
           "id": "sidebar-bags",
           "name": "ROS Bags",
           "contextualTitle": "ROS Bags",
-          "visibility": "visible",
+          "visibility": "collapsed",
           "initialSize": 1
         },
         {
@@ -46,15 +46,13 @@
           "id": "sidebar-visuals",
           "name": "Visualization Tools",
           "contextualTitle": "Visualization Tools",
-          "visibility": "visible",
+          "visibility": "collapsed",
           "initialSize": 1
         },
         {
-          "type": "webview",
-          "id": "sidebar-topics",
-          "name": "ROS Topics",
-          "contextualTitle": "ROS Topics",
-          "visibility": "visible",
+          "id": "topic-tree-view",
+          "name": "ROS Topic Monitor",
+          "visibility": "collapsed",
           "initialSize": 1
         }
       ]
@@ -81,7 +79,7 @@
             "type": "uri"
           }
         ]
-      }, 
+      },
       {
         "command": "r-ide.create-package",
         "title": "R-IDE: Create a new ROS package",
@@ -124,7 +122,7 @@
             "type": "uri"
           }
         ]
-      }, 
+      },
       {
         "command": "r-ide.register-srv",
         "title": "R-IDE: Register a service file with a package",
@@ -140,6 +138,14 @@
             "type": "uri"
           }
         ]
+      },
+      {
+        "command": "r-ide.topic-clicked",
+        "title": "R-IDE: Select Topic"
+      },
+      {
+        "command": "r-ide.topic-refresh",
+        "title": "R-IDE: Refresh Topics"
       }
     ],
     "snippets": [
@@ -186,5 +192,8 @@
   },
   "extensionDependencies": [
     "ms-iot.vscode-ros"
-  ]
+  ],
+  "dependencies": {
+    "mongoose": "^6.9.1"
+  }
 }

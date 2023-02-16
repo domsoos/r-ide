@@ -4,7 +4,7 @@ import commonjs from "@rollup/plugin-commonjs";
 import { terser } from "rollup-plugin-terser";
 import sveltePreprocess from "svelte-preprocess";
 import typescript from "@rollup/plugin-typescript";
-//import {Slider} from '@bulatdashiev/svelte-slider';
+import {Slider} from '@bulatdashiev/svelte-slider';
 import path from "path";
 import fs from "fs";
 
@@ -23,7 +23,7 @@ export default fs
         file: "out/compiled/" + name + ".js",
       },
       plugins: [
-        //Slider,
+        Slider,
         svelte({
           // enable run-time checks when not in production
           //dev: !production,
