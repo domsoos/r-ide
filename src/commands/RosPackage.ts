@@ -11,7 +11,7 @@ export class RosPackage {
         RosPackage.packages.set(directory.fsPath, this);
         this.rootDirectory = directory;
         this.msgWatcher = vscode.workspace.createFileSystemWatcher(this.rootDirectory.fsPath + '/**/*.msg');
-        // this.srvWatcher = vscode.workspace.createFileSystemWatcher(this.rootDirectory.fsPath + '/**/*.srv');
+        this.srvWatcher = vscode.workspace.createFileSystemWatcher(this.rootDirectory.fsPath + '/**/*.srv');
 
         this.msgWatcher.onDidCreate(async uri => {
             this.addMsg(uri);
@@ -20,6 +20,15 @@ export class RosPackage {
         this.msgWatcher.onDidDelete(async uri => {
             this.msg.delete(uri.fsPath);
             this.updateCmake('msg');
+        });
+
+        this.srvWatcher.onDidCreate(async uri => {
+            this.addSrv(uri);
+        });
+
+        this.srvWatcher.onDidDelete(async uri => {
+            this.srv.delete(uri.fsPath);
+            this.updateCmake('srv');
         });
 
         const config = vscode.workspace.getConfiguration('r-ide');
@@ -38,7 +47,7 @@ export class RosPackage {
 
     // File System Watchers
     msgWatcher: vscode.FileSystemWatcher;
-    // srvWatcher: vscode.FileSystemWatcher;
+    srvWatcher: vscode.FileSystemWatcher;
 
 
     rootDirectory;
@@ -99,53 +108,73 @@ export class RosPackage {
             let text = document.getText();
 
             vscode.window.showTextDocument(document, 1, true).then(editor => {
+                let files: string[] = [];
+                let marker: string;
+                let longMarker: string;
+                let directory: vscode.Uri;
+                
+
+                // TODO: Assumes that the files are located in ./$partition 
                 switch (partition) {
-                        case ('msg'): {
-                            // TODO: The message files may not all be in package_root/msg
-                            let directory = vscode.Uri.joinPath(this.rootDirectory, './msg');
-                            let files: string[] = [];
-
-                            this.msg.forEach(msg => {
-                                console.log(msg);
-                                files.push(relative(directory.fsPath, msg));
-                            });
-
-                            let match = text.match(/# START MSG.*?# END MSG/s);
-                            let replaceText: string;
-                            
-                            if (this.msg.size !== 0) {
-                                replaceText =  '# START MSG\n' +
-                                `${disclaimer}\n\n` + 
-                                'add_message_files(\n' +
-                                '    DIRECTORY msg\n' + 
-                                '    FILES\n' + 
-                                `    ${files.join('\n    ')}\n` + 
-                                ')\n\n' +
-                                '# END MSG';
-                            } else {
-                                replaceText =  '# START MSG\n' +
-                                `${disclaimer}\n\n` + 
-                                '# END MSG';
-                            }
-
-                            if (match?.index) {
-                                
-                                let start = document.positionAt(match.index);
-                                let end = document.positionAt(match.index + match[0].length);
-
-                                editor.selection = new vscode.Selection(start, end);
-
-                                editor.edit(editBuilder => {
-                                    editBuilder.replace(editor.selection, replaceText);
-                                });
-
-                            } else {
-                                vscode.window.showErrorMessage("Could not find R-IDE tags for msg");
-                            }
-
-                            break;
-                        }
+                    case ('msg'): {
+                        marker = 'msg';
+                        longMarker = 'message';
+                        directory = vscode.Uri.joinPath(this.rootDirectory, './msg');
+                        this.msg.forEach(msg => {
+                            files.push(relative(directory.fsPath, msg));
+                        });
+                        break;
                     }
+
+                    case ('srv'): {
+                        marker = 'srv';
+                        longMarker = 'service';
+                        directory = vscode.Uri.joinPath(this.rootDirectory, './srv');
+                        this.srv.forEach(srv => {
+                            files.push(relative(directory.fsPath, srv));
+                        });
+                        break;
+                    }
+
+                    default: {
+                        vscode.window.showErrorMessage(`Could not parse what was being updated. Recieved ${partition}`);
+                        return;
+                    }
+                }
+
+                const tags = generateRideTags(marker);
+                let regexp = new RegExp(`${tags[0]}.*?${tags[1]}`, 's');
+                let match = text.match(regexp);
+
+                if (match?.index) {
+                    let replaceText: string;
+
+                    if (files.length === 0) {
+                        replaceText = `${tags[0]}\n` +
+                        `${disclaimer}\n\n` +
+                        `${tags[1]}\n`;
+                    } else {
+                        replaceText = `${tags[0]}\n` +
+                        `${disclaimer}\n\n` +
+                        `add_${longMarker}_files(\n` +
+                        `    DIRECTORY ${marker}\n` +
+                        `    FILES\n` +
+                        `    ${files.join('\n    ')}\n` +
+                        ')\n\n' +
+                        `${tags[1]}\n`;
+                    }
+
+                    let start = document.positionAt(match.index);
+                    let end = document.positionAt(match.index + match[0].length);
+
+                    editor.selection = new vscode.Selection(start, end);
+
+                    editor.edit(editBuilder => {
+                        editBuilder.replace(editor.selection, replaceText);
+                    });
+                } else {
+                    vscode.window.showErrorMessage(`Could not find R-IDE tags for ${marker}`);
+                }
             });
         });
         
@@ -160,10 +189,12 @@ export class RosPackage {
     }
 
     private generateMsg() {
+        const tags = generateRideTags('msg'); 
         if (this.msg.size === 0) {
-            return '# START MSG\n' +
+            return `${tags[0]}` +
             `${disclaimer}\n` + 
-            '# END MSG';
+            '# No messages to add\n' +
+            `${tags[1]}\n`;
         }
         // TODO: Assumes that messages are placed in the msg directory, this might not be the case
         let directory = './msg';
@@ -173,27 +204,39 @@ export class RosPackage {
             files.push(relative(vscode.Uri.joinPath(this.rootDirectory, directory).fsPath, msg));
         }
 
-        return '# START MSG\n' +
+        return  `${tags[0]}` +
         `${disclaimer}\n\n` + 
         'add_message_files(\n' +
         '    DIRECTORY msg\n' + 
         '    FILES\n' + 
         `    ${files.join('\n    ')}\n` + 
         ')\n\n' +
-        '# END MSG';
+        `${tags[1]}\n`;
     }
 
     private generateSrv() {
-        return `
-        # START SRV
-        ${disclaimer}
+        const tags = generateRideTags('srv'); 
+        if (this.srv.size === 0) {
+            return `${tags[0]}` +
+            `${disclaimer}\n` + 
+            '# No services to add\n' +
+            `${tags[1]}\n`;
+        }
+        // TODO: Assumes that services are placed in the srv directory, this might not be the case
+        let directory = './srv';
+        let files = [];
 
-        add_service_files(
-            DIRECTORY <directory_1>
-            FILES <service_files_1>
-        )
-
-        # END SRV`;
+        for (let srv of this.srv) {
+            files.push(relative(vscode.Uri.joinPath(this.rootDirectory, directory).fsPath, srv));
+        }
+        return  `${tags[0]}` +
+        `${disclaimer}\n\n` + 
+        'add_service_files(\n' +
+        '    DIRECTORY msg\n' + 
+        '    FILES\n' + 
+        `    ${files.join('\n    ')}\n` + 
+        ')\n\n' +
+        `${tags[1]}\n`;
     }
 
     private generateAction() {
@@ -234,7 +277,7 @@ export class RosPackage {
      * @returns Returns the text of the CMakeLists.txt
      */
     public generateCMakeLists() {
-        return '# http://wiki.ros.org/catkin/CMakeLists.txt\n' +
+        return '# http://wiki.ros.org/catkin/CMakeLists.txt \n' +
         '\n' +
         `cmake_minimnum_required(${this.cMakeVersion})\n` +
         `project(${this.projectName})\n` +
@@ -418,7 +461,7 @@ export async function addSrvToPackage(package_?: RosPackage, services?: vscode.U
 
     if (!services) {
         let selectedService = await vscode.window.showOpenDialog({
-            title: "Select Message files",
+            title: "Select Service files",
             // eslint-disable-next-line @typescript-eslint/naming-convention
             filters: {"Text Files": ['srv']},
             canSelectFolders: false,
@@ -488,4 +531,13 @@ export async function loadPackages() {
         }
     }
     
+}
+
+/**
+ * Generates tags to start and end a RIDE auto-generate section
+ * @param marker Marks what is being managed between these tags
+ * @returns An array of size 2 with the start and end tags
+ */
+function generateRideTags(marker: string) {
+    return [`# !RIDE START ${marker.toUpperCase()}`, `# !RIDE END ${marker.toUpperCase()}`];
 }

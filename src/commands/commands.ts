@@ -75,9 +75,9 @@ export async function createSrv(path?: string | vscode.Uri) {
     if (!path) {
         path = await vscode.window.showSaveDialog({
             // eslint-disable-next-line @typescript-eslint/naming-convention
-            filters: {"Text Files": ['msg']},
+            filters: {"Text Files": ['srv']},
             // TODO: This default Uri should be smarter
-            defaultUri: vscode.Uri.file(vscode.workspace.workspaceFolders?.map(folder => folder.uri.path).toString() + "/src/untitled.msg")
+            defaultUri: vscode.Uri.file(vscode.workspace.workspaceFolders?.map(folder => folder.uri.path).toString() + "/src/untitled.srv")
         });
 
         // Check the user provided a path
