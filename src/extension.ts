@@ -13,7 +13,7 @@ import {
 	createSrv
 } from './commands/commands';
 import { 
-	addMsgToPackage, addSrvToPackage, createRosPackage, loadPackages, registerPackage
+	addMsgToPackage, addSrvToPackage, createRosPackage, loadPackages, registerPackage, RosPackage, updateExistingPackages
 } from './commands/RosPackage';
 
 // This method is called when your extension is activated
@@ -28,6 +28,8 @@ export function activate(context: vscode.ExtensionContext) {
 	const topicTree = new SBTP.tree_view();
 
 	loadPackages();
+	updateExistingPackages();
+	console.log(RosPackage.existingPackages);
 	
 
 	context.subscriptions.push(
@@ -84,28 +86,10 @@ export function activate(context: vscode.ExtensionContext) {
 			"r-ide.register-srv",
 			addSrvToPackage
 		),
-
-		// Workspace listener
-		vscode.workspace.onDidChangeTextDocument((event) => {
-			switch (event.document.languageId) {
-				case ('python'): {
-					break;
-				}
-
-				case ('cpp'): {
-					break;
-				}
-
-				case ('ros.msg'): {
-					break;
-				}
-
-				default: {
-					console.log(event.document.languageId);
-					break;
-				}
-			}
-		}),
+		vscode.commands.registerCommand(
+			"r-ide.update-package-list",
+			updateExistingPackages
+		),
 		/*
 		vscode.commands.registerCommand("r-ide.open-topic-monitor", () => {
 			TopicMonitorProvider.createOrShow(context.extensionUri);
