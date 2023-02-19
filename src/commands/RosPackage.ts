@@ -523,7 +523,7 @@ export async function loadPackages() {
     const config = vscode.workspace.getConfiguration('r-ide');
     let p = config.get<Map<string, RosPackage>>('RosPackage.packages');
 
-    console.log(p);
+    //console.log(p);
 
     if (p) {
         for (let entry of p) {
