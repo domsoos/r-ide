@@ -20,6 +20,7 @@ import { SidebarTopicsProvider } from './SidebarTopicsProvider';
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
 	dbcontroller.connectToDB();
+	// check if the connection is successful
 
 	const sidebarWizardsProvider = new SidebarWizardsProvider(context.extensionUri);
 	const sidebarBagsProvider = new SidebarBagsProvider(context.extensionUri);
@@ -93,4 +94,6 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 // This method is called when your extension is deactivated
-export function deactivate() {}
+export function deactivate() {
+	dbcontroller.closeConnection();
+}

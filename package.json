@@ -204,7 +204,7 @@
     "ms-iot.vscode-ros"
   ],
   "dependencies": {
-    "mongoose": "^6.9.1",
+    "mongoose": "^6.9.2",
     "roslib": "^1.3.0",
     "slider": "^1.0.4"
   }
