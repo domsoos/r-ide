@@ -152,8 +152,16 @@
     ],
     "snippets": [
       {
-        "language": "python",
+        "language": "python", 
         "path": "./src/snippets/snippets.json"
+      },
+      {
+        "language": "C++", 
+        "path": "./src/snippets/cpp-snippets.json"
+      },
+      {
+        "language": "souce.ros.msg", 
+        "path": "./src/snippets/srv-snippets.json"
       }
     ]
   },
