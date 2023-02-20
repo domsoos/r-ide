@@ -17,5 +17,5 @@ const wizardSchema = new mongoose.Schema({
     }
 });
 
-mongoose.model('Template', wizardSchema);
+mongoose.model('Wizard', wizardSchema);
 
