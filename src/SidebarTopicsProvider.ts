@@ -77,7 +77,6 @@ export class SidebarTopicsProvider implements vscode.WebviewViewProvider {
           break;
         }
         case 'pushActiveTopic':{
-
           let ros = this.getROS();
           if(ros.rosAPI && ros.rosLib){
             let topic = new ros.rosLib.Topic({
@@ -85,18 +84,15 @@ export class SidebarTopicsProvider implements vscode.WebviewViewProvider {
               name : data.value.topic,
               messageType : data.value.type
             });
-
             topic.subscribe(function(message: any) {
               webviewView.webview.postMessage({
                 type: 'imgTest',
                 data: message
               });
             });
-
             this.activeTopics.push(topic);
           }
           break;
-
         }
         case 'popActiveTopic':{
           let index = this.activeTopics.findIndex((obj: { name: any; }) => obj.name === data.value.topic);
@@ -233,12 +229,10 @@ export class TreeView implements vscode.TreeDataProvider<TreeItem>
         });
         this.refresh();
     }
-
     // this is called when we click an item
     public itemClicked(item: TreeItem) {
       // we implement this later
   }
-
     // this is called whenever we refresh the tree view
     public async refresh() {
       this.treeData = [];
@@ -254,13 +248,11 @@ export class TreeView implements vscode.TreeDataProvider<TreeItem>
       }
       this._onDidChangeTreeData.fire();
     }
-
     // we need to implement getTreeItem to receive items from our tree view
     public getTreeItem(element: TreeItem): vscode.TreeItem|Thenable<vscode.TreeItem> {
       const item = new vscode.TreeItem(element.label!, element.collapsibleState);
       return item;
     }
-
     // and getChildren
     public getChildren(element : TreeItem | undefined): vscode.ProviderResult<TreeItem[]> {
       if (element === undefined) {
@@ -270,14 +262,11 @@ export class TreeView implements vscode.TreeDataProvider<TreeItem>
       }
     }
 }
-
-
 export class TreeItem extends vscode.TreeItem 
 { 
   readonly topic: string | undefined;
   readonly type: string | undefined;
   public children: TreeItem[] = [];
-
   constructor(label: string, topic: string, type: string) {
     super(label, vscode.TreeItemCollapsibleState.None);
     this.topic = topic;
@@ -287,9 +276,7 @@ export class TreeItem extends vscode.TreeItem
       dark: path.join(__filename, '..', '..', 'resources', 'dark', 'dependency.svg')
     };
   }
-
   contextValue = 'tree-topic';
-
   // a public method to add childs, and with additional branches
   // we want to make the item collabsible
   public addChild (child : TreeItem) {
@@ -297,7 +284,6 @@ export class TreeItem extends vscode.TreeItem
     this.children.push(child);
   }
 }
-
 **Package.Json
     "viewsWelcome": [
       {
@@ -355,10 +341,6 @@ export class TreeItem extends vscode.TreeItem
         "command": "r-ide.reconnect-ros-master",
         "title": "R-IDE: Reconnect ROS Master"
       }
-
   **Extension.js
   		vscode.window.registerTreeDataProvider('topic-tree-view', new TreeView())
-
-
-
 */

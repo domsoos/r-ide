@@ -144,6 +144,10 @@
       {
         "command": "r-ide.open-topic-monitor",
         "title": "R-IDE: Open Topic Monitor"
+      },
+      {
+        "command": "r-ide.update-package-list",
+        "title": "R-IDE: Update the package list from rospack"
       }
     ],
     "snippets": [
@@ -172,9 +176,7 @@
     "@types/glob": "^8.0.1",
     "@types/mocha": "^10.0.1",
     "@types/node": "^16.18.12",
-    "@types/roslib": "^1.3.0",
     "@types/vscode": "^1.75.0",
-    "@types/xmlrpc": "^1.3.7",
     "@typescript-eslint/eslint-plugin": "^5.52.0",
     "@typescript-eslint/parser": "^5.52.0",
     "@vscode/test-electron": "^2.2.3",
@@ -196,6 +198,6 @@
   "dependencies": {
     "mongoose": "^6.9.1",
     "roslib": "^1.3.0",
-    "xmlrpc": "^1.3.2"
+    "slider": "^1.0.4"
   }
 }

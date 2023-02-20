@@ -21,6 +21,7 @@ export class SidebarBagsProvider implements vscode.WebviewViewProvider {
     webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
 
     webviewView.webview.onDidReceiveMessage(async (data) => {
+      console.log(data);
       switch (data.type) {
         case "onInfo": {
           if (!data.value) {
