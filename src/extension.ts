@@ -14,7 +14,7 @@ import {
 } from './commands/commands';
 import { 
 	addMsgToPackage, addSrvToPackage, createRosPackage, loadPackages, registerPackage, RosPackage, updateExistingPackages
-} from './commands/RosPackage';
+} from './RosPackages/RosPackage';
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed

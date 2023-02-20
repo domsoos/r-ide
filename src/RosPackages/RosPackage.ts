@@ -247,7 +247,7 @@ export class RosPackage {
         return `${tags[0]}\n` +
         `${disclaimer}\n\n` + 
         'add_service_files(\n' +
-        '    DIRECTORY msg\n' + 
+        '    DIRECTORY srv\n' + 
         '    FILES\n' + 
         `    ${files.join('\n    ')}\n` + 
         ')\n\n' +
@@ -586,7 +586,6 @@ async function readFileForRosPackages(path: vscode.Uri) {
         // Python
         if (/import/.test(text)) {
             const regex = /import\s+(\w+)|from\s+(\w+(\.\w+)*)\s+import\s+(\w+(,\s*\w+)*)/g;
-
             let matches = text.matchAll(regex);
 
 
@@ -599,7 +598,16 @@ async function readFileForRosPackages(path: vscode.Uri) {
 
         // CPP
         } else if (/include/.test(text)) {
+            const regex = /#include\s+["<](\S+)[">]/gm;
+            let matches = text.matchAll(regex);
 
+
+            for (let match of matches) {
+                let packageName = match[1];
+                if (RosPackage.existingPackages.has(packageName)) {
+                    otherPackages.add(packageName);
+                }
+            }
         }
     });
 
