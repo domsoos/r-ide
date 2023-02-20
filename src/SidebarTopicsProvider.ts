@@ -8,6 +8,7 @@ import { ROSManager } from './ROSManagers/ros';
 export class SidebarTopicsProvider implements vscode.WebviewViewProvider {
   _view?: vscode.WebviewView;
   _doc?: vscode.TextDocument;
+  activeTopics: any = [];
 
   constructor(private readonly _extensionUri: vscode.Uri) {}
 
@@ -41,15 +42,22 @@ export class SidebarTopicsProvider implements vscode.WebviewViewProvider {
           break;
         }
         case "getROSTopics": {
-          let ros = ROSManager.getInstance();
-          if(ros.isConnected()){
-            await ros.getTopics().then( res => {
-              webviewView.webview.postMessage({
-                type: 'setROSTopics',
-                success: true,
-                data: res,
-              });
-            }, (err) => { 
+          let ros = this.getROS();
+          if(ros.rosAPI){
+            ros.rosAPI.getTopics((res: any) => {
+                if (res) {
+                  webviewView.webview.postMessage({
+                    type: 'setROSTopics',
+                    success: true,
+                    data: res,
+                  });
+                } else {
+                  webviewView.webview.postMessage({
+                    type: 'setROSTopics',
+                    success: false,
+                  });
+                }
+            }, (err: any)=>{
               webviewView.webview.postMessage({
                 type: 'setROSTopics',
                 success: false,
@@ -64,8 +72,46 @@ export class SidebarTopicsProvider implements vscode.WebviewViewProvider {
           }
           break;
         }
+        case 'pushActiveTopic':{
+
+          let ros = this.getROS();
+          if(ros.rosAPI && ros.rosLib){
+            let topic = new ros.rosLib.Topic({
+              ros : ros.rosAPI,
+              name : data.value.topic,
+              messageType : data.value.type
+            });
+
+            topic.subscribe(function(message: any) {
+              webviewView.webview.postMessage({
+                type: 'imgTest',
+                data: message
+              });
+            });
+
+            this.activeTopics.push(topic);
+          }
+          break;
+
+        }
+        case 'popActiveTopic':{
+          let index = this.activeTopics.findIndex((obj: { name: any; }) => obj.name === data.value.topic);
+          this.activeTopics[index].unsubscribe();
+          this.activeTopics.splice(index, 1);
+          break;
+        }
       }
     });
+  }
+
+  private getROS(){
+    let ROS = ROSManager.getInstance();
+    if(ROS.isConnected()){
+      return ROS.getROSApi();
+    }
+    else{
+      return false;
+    }
   }
 
   public revive(panel: vscode.WebviewView) {
@@ -118,11 +164,11 @@ export class SidebarTopicsProvider implements vscode.WebviewViewProvider {
 
 
 
-
-
-
-
-
+/*
+let ROS = ROSManager.getInstance();
+if(ROS.isConnected()){
+  let rosAPI = ROS.getROSApi();
+*/
 
 
 

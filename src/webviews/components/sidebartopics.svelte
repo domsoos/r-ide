@@ -5,7 +5,7 @@
     let isConnected = null;
     let isLoading = false;
     let topics = [];
-    let buttonLabel = 'View Topics';
+    let buttonLabel = 'View Topics'; 
 
     window.addEventListener('message', event => {
 		const message = event.data; // The JSON data our extension sent
@@ -42,6 +42,21 @@
                     isConnected = false;
                     isLoading = false;
                 }
+                break;
+            }
+            case 'imgTest':{
+                const binaryData = atob(message.data.data);
+                const bytes = new Uint8Array(binaryData.length);
+                for (let i = 0; i < binaryData.length; i++) {
+                    bytes[i] = binaryData.charCodeAt(i);
+                }
+                const imageData = new ImageData(new Uint8ClampedArray(bytes.buffer), message.data.width, message.data.height);
+                const canvas = document.getElementById('my-canvas');
+                canvas.width = message.data.width;
+                canvas.height = message.data.height;
+                const context = canvas.getContext('2d');
+                context.putImageData(imageData, 0, 0);
+                break;
             }
 		}
 	});
@@ -51,6 +66,11 @@
         vscode.postMessage({
             type: 'getROSTopics',
         });
+
+        setTimeout(() => {
+            if(isLoading)
+            isLoading = false;
+        }, 3000);
     }
 
     function buildTree(topics) {
@@ -92,7 +112,7 @@
         if (element.fulltopic && element.checked) {
             element.checked = false;
         }
-        if (element.children) {
+        if (element.children.length > 0) {
             element.children.forEach(child => {
             clearAllChecks(child);
         });
@@ -123,5 +143,8 @@
     </div>
     <hr>
 
-    <TreeView topics={topics} updateCheckboxes={updateCheckboxes}/>   
+    <TreeView topics={topics} updateCheckboxes={updateCheckboxes} vscode={vscode}/>   
+
 {/if}
+
+<canvas id="my-canvas" style="height: 300px;"></canvas>

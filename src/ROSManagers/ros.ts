@@ -1,4 +1,5 @@
 import { Ros, Topic } from "roslib";
+import ROSLIB = require("roslib");
 
 export class ROSManager {
     private static instance: ROSManager;
@@ -19,18 +20,8 @@ export class ROSManager {
         return ROSManager.instance;
     }
 
-    public async getTopics(): Promise<any> {
-        return new Promise((resolve, reject) => {
-            this.ros.getTopics((res) => {
-                if (res) {
-                resolve(res);
-                } else {
-                reject(new Error("Failed to retrieve topics"));
-                }
-            }, (err)=>{
-                reject(err);
-            });
-        });
+    public getROSApi(): any{
+        return {rosAPI: this.ros, rosLib: ROSLIB};
     }
 
     public isConnected(){
@@ -64,3 +55,19 @@ export class ROSManager {
     }
 }
 
+
+    /*
+    public async getTopics(): Promise<any> {
+        return new Promise((resolve, reject) => {
+            this.ros.getTopics((res) => {
+                if (res) {
+                resolve(res);
+                } else {
+                reject(new Error("Failed to retrieve topics"));
+                }
+            }, (err)=>{
+                reject(err);
+            });
+        });
+    }
+    */

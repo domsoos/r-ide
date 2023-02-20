@@ -8,6 +8,7 @@ import { SidebarWizardsProvider } from './SidebarWizardsProvider';
 //import { TopicMonitorProvider } from './TopicMonitorProvider';
 import * as dbcontroller from './database/dbcontroller';
 import { ROSManager } from './ROSManagers/ros';
+import { TopicMonitorProvider } from './TopicMonitorProvider';
 import { 
 	createFileFromTemplate,
 	createMessage,
@@ -111,11 +112,10 @@ export function activate(context: vscode.ExtensionContext) {
 				}
 			}
 		}),
-		/*
 		vscode.commands.registerCommand("r-ide.open-topic-monitor", () => {
 			TopicMonitorProvider.createOrShow(context.extensionUri);
 		}),
-		*/
+		
 	  );
 }
 
