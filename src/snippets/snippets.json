@@ -41,7 +41,7 @@
 	  },
 
 	  "srv example": {
-		"scope": "ros.msg",
+		"scope": "ros.srv",
 		"prefix": "srv example",
 		"body": [
 		"$0",
