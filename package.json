@@ -52,8 +52,8 @@
         {
           "type": "webview",
           "id": "sidebar-topics",
-          "name": "ROS Topic Monitor",
-          "contextualTitle": "ROS Topic Monitor",
+          "name": "ROS Topic Tools",
+          "contextualTitle": "ROS Topic Tools",
           "visibility": "collapsed",
           "initialSize": 1
         }
@@ -140,6 +140,10 @@
             "type": "uri"
           }
         ]
+      },
+      {
+        "command": "r-ide.open-topic-monitor",
+        "title": "R-IDE: Open Topic Monitor"
       }
     ],
     "snippets": [

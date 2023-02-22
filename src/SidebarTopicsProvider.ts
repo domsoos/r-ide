@@ -8,7 +8,7 @@ import { ROSManager } from './ROSManagers/ros';
 export class SidebarTopicsProvider implements vscode.WebviewViewProvider {
   _view?: vscode.WebviewView;
   _doc?: vscode.TextDocument;
-  activeTopics: any = [];
+  //activeTopics: any = [];
 
   constructor(private readonly _extensionUri: vscode.Uri) {}
 
@@ -41,6 +41,10 @@ export class SidebarTopicsProvider implements vscode.WebviewViewProvider {
           vscode.window.showErrorMessage(data.value);
           break;
         }
+        case "openTopicMonitor":{
+          vscode.commands.executeCommand("r-ide.open-topic-monitor");
+        }
+        /*
         case "getROSTopics": {
           let ros = this.getROS();
           if(ros.rosAPI){
@@ -100,10 +104,12 @@ export class SidebarTopicsProvider implements vscode.WebviewViewProvider {
           this.activeTopics.splice(index, 1);
           break;
         }
+        */
       }
     });
   }
 
+  /*
   private getROS(){
     let ROS = ROSManager.getInstance();
     if(ROS.isConnected()){
@@ -113,6 +119,7 @@ export class SidebarTopicsProvider implements vscode.WebviewViewProvider {
       return false;
     }
   }
+  */
 
   public revive(panel: vscode.WebviewView) {
     this._view = panel;

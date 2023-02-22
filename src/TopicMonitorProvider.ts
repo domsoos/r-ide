@@ -1,11 +1,14 @@
 import * as vscode from "vscode";
 import { getNonce } from "./getNonce";
+import { ROSManager } from "./ROSManagers/ros";
 
 export class TopicMonitorProvider {
   /**
    * Track the currently panel. Only allow a single panel to exist at a time.
    */
   public static currentPanel: TopicMonitorProvider | undefined;
+  activeTopics: any = [];
+  activeMediaTopic: any = null;
 
   public static readonly viewType = "topic-monitor";
 
@@ -36,8 +39,7 @@ export class TopicMonitorProvider {
 
         // And restrict the webview to only loading content from our extension's `media` directory.
         localResourceRoots: [
-          vscode.Uri.joinPath(extensionUri, "media"),
-          vscode.Uri.joinPath(extensionUri, "out/compiled"),
+          extensionUri
         ],
       }
     );
@@ -113,53 +115,142 @@ export class TopicMonitorProvider {
           vscode.window.showErrorMessage(data.value);
           break;
         }
-        // case "tokens": {
-        //   await Util.globalState.update(accessTokenKey, data.accessToken);
-        //   await Util.globalState.update(refreshTokenKey, data.refreshToken);
-        //   break;
-        // }
+        case "getROSTopics": {
+          let ros = this.getROS();
+          if(ros.rosAPI){
+            ros.rosAPI.getTopics((res: any) => {
+                if (res) {
+                  webview.postMessage({
+                    type: 'setROSTopics',
+                    success: true,
+                    data: res,
+                  });
+                } else {
+                  webview.postMessage({
+                    type: 'setROSTopics',
+                    success: false,
+                  });
+                }
+            }, (err: any)=>{
+              webview.postMessage({
+                type: 'setROSTopics',
+                success: false,
+                data: err,
+              });
+            });
+          }else{
+            webview.postMessage({
+              type: 'setROSTopics',
+              success: false,
+            });
+          }
+          break;
+        }
+        case 'pushActiveTopic':{
+          let ros = this.getROS();
+          if(ros.rosAPI && ros.rosLib){
+            let topic = new ros.rosLib.Topic({
+              ros : ros.rosAPI,
+              name : data.value.topic,
+              messageType : data.value.type
+            });
+
+            topic.subscribe(function(message: any) {
+              webview.postMessage({
+                type: 'messageFromTopic',
+                data: message
+              });
+            });
+
+            this.activeTopics.push(topic);
+          }
+          break;
+
+        }
+        case 'popActiveTopic':{
+          let index = this.activeTopics.findIndex((obj: { name: any; }) => obj.name === data.value.topic);
+          this.activeTopics[index].unsubscribe();
+          this.activeTopics.splice(index, 1);
+          break;
+        }
+        case 'subActiveMediaTopic':{
+          let ros = this.getROS();
+          if(ros.rosAPI && ros.rosLib){
+            
+            if(this.activeMediaTopic !== null){
+              this.activeMediaTopic.unsubscribe();
+              this.activeMediaTopic = null;
+            }
+
+            let topic = new ros.rosLib.Topic({
+              ros : ros.rosAPI,
+              name : data.value.topic,
+              messageType : data.value.type
+            });
+
+            topic.subscribe(function(message: any) {
+              webview.postMessage({
+                type: 'setActiveMediaTopic',
+                data: message
+              });
+            });
+
+            this.activeMediaTopic = topic;
+          }
+          break;
+        }
       }
     });
   }
 
+  private getROS(){
+    let ROS = ROSManager.getInstance();
+    if(ROS.isConnected()){
+      return ROS.getROSApi();
+    }
+    else{
+      return false;
+    }
+  }
+
   private _getHtmlForWebview(webview: vscode.Webview) {
-    // // And the uri we use to load this script in the webview
+    const styleResetUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(this._extensionUri, "src", "styles/reset.css")
+    );
+    const styleVSCodeUri = webview.asWebviewUri(
+        vscode.Uri.joinPath(this._extensionUri, "src", "styles/vscode.css")
+    );
+
     const scriptUri = webview.asWebviewUri(
       vscode.Uri.joinPath(this._extensionUri, "out", "compiled/topicmonitor.js")
     );
 
-    // Uri to load styles into webview
-    const styleResetUri = webview.asWebviewUri(
-        vscode.Uri.joinPath(this._extensionUri, "src", "styles/reset.css")
-      );
-      const styleVSCodeUri = webview.asWebviewUri(
-          vscode.Uri.joinPath(this._extensionUri, "src", "styles/vscode.css")
-      );
-    // const cssUri = webview.asWebviewUri(
-    //   vscode.Uri.joinPath(this._extensionUri, "out", "compiled/swiper.css")
-    // );
+    const styleMainUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(this._extensionUri, "src", "styles/topicmonitor.css")
+    );
 
     // // Use a nonce to only allow specific scripts to be run
     const nonce = getNonce();
 
     return `<!DOCTYPE html>
-			<html lang="en">
-			<head>
-				<meta charset="UTF-8">
-				<!--
-					Use a content security policy to only allow loading images from https or from our extension directory,
-					and only allow scripts that have a specific nonce.
-        -->
-        <meta http-equiv="Content-Security-Policy" content="img-src https: data:; style-src 'unsafe-inline' ${webview.cspSource}; script-src 'nonce-${nonce}';">
-				<meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+          <!--
+          Use a content security policy to only allow loading images from https or from our extension directory,
+          and only allow scripts that have a specific nonce.
+          -->
+        <meta http-equiv="Content-Security-Policy" content="img-src https: data:; style-src 'unsafe-inline' ${
+      webview.cspSource
+    }; script-src 'nonce-${nonce}';">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link href="${styleResetUri}" rel="stylesheet">
         <link href="${styleVSCodeUri}" rel="stylesheet">
-        <script nonce="${nonce}">
-        </script>
-			</head>
-      <body>
-			</body>
-      <script src="${scriptUri}" nonce="${nonce}">
-			</html>`;
+        <link href="${styleMainUri}" rel="stylesheet">  
+        </head>
+        <body>
+        <script nonce="${nonce}" src="${scriptUri}"></script>
+        </body>
+        </html>`;
   }
 }
