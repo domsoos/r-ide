@@ -6,6 +6,7 @@
     const handleChange = (event, topic) => {
         topic.checked = event.target.checked;
 
+        /*
         if(topic.checked){
             vscode.postMessage({
                 type: 'pushActiveTopic',
@@ -18,8 +19,9 @@
                 value: {topic: topic.fulltopic, type: topic.type}
             });
         }
+        */
 
-        updateCheckboxes();
+        updateCheckboxes(topic);
     };
 </script>
     

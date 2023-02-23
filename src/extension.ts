@@ -5,9 +5,7 @@ import { SidebarBagsProvider } from './SidebarBagsProvider';
 import { SidebarTopicsProvider } from './SidebarTopicsProvider';
 import { SidebarVisualsProvider } from './SidebarVisualsProvider';
 import { SidebarWizardsProvider } from './SidebarWizardsProvider';
-//import { TopicMonitorProvider } from './TopicMonitorProvider';
 import * as dbcontroller from './database/dbcontroller';
-import { ROSManager } from './ROSManagers/ros';
 import { TopicMonitorProvider } from './TopicMonitorProvider';
 import { 
 	createFileFromTemplate,
@@ -30,7 +28,6 @@ export let env: any;
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
 	dbcontroller.connectToDB();
-	ROSManager.getInstance();
 
 	const sidebarWizardsProvider = new SidebarWizardsProvider(context.extensionUri);
 	const sidebarBagsProvider = new SidebarBagsProvider(context.extensionUri);

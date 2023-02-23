@@ -1,14 +1,11 @@
 import * as vscode from "vscode";
 import { getNonce } from "./getNonce";
-import { ROSManager } from "./ROSManagers/ros";
 
 export class TopicMonitorProvider {
   /**
    * Track the currently panel. Only allow a single panel to exist at a time.
    */
   public static currentPanel: TopicMonitorProvider | undefined;
-  activeTopics: any = [];
-  activeMediaTopic: any = null;
 
   public static readonly viewType = "topic-monitor";
 
@@ -115,102 +112,8 @@ export class TopicMonitorProvider {
           vscode.window.showErrorMessage(data.value);
           break;
         }
-        case "getROSTopics": {
-          let ros = this.getROS();
-          if(ros.rosAPI){
-            ros.rosAPI.getTopics((res: any) => {
-                if (res) {
-                  webview.postMessage({
-                    type: 'setROSTopics',
-                    success: true,
-                    data: res,
-                  });
-                } else {
-                  webview.postMessage({
-                    type: 'setROSTopics',
-                    success: false,
-                  });
-                }
-            }, (err: any)=>{
-              webview.postMessage({
-                type: 'setROSTopics',
-                success: false,
-                data: err,
-              });
-            });
-          }else{
-            webview.postMessage({
-              type: 'setROSTopics',
-              success: false,
-            });
-          }
-          break;
-        }
-        case 'pushActiveTopic':{
-          let ros = this.getROS();
-          if(ros.rosAPI && ros.rosLib){
-            let topic = new ros.rosLib.Topic({
-              ros : ros.rosAPI,
-              name : data.value.topic,
-              messageType : data.value.type
-            });
-
-            topic.subscribe(function(message: any) {
-              webview.postMessage({
-                type: 'messageFromTopic',
-                data: message
-              });
-            });
-
-            this.activeTopics.push(topic);
-          }
-          break;
-
-        }
-        case 'popActiveTopic':{
-          let index = this.activeTopics.findIndex((obj: { name: any; }) => obj.name === data.value.topic);
-          this.activeTopics[index].unsubscribe();
-          this.activeTopics.splice(index, 1);
-          break;
-        }
-        case 'subActiveMediaTopic':{
-          let ros = this.getROS();
-          if(ros.rosAPI && ros.rosLib){
-            
-            if(this.activeMediaTopic !== null){
-              this.activeMediaTopic.unsubscribe();
-              this.activeMediaTopic = null;
-            }
-
-            let topic = new ros.rosLib.Topic({
-              ros : ros.rosAPI,
-              name : data.value.topic,
-              messageType : data.value.type
-            });
-
-            topic.subscribe(function(message: any) {
-              webview.postMessage({
-                type: 'setActiveMediaTopic',
-                data: message
-              });
-            });
-
-            this.activeMediaTopic = topic;
-          }
-          break;
-        }
       }
     });
-  }
-
-  private getROS(){
-    let ROS = ROSManager.getInstance();
-    if(ROS.isConnected()){
-      return ROS.getROSApi();
-    }
-    else{
-      return false;
-    }
   }
 
   private _getHtmlForWebview(webview: vscode.Webview) {

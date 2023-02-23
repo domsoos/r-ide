@@ -1,5 +1,6 @@
+/*
 import * as xmlrpc from "xmlrpc";
-import * as extension from "../extension";
+import * as extension from "../../extension";
 import * as ROSLIB from 'roslib';
 
 
@@ -50,9 +51,8 @@ interface ISystemState {
 
 const CALLER_ID = "vscode-ros";
 
-/**
- * Exposes the ROS master XML-RPC api.
- */
+//Exposes the ROS master XML-RPC api.
+
 export class XmlRpcApi {
     private client: xmlrpc.Client;
 
@@ -60,9 +60,8 @@ export class XmlRpcApi {
         this.client = xmlrpc.createClient(uri);
     }
 
-    /**
-     * Returns true if a master process is running.
-     */
+    
+    // Returns true if a master process is running.
     public check(): Promise<boolean> {
         return this.getPid().then(() => true, () => false);
     }
@@ -116,5 +115,5 @@ export class XmlRpcApi {
         });
     }
 }
-    
+*/    
 
