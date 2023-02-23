@@ -71,8 +71,16 @@
     ],
     "snippets": [
       {
-        "language": "python",
+        "language": "python", 
         "path": "./src/snippets/snippets.json"
+      },
+      {
+        "language": "C++", 
+        "path": "./src/snippets/cpp-snippets.json"
+      },
+      {
+        "language": "souce.ros.msg", 
+        "path": "./src/snippets/srv-snippets.json"
       }
     ]
   },
@@ -110,8 +118,5 @@
     "svelte-check": "^3.0.3",
     "svelte-preprocess": "^5.0.1",
     "typescript": "^4.9.3"
-  },
-  "extensionDependencies": [
-    "ms-iot.vscode-ros"
-  ]
+  }
 }

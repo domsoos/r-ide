@@ -40,7 +40,7 @@
 		"isFileTemplate": true
 	  },
 
-	  "srv example": {
+	  "service": {
 		"scope": "ros.srv",
 		"prefix": "srv example",
 		"body": [

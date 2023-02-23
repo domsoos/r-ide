@@ -1,0 +1,17 @@
+{
+    "service": {
+		"scope": "ros.srv",
+		"prefix": "srv example",
+		"body": [
+		"$0",
+		"int8 foobar",
+		"another_pkg/AnotherMessage msg",
+		"---",
+		"another_pkg/YetAnotherMessage val",
+		"CustomMessageDefinedInThisPackage value",
+		"uint32 an_integer"
+		],
+		"description": "srv example",
+		"isFileTemplate": true
+		}
+}
