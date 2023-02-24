@@ -4,6 +4,14 @@
     //import * as ROSLIB from "roslib";
     import ROS from "../../ROSManagers/rosmanager.js"
     import { onMount } from 'svelte';
+    import { Buffer } from "buffer";
+    import { decodeBGRA8,
+             decodeMono8,
+             decodeFloat1c,
+             decodeBayerRGGB8,
+             decodeBayerBGGR8,
+             decodeBayerGBRG8,
+             decodeBayerGRBG8 } from '../../utils/decoders'
 
     let ros;
     let rosApi;
@@ -53,7 +61,7 @@
                 });
                 clearInterval(autoUpdateInterval);
             }
-        }, 5000);
+        }, 1000);
     }
 
     function updateTopicTree(rawTopics){
@@ -81,12 +89,6 @@
         topicsStatus = "Connection Successful"
     }
 
-
-
-
-
-    
-    
     window.addEventListener('message', event => {
 		const message = event.data; // The JSON data our extension sent
 		switch (message.type) {
@@ -235,48 +237,73 @@
         activeMediaTopic = newMediaTopic;
     }
 
-
     function decodeImageMessage(message){
-        if(message.encoding === "bgra8"){
-            const binaryData = atob(message.data);
-            const bytes = new Uint8Array(binaryData.length);
-            for (let i = 0; i < binaryData.length; i++) {
-                bytes[i] = binaryData.charCodeAt(i);
-            }
-            const imageData = new ImageData(new Uint8ClampedArray(bytes.buffer), message.width, message.height);
-            const canvas = document.getElementById('my-canvas');
-            canvas.width = message.width;
-            canvas.height = message.height;
 
-            if(message.width > message.height){
-                canvas.style.width = '500px';
-                canvas.style.height = 'fit-content';
-            }
-            else{
-                canvas.style.height = '350px';
-                canvas.style.width = 'fit-content';
-            }
+        if(message.data){
+            let width = message.width;
+            let height = message.height;
+            let binaryString = Buffer.from(message.data, 'base64');
+            let rawData = new Uint8Array(binaryString);
+            const image = new ImageData(width, height);
 
-            const context = canvas.getContext('2d');
-            context.putImageData(imageData, 0, 0);
-
-        }else if(message.encoding === "bayer_rggb8"){
-                const binaryData = atob(message.data);
-                const bytes = new Uint8Array(binaryData.length);
-                for (let i = 0; i < binaryData.length; i++) {
-                    bytes[i] = binaryData.charCodeAt(i);
+            if(message.encoding){
+                switch(message.encoding){
+                    case "yuv422":
+                        decodeYUV(rawData, width, height, image.data);
+                        break;
+                    // same thing as yuv422, but a distinct decoding from yuv422 and yuyv
+                    case "uyuv":
+                        decodeYUV(rawData, width, height, image.data);
+                        break;
+                    // change name in the future
+                    case "yuyv":
+                        decodeYUYV(rawData, width, height, image.data);
+                        break;
+                    case "rgb8":
+                        decodeRGB8(rawData, width, height, image.data);
+                        break;
+                    case "rgba8":
+                        decodeRGBA8(rawData, width, height, image.data);
+                        break;
+                    case "bgra8":
+                        decodeBGRA8(rawData, width, height, image.data);
+                        break;
+                    case "bgr8":
+                        case "8UC3":
+                        decodeBGR8(rawData, width, height, image.data);
+                        break;
+                    case "32FC1":
+                        decodeFloat1c(rawData, width, height, message.is_bigendian, image.data);
+                        break;
+                    case "bayer_rggb8":
+                        decodeBayerRGGB8(rawData, width, height, image.data);
+                        break;
+                    case "bayer_bggr8":
+                        decodeBayerBGGR8(rawData, width, height, image.data);
+                        break;
+                    case "bayer_gbrg8":
+                        decodeBayerGBRG8(rawData, width, height, image.data);
+                        break;
+                    case "bayer_grbg8":
+                        decodeBayerGRBG8(rawData, width, height, image.data);
+                        break;
+                    case "mono8":
+                    case "8UC1":
+                        decodeMono8(rawData, width, height, image.data);
+                        break;
+                    case "mono16":
+                    case "16UC1":
+                        decodeMono16(rawData, width, height, message.is_bigendian, image.data, options);
+                        break;
+                    default:
+                        throw new Error(`Unsupported encoding ${encoding}`);
                 }
-                const width = message.width;
-                const height = message.height;
-                
-                const pixels = parseBayerData(bytes, width, height);
-                const imageData = createImageData(pixels, width, height);
 
                 const canvas = document.getElementById('my-canvas');
                 canvas.width = width;
                 canvas.height = height;
 
-                if(message.width > message.height){
+                if(width > height){
                     canvas.style.width = '500px';
                     canvas.style.height = 'fit-content';
                 }
@@ -286,52 +313,12 @@
                 }
 
                 const context = canvas.getContext('2d');
-                context.putImageData(imageData, 0, 0);
+                context.putImageData(image, 0, 0);
+                }
         }
     }
 
-
-    function parseBayerData(data, width, height) {
-        const pixelCount = width * height;
-        const pixels = new Array(pixelCount);
-
-        for (let i = 0; i < pixelCount; i++) {
-            const r = data[i];
-            const g = data[i + 1];
-            const b = data[i + 2];
-
-            // Convert R, G, B values to grayscale value
-            const grayValue = (r + g + b) / 3;
-
-            // Calculate row and column indices for current pixel
-            const row = Math.floor(i / width);
-            const col = i % width;
-
-            // Calculate the position of the current pixel in the output array
-            const outputIndex = (row * width) + col;
-
-            // Set the pixel value in the output array
-            pixels[outputIndex] = grayValue;
-        }
-
-        return pixels;
-    }
-
-    function createImageData(pixels, width, height) {
-        const imageData = new ImageData(new Uint8ClampedArray(width * height * 4), width, height);
-        const pixelData = imageData.data;
-
-        for (let i = 0; i < pixels.length; i++) {
-            const outputIndex = i * 4;
-            pixelData[outputIndex] = pixels[i];
-            pixelData[outputIndex + 1] = pixels[i];
-            pixelData[outputIndex + 2] = pixels[i];
-            pixelData[outputIndex + 3] = 255; // Set alpha value to 255
-        }
-
-        return imageData;
-    }
-
+/*
     function displayObjectProperties(obj, prefix = '') {
         let messageData = [];
         for (const key in obj) {
@@ -343,8 +330,6 @@
                 value: value ? value.toString(): "null"
             }
             
-            //console.log(`${propertyKey}: ${typeof value}`);
-            
             if (typeof value === 'object') {
             displayObjectProperties(value, propertyKey);
             }
@@ -352,6 +337,42 @@
         }
         return messageData;
     }
+*/
+
+function displayObjectProperties(obj, prefix = '') {
+  let messageData = [];
+  for (const key in obj) {
+    const value = obj[key];
+    const propertyKey = prefix ? `${prefix}.${key}` : key;
+
+    let data = {
+      property: propertyKey,
+      value: value ? value.toString() : "null"
+    }
+
+    if (Array.isArray(value)) {
+      value.forEach((element, index) => {
+        const elementKey = `${propertyKey}[${index}]`;
+        const elementData = {
+          property: elementKey,
+          value: element ? element.toString() : "null"
+        };
+        if (typeof element === 'object') {
+          const nestedData = displayObjectProperties(element, elementKey);
+          messageData.push(...nestedData);
+        } else {
+          messageData.push(elementData);
+        }
+      });
+    } else if (typeof value === 'object') {
+      const nestedData = displayObjectProperties(value, propertyKey);
+      messageData.push(...nestedData);
+    } else {
+      messageData.push(data);
+    }
+  }
+  return messageData;
+}
 
 </script>
 
