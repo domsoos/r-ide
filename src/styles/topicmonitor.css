@@ -129,3 +129,9 @@
     background-color: #7e7e7e;
     cursor: pointer;
   }
+
+  .message-data{
+    background-color: #222222;
+    padding: 10px;
+    font-size: 14px;
+  }

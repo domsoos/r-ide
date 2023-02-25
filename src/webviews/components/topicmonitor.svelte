@@ -1,6 +1,7 @@
 <script>
     const vscode = acquireVsCodeApi();
     import TreeView from "./TreeView.svelte";
+    import MessageTree from "./messageTree.svelte";
     //import * as ROSLIB from "roslib";
     import ROS from "../../ROSManagers/rosmanager.js"
     import { onMount } from 'svelte';
@@ -318,61 +319,33 @@
         }
     }
 
-/*
     function displayObjectProperties(obj, prefix = '') {
-        let messageData = [];
-        for (const key in obj) {
-            const value = obj[key];
-            const propertyKey = prefix ? `${prefix}.${key}` : key;
+    let messageData = [];
+    for (const key in obj) {
+        const value = obj[key];
+        let propertyKey;
 
-            let data = {
-                property: propertyKey,
-                value: value ? value.toString(): "null"
-            }
-            
-            if (typeof value === 'object') {
-            displayObjectProperties(value, propertyKey);
-            }
-            messageData.push(data);
-        }
-        return messageData;
-    }
-*/
-
-function displayObjectProperties(obj, prefix = '') {
-  let messageData = [];
-  for (const key in obj) {
-    const value = obj[key];
-    const propertyKey = prefix ? `${prefix}.${key}` : key;
-
-    let data = {
-      property: propertyKey,
-      value: value ? value.toString() : "null"
-    }
-
-    if (Array.isArray(value)) {
-      value.forEach((element, index) => {
-        const elementKey = `${propertyKey}[${index}]`;
-        const elementData = {
-          property: elementKey,
-          value: element ? element.toString() : "null"
-        };
-        if (typeof element === 'object') {
-          const nestedData = displayObjectProperties(element, elementKey);
-          messageData.push(...nestedData);
+        if (Array.isArray(obj)) {
+        propertyKey = `${prefix}[${key}]`;
         } else {
-          messageData.push(elementData);
+        propertyKey = key;
         }
-      });
-    } else if (typeof value === 'object') {
-      const nestedData = displayObjectProperties(value, propertyKey);
-      messageData.push(...nestedData);
-    } else {
-      messageData.push(data);
+
+        let data = {
+        property: propertyKey,
+        value: value ? value.toString() : "null",
+        type: Array.isArray(value) ? "array" : typeof value
+        }
+
+        if (typeof value === 'object' && value !== null) {
+        data.children = displayObjectProperties(value, key);
+        data.type = "object";
+        }
+
+        messageData.push(data);
     }
-  }
-  return messageData;
-}
+    return messageData;
+    }
 
 </script>
 
@@ -398,18 +371,17 @@ function displayObjectProperties(obj, prefix = '') {
                     <div class="message-block" on:click={()=>{ item.expanded = !item.expanded}}>
                         {#if item.expanded}
                             <span style="float: left;margin-right: 15px">&#x25BC</span>{item.fulltopic}
-                            <div class="message-data">
-                                {#if item.recentMessage}
-                                    {#each displayObjectProperties(item.recentMessage) as messageData}
-                                        <div>{messageData.property}: {messageData.value}</div>
-                                    {/each}
-                                {/if}
-                            </div>
                         {:else}
                             <span style="float: left;margin-right: 15px">&#x25b6</span>{item.fulltopic}
                         {/if}
-                            
                     </div>
+                    {#if item.expanded}
+                        <div class="message-data">
+                            {#if item.recentMessage}
+                                <MessageTree nodes={displayObjectProperties(item.recentMessage)}/>
+                            {/if}
+                        </div>
+                    {/if}
                 {/each}
             </div>
         </div>

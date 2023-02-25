@@ -12,6 +12,7 @@ export class TopicMonitorProvider {
   private readonly _panel: vscode.WebviewPanel;
   private readonly _extensionUri: vscode.Uri;
   private _disposables: vscode.Disposable[] = [];
+  
 
   public static createOrShow(extensionUri: vscode.Uri) {
     const column = vscode.window.activeTextEditor

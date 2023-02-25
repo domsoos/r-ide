@@ -5,22 +5,6 @@
 
     const handleChange = (event, topic) => {
         topic.checked = event.target.checked;
-
-        /*
-        if(topic.checked){
-            vscode.postMessage({
-                type: 'pushActiveTopic',
-                value: {topic: topic.fulltopic, type: topic.type}
-            });
-        }
-        else{
-            vscode.postMessage({
-                type: 'popActiveTopic',
-                value: {topic: topic.fulltopic, type: topic.type}
-            });
-        }
-        */
-
         updateCheckboxes(topic);
     };
 </script>
