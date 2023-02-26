@@ -65,9 +65,13 @@
     opacity: .7;
     /*cursor: not-allowed;*/
   }
-  
+
   button:focus {
     outline-color: var(--vscode-focusBorder);
+  }
+
+    *:focus {
+    outline-color: var(--vscode-focusBorder) !important;
   }
   
   button.secondary {

@@ -135,3 +135,23 @@
     padding: 10px;
     font-size: 14px;
   }
+
+  .refresh-btn{
+    background: none!important;
+    width: 35px;
+    border-radius: 50%;
+    height: 35px;
+    margin-right: 10px;
+    margin-top: 5px;
+  }
+
+  button{
+    outline: none!important;
+  }
+
+  .connection-error{
+    text-align: center;
+    color: red;
+    font-weight: 500;
+    font-style: italic;
+  }

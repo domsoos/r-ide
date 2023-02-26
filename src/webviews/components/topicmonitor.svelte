@@ -2,28 +2,30 @@
     const vscode = acquireVsCodeApi();
     import TreeView from "./TreeView.svelte";
     import MessageTree from "./messageTree.svelte";
-    //import * as ROSLIB from "roslib";
     import ROS from "../../ROSManagers/rosmanager.js"
     import { onMount } from 'svelte';
     import { Buffer } from "buffer";
     import { decodeBGRA8,
-             decodeMono8,
-             decodeFloat1c,
-             decodeBayerRGGB8,
-             decodeBayerBGGR8,
-             decodeBayerGBRG8,
-             decodeBayerGRBG8 } from '../../utils/decoders'
+            decodeYUV,
+            decodeYUYV,
+            decodeRGB8,
+            decodeRGBA8,
+            decodeBGR8,
+            decodeFloat1c,
+            decodeMono8,
+            decodeMono16,
+            decodeBayerRGGB8,
+            decodeBayerBGGR8,
+            decodeBayerGBRG8,
+            decodeBayerGRBG8 } from '../../utils/decoders'
 
-    let ros;
     let rosApi;
     let rosLib;
 
-    let isConnected = null;
+    let isConnected = true;
     let isLoading = false;
-    //let buttonLabel = 'View Topics'; 
-    //let currentMediaTopic = "None"
     let autoUpdateInterval;
-    let topicsStatus = "No connection -  Please ensure ROSBridge is running"
+    let topicsStatus = "Loading..."
 
     let topics = [];
     let mediaTopics = [];
@@ -36,18 +38,70 @@
     // Actual list of active subscriptions
     let activeSubcriptions = [];
 
+    function clearAllData(){
+        topics = [];
+        mediaTopics = [];
+        activeMediaTopic = null;
+        subscribedTopics = [];
+        activeSubcriptions = [];
+    }
 
 
 
     onMount(async () => {
-        ros = new ROS();
-        rosApi = ROS.getROSApi();
-        rosLib = ROS.getRosLib();
 
-        autoUpdateTopics();
+        try {
+            await new ROS();
+            rosApi = ROS.getROSApi();
+            rosLib = ROS.getRosLib();
+            getROSTopics();
+        } catch (error) {
+            isConnected = false;
+            //console.error(error);
+        }
     });
 
+    function rosReconnect(){
+        clearAllData();
+        isLoading = true;
+        isConnected = true;
+        ROS.reconnect().then(() => {
+            rosApi = ROS.getROSApi();
+            rosLib = ROS.getRosLib();
+            getROSTopics();
+        }).catch(() => {
+            isConnected = false;
+        });
+    }
 
+
+    function getROSTopics(){
+        isLoading = true;
+        topicsStatus = "Loading...";
+
+        if(rosApi?.isConnected){
+            rosApi.getTopics((res) => {
+                if (res) {
+                    updateTopicTree(res);
+                    topicsStatus = "Connected";
+                } else {
+                    console.log("failed");
+                    isConnected = false;
+                }
+                isLoading = false;
+            }, (err)=>{
+                console.log(err);
+                isLoading = false;
+                isConnected = false;
+            });
+        }else{
+            isLoading = false;
+            isConnected = false;
+            clearAllData();
+        }
+    }
+
+    //ROS topics autoupdate
     function autoUpdateTopics(){
         autoUpdateInterval = setInterval(() => {
             if(rosApi.isConnected){
@@ -60,9 +114,8 @@
                 }, (err)=>{
                     console.log(err);
                 });
-                clearInterval(autoUpdateInterval);
             }
-        }, 1000);
+        }, 3000);
     }
 
     function updateTopicTree(rawTopics){
@@ -86,8 +139,6 @@
             }
         }
         topics = buildTree(temp);
-        isConnected = true;
-        topicsStatus = "Connection Successful"
     }
 
     window.addEventListener('message', event => {
@@ -98,19 +149,6 @@
             }
 		}
 	});
-    
-
-    function getROSTopics(){
-        isLoading = true;
-        vscode.postMessage({
-            type: 'getROSTopics',
-        });
-
-        setTimeout(() => {
-            if(isLoading)
-            isLoading = false;
-        }, 3000);
-    }
 
     function buildTree(topics) {
         const root = {topic: "/", children: []};
@@ -192,16 +230,13 @@
         });
 
         activeSubcriptions.push(newTopic);
-        //subscribedTopics.push(item);
         subscribedTopics = [...subscribedTopics, item];
-        //console.log(subscribedTopics);
-        //console.log(activeSubcriptions);
     }
 
     function setRecentMessage(message, topic){
         let myTopic = subscribedTopics.find(item => item.fulltopic === topic);
         myTopic.recentMessage = message
-        // NEED BETTER WAY TO UPDATE DOM
+        // Figure out a better way to update the DOM
         subscribedTopics = [...subscribedTopics];
     }
 
@@ -214,9 +249,6 @@
         index = activeSubcriptions.findIndex((obj) => obj.name === item.fulltopic)
         activeSubcriptions[index].unsubscribe();
         activeSubcriptions.splice(index, 1);
-
-        //console.log(subscribedTopics);
-        //console.log(activeSubcriptions);
     }
 
     function subcribeToMediaTopic(item){
@@ -333,7 +365,7 @@
 
         let data = {
         property: propertyKey,
-        value: value ? value.toString() : "null",
+        value: value ? value.toString() : typeof value === "number" ? 0 : "null",
         type: Array.isArray(value) ? "array" : typeof value
         }
 
@@ -347,15 +379,30 @@
     return messageData;
     }
 
+
 </script>
 
 
 <div class="container">
         <div class="topic-container">
-            <h2 style="text-align: center;"><b>Status:</b> { topicsStatus }</h2>
+            {#if isConnected}
+                <div style="display:flex;align-items:center;justify-content: space-between;">
+                    <h2 style="text-align: center;flex-grow: 1;margin-left: 25px;"><b>Status:</b> {topicsStatus}</h2>
+                    <button class="refresh-btn" on:click={()=>{getROSTopics()}}>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"><path d="M13.451 5.609l-.579-.939-1.068.812-.076.094c-.335.415-.927 1.341-1.124 2.876l-.021.165.033.163.071.345c0 1.654-1.346 3-3 3-.795 0-1.545-.311-2.107-.868-.563-.567-.873-1.317-.873-2.111 0-1.431 1.007-2.632 2.351-2.929v2.926s2.528-2.087 2.984-2.461h.012l3.061-2.582-4.919-4.1h-1.137v2.404c-3.429.318-6.121 3.211-6.121 6.721 0 1.809.707 3.508 1.986 4.782 1.277 1.282 2.976 1.988 4.784 1.988 3.722 0 6.75-3.028 6.75-6.75 0-1.245-.349-2.468-1.007-3.536z" fill="#2D2D30"/><path d="M12.6 6.134l-.094.071c-.269.333-.746 1.096-.91 2.375.057.277.092.495.092.545 0 2.206-1.794 4-4 4-1.098 0-2.093-.445-2.817-1.164-.718-.724-1.163-1.718-1.163-2.815 0-2.206 1.794-4 4-4l.351.025v1.85s1.626-1.342 1.631-1.339l1.869-1.577-3.5-2.917v2.218l-.371-.03c-3.176 0-5.75 2.574-5.75 5.75 0 1.593.648 3.034 1.695 4.076 1.042 1.046 2.482 1.694 4.076 1.694 3.176 0 5.75-2.574 5.75-5.75-.001-1.106-.318-2.135-.859-3.012z" fill="#C5C5C5"/></svg>
+                    </button>
+                </div>
+            {:else}
+                <div style="display:flex;align-items:center;justify-content: space-between;">
+                    <h2 style="text-align: center;flex-grow: 1;margin-left: 25px;"><b>Error:</b> No connection</h2>
+                    <button class="refresh-btn" on:click={()=>{rosReconnect()}}>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"><path d="M13.451 5.609l-.579-.939-1.068.812-.076.094c-.335.415-.927 1.341-1.124 2.876l-.021.165.033.163.071.345c0 1.654-1.346 3-3 3-.795 0-1.545-.311-2.107-.868-.563-.567-.873-1.317-.873-2.111 0-1.431 1.007-2.632 2.351-2.929v2.926s2.528-2.087 2.984-2.461h.012l3.061-2.582-4.919-4.1h-1.137v2.404c-3.429.318-6.121 3.211-6.121 6.721 0 1.809.707 3.508 1.986 4.782 1.277 1.282 2.976 1.988 4.784 1.988 3.722 0 6.75-3.028 6.75-6.75 0-1.245-.349-2.468-1.007-3.536z" fill="#2D2D30"/><path d="M12.6 6.134l-.094.071c-.269.333-.746 1.096-.91 2.375.057.277.092.495.092.545 0 2.206-1.794 4-4 4-1.098 0-2.093-.445-2.817-1.164-.718-.724-1.163-1.718-1.163-2.815 0-2.206 1.794-4 4-4l.351.025v1.85s1.626-1.342 1.631-1.339l1.869-1.577-3.5-2.917v2.218l-.371-.03c-3.176 0-5.75 2.574-5.75 5.75 0 1.593.648 3.034 1.695 4.076 1.042 1.046 2.482 1.694 4.076 1.694 3.176 0 5.75-2.574 5.75-5.75-.001-1.106-.318-2.135-.859-3.012z" fill="#C5C5C5"/></svg>
+                    </button>
+                </div>
+                <div class="connection-error">Start/Restart ROS bridge and click refresh</div>
+            {/if}
             <hr>
-            <!--<button disabled='{isLoading}'  on:click={() => {getROSTopics();}}>{buttonLabel}</button>-->
-        
+            
             {#if topics.length > 0}
                 <div class="topics">
                     <TreeView topics={topics} updateCheckboxes={updateCheckboxes} vscode={vscode}/>   
@@ -379,6 +426,8 @@
                         <div class="message-data">
                             {#if item.recentMessage}
                                 <MessageTree nodes={displayObjectProperties(item.recentMessage)}/>
+                            {:else}
+                                <h3>No data</h3>    
                             {/if}
                         </div>
                     {/if}
