@@ -1,5 +1,6 @@
+/*
 import { Ros, Topic } from "roslib";
-import ROSLIB = require("roslib");
+import * as ROSLIB from "roslib";
 
 export class ROSManager {
     private static instance: ROSManager;
@@ -54,6 +55,7 @@ export class ROSManager {
         });
     }
 }
+*/
 
 
     /*

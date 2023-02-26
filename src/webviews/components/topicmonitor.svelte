@@ -1,136 +1,154 @@
 <script>
     const vscode = acquireVsCodeApi();
     import TreeView from "./TreeView.svelte";
+    import MessageTree from "./messageTree.svelte";
+    import ROS from "../../ROSManagers/rosmanager.js"
+    import { onMount } from 'svelte';
+    import { Buffer } from "buffer";
+    import { decodeBGRA8,
+            decodeYUV,
+            decodeYUYV,
+            decodeRGB8,
+            decodeRGBA8,
+            decodeBGR8,
+            decodeFloat1c,
+            decodeMono8,
+            decodeMono16,
+            decodeBayerRGGB8,
+            decodeBayerBGGR8,
+            decodeBayerGBRG8,
+            decodeBayerGRBG8 } from '../../utils/decoders'
 
-    let isConnected = null;
+    let rosApi;
+    let rosLib;
+
+    let isConnected = true;
     let isLoading = false;
+    let autoUpdateInterval;
+    let topicsStatus = "Loading..."
+
     let topics = [];
-    let buttonLabel = 'View Topics'; 
-    let currentMediaTopic = "None"
     let mediaTopics = [];
+    let activeMediaTopic = null;
     
+    // holding list of subscirbed topics so i can compare against
+    // new list and keep box checked
+    let subscribedTopics = [];
+
+    // Actual list of active subscriptions
+    let activeSubcriptions = [];
+
+    function clearAllData(){
+        topics = [];
+        mediaTopics = [];
+        activeMediaTopic = null;
+        subscribedTopics = [];
+        activeSubcriptions = [];
+    }
+
+
+
+    onMount(async () => {
+
+        try {
+            await new ROS();
+            rosApi = ROS.getROSApi();
+            rosLib = ROS.getRosLib();
+            getROSTopics();
+        } catch (error) {
+            isConnected = false;
+            //console.error(error);
+        }
+    });
+
+    function rosReconnect(){
+        clearAllData();
+        isLoading = true;
+        isConnected = true;
+        ROS.reconnect().then(() => {
+            rosApi = ROS.getROSApi();
+            rosLib = ROS.getRosLib();
+            getROSTopics();
+        }).catch(() => {
+            isConnected = false;
+        });
+    }
+
+
+    function getROSTopics(){
+        isLoading = true;
+        topicsStatus = "Loading...";
+
+        if(rosApi?.isConnected){
+            rosApi.getTopics((res) => {
+                if (res) {
+                    updateTopicTree(res);
+                    topicsStatus = "Connected";
+                } else {
+                    console.log("failed");
+                    isConnected = false;
+                }
+                isLoading = false;
+            }, (err)=>{
+                console.log(err);
+                isLoading = false;
+                isConnected = false;
+            });
+        }else{
+            isLoading = false;
+            isConnected = false;
+            clearAllData();
+        }
+    }
+
+    //ROS topics autoupdate
+    function autoUpdateTopics(){
+        autoUpdateInterval = setInterval(() => {
+            if(rosApi.isConnected){
+                rosApi.getTopics((res) => {
+                    if (res) {
+                        updateTopicTree(res);
+                    } else {
+                        console.log("failed")
+                    }
+                }, (err)=>{
+                    console.log(err);
+                });
+            }
+        }, 3000);
+    }
+
+    function updateTopicTree(rawTopics){
+        topics = [];
+        mediaTopics = [];
+        let temp = [];
+        for (let i = 0; i < rawTopics.topics.length; i++){
+            if(rawTopics.types[i] == "sensor_msgs/Image"){
+                mediaTopics = [...mediaTopics, {
+                    topic: rawTopics.topics[i],
+                    type: rawTopics.types[i],
+                }]
+            }
+            else{
+                let subbed = subscribedTopics.find(item => item.fulltopic === rawTopics.topics[i]);
+                temp.push({
+                    topic: rawTopics.topics[i],
+                    type: rawTopics.types[i],
+                    checked: subbed ? true : false
+                });
+            }
+        }
+        topics = buildTree(temp);
+    }
 
     window.addEventListener('message', event => {
 		const message = event.data; // The JSON data our extension sent
 		switch (message.type) {
-			case 'setROSTopics': {
-                topics = [];
-                mediaTopics = [];
-                if(message.success && message.data.topics){
-                    let temp = []
-                    for (let i = 0; i < message.data.topics.length; i++){
-                        if(message.data.types[i] == "sensor_msgs/Image"){
-                            mediaTopics = [...mediaTopics, {
-                                topic: message.data.topics[i],
-                                type: message.data.types[i],
-                            }]
-                        }
-                        else{
-                            temp.push({
-                                topic: message.data.topics[i],
-                                type: message.data.types[i],
-                            });
-                        }
-                    }
-                    topics = buildTree(temp);
-                    buttonLabel = 'Refresh Topics';
-                    isConnected = true;
-                    isLoading = false;
-                }else if(!message.success && message.data){
-                    vscode.postMessage({
-                        type: 'onError',
-                        value: message.data + "- Please try restarting ROSBridge."
-                    });
-                    buttonLabel = 'No connection. Try again.'
-                    isConnected = false;
-                    isLoading = false;
-                }
-                else{
-                    vscode.postMessage({
-                        type: 'onError',
-                        value: "Cannot communicate with ROS. Please ensure ROSBridge is running."
-                    });
-                    buttonLabel = 'No connection. Try again.'
-                    isConnected = false;
-                    isLoading = false;
-                }
-                break;
-            }
-            case 'setActiveMediaTopic':{
-                if(message.data.encoding === "bgra8"){
-                    const binaryData = atob(message.data.data);
-                    const bytes = new Uint8Array(binaryData.length);
-                    for (let i = 0; i < binaryData.length; i++) {
-                        bytes[i] = binaryData.charCodeAt(i);
-                    }
-                    const imageData = new ImageData(new Uint8ClampedArray(bytes.buffer), message.data.width, message.data.height);
-                    const canvas = document.getElementById('my-canvas');
-                    canvas.width = message.data.width;
-                    canvas.height = message.data.height;
-
-                    if(message.data.width > message.data.height){
-                        canvas.style.width = '500px';
-                        canvas.style.height = 'fit-content';
-                    }
-                    else{
-                        canvas.style.height = '350px';
-                        canvas.style.width = 'fit-content';
-                    }
-
-                    const context = canvas.getContext('2d');
-                    context.putImageData(imageData, 0, 0);
-
-            
-                }else if(message.data.encoding === "bayer_rggb8"){
-
-                    const binaryData = atob(message.data.data);
-                    const bytes = new Uint8Array(binaryData.length);
-                    for (let i = 0; i < binaryData.length; i++) {
-                        bytes[i] = binaryData.charCodeAt(i);
-                    }
-                    const width = message.data.width;
-                    const height = message.data.height;
-                    
-                    const pixels = parseBayerData(bytes, width, height);
-                    const imageData = createImageData(pixels, width, height);
-
-                    const canvas = document.getElementById('my-canvas');
-                    canvas.width = width;
-                    canvas.height = height;
-
-                    if(message.data.width > message.data.height){
-                        canvas.style.width = '500px';
-                        canvas.style.height = 'fit-content';
-                    }
-                    else{
-                        canvas.style.height = '350px';
-                        canvas.style.width = 'fit-content';
-                    }
-
-                    const context = canvas.getContext('2d');
-                    context.putImageData(imageData, 0, 0);
-
-                }
-
-                break;
-            }
-            case 'messageFromTopic':{
+            case 'example':{
                 console.log(message.data);
             }
 		}
 	});
-
-    function getROSTopics(){
-        isLoading = true;
-        vscode.postMessage({
-            type: 'getROSTopics',
-        });
-
-        setTimeout(() => {
-            if(isLoading)
-            isLoading = false;
-        }, 3000);
-    }
 
     function buildTree(topics) {
         const root = {topic: "/", children: []};
@@ -147,7 +165,7 @@
                 let node = map[path];
                 if (!node) {
                     if(i == parts.length - 1){
-                        node = {topic: parts[i], children: [], fulltopic: topic.topic, type: topic.type, checked: false};
+                        node = {topic: parts[i], children: [], fulltopic: topic.topic, type: topic.type, checked: topic.checked};
                     }
                     else{
                         node = {topic: parts[i], children: []};
@@ -188,66 +206,203 @@
     }
     */
 
-    function updateCheckboxes() {
-        topics = [...topics];
+    function updateCheckboxes(item) {
+        if(item.checked){
+            subscribeToTopic(item);
+        }
+        else{
+            unsubscribeFromTopic(item);
+        }
+        
+        //topics = [...topics];
+    }
+
+    function subscribeToTopic(item){
+
+        let newTopic = new rosLib.Topic({
+                ros : rosApi,
+                name : item.fulltopic,
+                messageType : item.type
+            });
+
+        newTopic.subscribe((message) => {
+            setRecentMessage(message, item.fulltopic);
+        });
+
+        activeSubcriptions.push(newTopic);
+        subscribedTopics = [...subscribedTopics, item];
+    }
+
+    function setRecentMessage(message, topic){
+        let myTopic = subscribedTopics.find(item => item.fulltopic === topic);
+        myTopic.recentMessage = message
+        // Figure out a better way to update the DOM
+        subscribedTopics = [...subscribedTopics];
+    }
+
+    function unsubscribeFromTopic(item){
+        let index = subscribedTopics.findIndex((obj) => obj.fulltopic === item.fulltopic);
+        subscribedTopics.splice(index, 1);
+        // Figure out a better way to update the DOM
+        subscribedTopics = [...subscribedTopics];
+
+        index = activeSubcriptions.findIndex((obj) => obj.name === item.fulltopic)
+        activeSubcriptions[index].unsubscribe();
+        activeSubcriptions.splice(index, 1);
     }
 
     function subcribeToMediaTopic(item){
-        currentMediaTopic = item.topic;
-        vscode.postMessage({
-            type: 'subActiveMediaTopic',
-            value: {topic: item.topic, type: item.type}
+        if(activeMediaTopic !== null){
+            activeMediaTopic.unsubscribe();
+            activeMediaTopic = null;
+        }
+    
+        let newMediaTopic = new rosLib.Topic({
+            ros : rosApi,
+            name : item.topic,
+            messageType : item.type
         });
+
+        newMediaTopic.subscribe( (message)=> {
+            decodeImageMessage(message);
+        });
+
+        activeMediaTopic = newMediaTopic;
     }
 
-    function parseBayerData(data, width, height) {
-        const pixelCount = width * height;
-        const pixels = new Array(pixelCount);
+    function decodeImageMessage(message){
 
-        for (let i = 0; i < pixelCount; i++) {
-            const r = data[i];
-            const g = data[i + 1];
-            const b = data[i + 2];
+        if(message.data){
+            let width = message.width;
+            let height = message.height;
+            let binaryString = Buffer.from(message.data, 'base64');
+            let rawData = new Uint8Array(binaryString);
+            const image = new ImageData(width, height);
 
-            // Convert R, G, B values to grayscale value
-            const grayValue = (r + g + b) / 3;
+            if(message.encoding){
+                switch(message.encoding){
+                    case "yuv422":
+                        decodeYUV(rawData, width, height, image.data);
+                        break;
+                    // same thing as yuv422, but a distinct decoding from yuv422 and yuyv
+                    case "uyuv":
+                        decodeYUV(rawData, width, height, image.data);
+                        break;
+                    // change name in the future
+                    case "yuyv":
+                        decodeYUYV(rawData, width, height, image.data);
+                        break;
+                    case "rgb8":
+                        decodeRGB8(rawData, width, height, image.data);
+                        break;
+                    case "rgba8":
+                        decodeRGBA8(rawData, width, height, image.data);
+                        break;
+                    case "bgra8":
+                        decodeBGRA8(rawData, width, height, image.data);
+                        break;
+                    case "bgr8":
+                        case "8UC3":
+                        decodeBGR8(rawData, width, height, image.data);
+                        break;
+                    case "32FC1":
+                        decodeFloat1c(rawData, width, height, message.is_bigendian, image.data);
+                        break;
+                    case "bayer_rggb8":
+                        decodeBayerRGGB8(rawData, width, height, image.data);
+                        break;
+                    case "bayer_bggr8":
+                        decodeBayerBGGR8(rawData, width, height, image.data);
+                        break;
+                    case "bayer_gbrg8":
+                        decodeBayerGBRG8(rawData, width, height, image.data);
+                        break;
+                    case "bayer_grbg8":
+                        decodeBayerGRBG8(rawData, width, height, image.data);
+                        break;
+                    case "mono8":
+                    case "8UC1":
+                        decodeMono8(rawData, width, height, image.data);
+                        break;
+                    case "mono16":
+                    case "16UC1":
+                        decodeMono16(rawData, width, height, message.is_bigendian, image.data, options);
+                        break;
+                    default:
+                        throw new Error(`Unsupported encoding ${encoding}`);
+                }
 
-            // Calculate row and column indices for current pixel
-            const row = Math.floor(i / width);
-            const col = i % width;
+                const canvas = document.getElementById('my-canvas');
+                canvas.width = width;
+                canvas.height = height;
 
-            // Calculate the position of the current pixel in the output array
-            const outputIndex = (row * width) + col;
+                if(width > height){
+                    canvas.style.width = '500px';
+                    canvas.style.height = 'fit-content';
+                }
+                else{
+                    canvas.style.height = '350px';
+                    canvas.style.width = 'fit-content';
+                }
 
-            // Set the pixel value in the output array
-            pixels[outputIndex] = grayValue;
+                const context = canvas.getContext('2d');
+                context.putImageData(image, 0, 0);
+                }
+        }
+    }
+
+    function displayObjectProperties(obj, prefix = '') {
+    let messageData = [];
+    for (const key in obj) {
+        const value = obj[key];
+        let propertyKey;
+
+        if (Array.isArray(obj)) {
+        propertyKey = `${prefix}[${key}]`;
+        } else {
+        propertyKey = key;
         }
 
-        return pixels;
-    }
-
-    function createImageData(pixels, width, height) {
-        const imageData = new ImageData(new Uint8ClampedArray(width * height * 4), width, height);
-        const pixelData = imageData.data;
-
-        for (let i = 0; i < pixels.length; i++) {
-            const outputIndex = i * 4;
-            pixelData[outputIndex] = pixels[i];
-            pixelData[outputIndex + 1] = pixels[i];
-            pixelData[outputIndex + 2] = pixels[i];
-            pixelData[outputIndex + 3] = 255; // Set alpha value to 255
+        let data = {
+        property: propertyKey,
+        value: value ? value.toString() : typeof value === "number" ? 0 : "null",
+        type: Array.isArray(value) ? "array" : typeof value
         }
 
-        return imageData;
+        if (typeof value === 'object' && value !== null) {
+        data.children = displayObjectProperties(value, key);
+        data.type = "object";
+        }
+
+        messageData.push(data);
     }
+    return messageData;
+    }
+
 
 </script>
 
 
 <div class="container">
         <div class="topic-container">
-            <button disabled='{isLoading}'  on:click={() => {getROSTopics();}}>{buttonLabel}</button>
-        
+            {#if isConnected}
+                <div style="display:flex;align-items:center;justify-content: space-between;">
+                    <h2 style="text-align: center;flex-grow: 1;margin-left: 25px;"><b>Status:</b> {topicsStatus}</h2>
+                    <button class="refresh-btn" on:click={()=>{getROSTopics()}}>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"><path d="M13.451 5.609l-.579-.939-1.068.812-.076.094c-.335.415-.927 1.341-1.124 2.876l-.021.165.033.163.071.345c0 1.654-1.346 3-3 3-.795 0-1.545-.311-2.107-.868-.563-.567-.873-1.317-.873-2.111 0-1.431 1.007-2.632 2.351-2.929v2.926s2.528-2.087 2.984-2.461h.012l3.061-2.582-4.919-4.1h-1.137v2.404c-3.429.318-6.121 3.211-6.121 6.721 0 1.809.707 3.508 1.986 4.782 1.277 1.282 2.976 1.988 4.784 1.988 3.722 0 6.75-3.028 6.75-6.75 0-1.245-.349-2.468-1.007-3.536z" fill="#2D2D30"/><path d="M12.6 6.134l-.094.071c-.269.333-.746 1.096-.91 2.375.057.277.092.495.092.545 0 2.206-1.794 4-4 4-1.098 0-2.093-.445-2.817-1.164-.718-.724-1.163-1.718-1.163-2.815 0-2.206 1.794-4 4-4l.351.025v1.85s1.626-1.342 1.631-1.339l1.869-1.577-3.5-2.917v2.218l-.371-.03c-3.176 0-5.75 2.574-5.75 5.75 0 1.593.648 3.034 1.695 4.076 1.042 1.046 2.482 1.694 4.076 1.694 3.176 0 5.75-2.574 5.75-5.75-.001-1.106-.318-2.135-.859-3.012z" fill="#C5C5C5"/></svg>
+                    </button>
+                </div>
+            {:else}
+                <div style="display:flex;align-items:center;justify-content: space-between;">
+                    <h2 style="text-align: center;flex-grow: 1;margin-left: 25px;"><b>Error:</b> No connection</h2>
+                    <button class="refresh-btn" on:click={()=>{rosReconnect()}}>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"><path d="M13.451 5.609l-.579-.939-1.068.812-.076.094c-.335.415-.927 1.341-1.124 2.876l-.021.165.033.163.071.345c0 1.654-1.346 3-3 3-.795 0-1.545-.311-2.107-.868-.563-.567-.873-1.317-.873-2.111 0-1.431 1.007-2.632 2.351-2.929v2.926s2.528-2.087 2.984-2.461h.012l3.061-2.582-4.919-4.1h-1.137v2.404c-3.429.318-6.121 3.211-6.121 6.721 0 1.809.707 3.508 1.986 4.782 1.277 1.282 2.976 1.988 4.784 1.988 3.722 0 6.75-3.028 6.75-6.75 0-1.245-.349-2.468-1.007-3.536z" fill="#2D2D30"/><path d="M12.6 6.134l-.094.071c-.269.333-.746 1.096-.91 2.375.057.277.092.495.092.545 0 2.206-1.794 4-4 4-1.098 0-2.093-.445-2.817-1.164-.718-.724-1.163-1.718-1.163-2.815 0-2.206 1.794-4 4-4l.351.025v1.85s1.626-1.342 1.631-1.339l1.869-1.577-3.5-2.917v2.218l-.371-.03c-3.176 0-5.75 2.574-5.75 5.75 0 1.593.648 3.034 1.695 4.076 1.042 1.046 2.482 1.694 4.076 1.694 3.176 0 5.75-2.574 5.75-5.75-.001-1.106-.318-2.135-.859-3.012z" fill="#C5C5C5"/></svg>
+                    </button>
+                </div>
+                <div class="connection-error">Start/Restart ROS bridge and click refresh</div>
+            {/if}
+            <hr>
+            
             {#if topics.length > 0}
                 <div class="topics">
                     <TreeView topics={topics} updateCheckboxes={updateCheckboxes} vscode={vscode}/>   
@@ -257,11 +412,32 @@
         <div class="messages-container">
             <h2 style="text-align: center;">Messages</h2>
             <hr>
+            <div class="message-block-container">
+                {#each subscribedTopics as item, i}
+                    <!-- svelte-ignore a11y-click-events-have-key-events -->
+                    <div class="message-block" on:click={()=>{ item.expanded = !item.expanded}}>
+                        {#if item.expanded}
+                            <span style="float: left;margin-right: 15px">&#x25BC</span>{item.fulltopic}
+                        {:else}
+                            <span style="float: left;margin-right: 15px">&#x25b6</span>{item.fulltopic}
+                        {/if}
+                    </div>
+                    {#if item.expanded}
+                        <div class="message-data">
+                            {#if item.recentMessage}
+                                <MessageTree nodes={displayObjectProperties(item.recentMessage)}/>
+                            {:else}
+                                <h3>No data</h3>    
+                            {/if}
+                        </div>
+                    {/if}
+                {/each}
+            </div>
         </div>
 
         <div class="media-column">
             <div class="dropdown">
-                <button class="dropbtn"><b>Selected Media:</b> {currentMediaTopic}<span style="float: right;">&#x25BC</span></button>
+                <button class="dropbtn"><b>Selected Media:</b> {activeMediaTopic ? activeMediaTopic.name : "None"}<span style="float: right;">&#x25BC</span></button>
                 <div class="dropdown-content">
                     {#each mediaTopics as item, i}
                         <button on:click={() => {subcribeToMediaTopic(item)}}>{item.topic}</button>

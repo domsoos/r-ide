@@ -1,6 +1,10 @@
 .topic-container{
     width: 350px;
-    font-size: 16px;
+    height: 577px;
+    background-color: #3d3d3d;
+    color: white!important;
+    padding: 15px;
+    border-radius: 10px;
 }
 
 .container{
@@ -32,11 +36,11 @@
 
 
 .topics{
-    background-color: #3d3d3d;
     padding: 15px 15px 15px 0;
-    max-height: 550px;
+    max-height: 500px;
     overflow: auto;
     color: white!important;
+    font-size: 16px;
 }
 
 .img-canvas{
@@ -55,10 +59,6 @@
     background-color:black;
     position: relative;
     min-width: 500px
-}
-
-.media-column{
-
 }
 
 /* Dropdown Button */
@@ -110,3 +110,48 @@
   
   /* Change the background color of the dropdown button when the dropdown content is shown */
   .dropdown:hover .dropbtn {background-color: #434343;}
+
+  .message-block{
+    border: 1px solid white;
+    min-height: 50px;
+    padding: 10px;
+    font-size: 16px;
+    font-weight: 500;
+    user-select: none;
+  }
+
+  .message-block-container{
+    max-height: 500px;
+    overflow-y: auto;
+  }
+
+  .message-block:hover{
+    background-color: #7e7e7e;
+    cursor: pointer;
+  }
+
+  .message-data{
+    background-color: #222222;
+    padding: 10px;
+    font-size: 14px;
+  }
+
+  .refresh-btn{
+    background: none!important;
+    width: 35px;
+    border-radius: 50%;
+    height: 35px;
+    margin-right: 10px;
+    margin-top: 5px;
+  }
+
+  button{
+    outline: none!important;
+  }
+
+  .connection-error{
+    text-align: center;
+    color: red;
+    font-weight: 500;
+    font-style: italic;
+  }
