@@ -14,19 +14,25 @@
   ],
   "main": "./out/extension.js",
   "contributes": {
-    "languages": [{
-      "id": "ros-srv",
-      "aliases": ["ROS srv"],
-      "extensions": [".srv"],
-      "configuration": "./language-configuration.json"
-  }],
-  "grammars": [
-    {
+    "languages": [
+      {
+        "id": "ros-srv",
+        "aliases": [
+          "ROS srv"
+        ],
+        "extensions": [
+          ".srv"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
         "language": "ros-srv",
         "scopeName": "source.ros-srv",
         "path": "./syntaxes/ros-srv.tmLanguage.json"
-    }
-],
+      }
+    ],
     "viewsContainers": {
       "activitybar": [
         {
@@ -161,6 +167,10 @@
       {
         "command": "r-ide.update-package-list",
         "title": "R-IDE: Update the package list from rospack"
+      },
+      {
+        "command": "r-ide.add-new-find-package",
+        "title": "R-IDE: Add a new package to the find package call"
       }
     ],
     "snippets": [

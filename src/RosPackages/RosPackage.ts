@@ -76,6 +76,9 @@ export class RosPackage {
     actions = new Set<string>();
     srcFiles = new Set<string>();
 
+    // TODO: This is probably backwards,
+    // It should probably be file/path -> package1, package2, package3
+    // When updating cmake just get the union of all the sets - any excluded (manually of based on dependencies)
     requiredPackages = new Map<string, Set<string>>();
 
     // File System Watchers
@@ -144,7 +147,6 @@ export class RosPackage {
         if (didChange) {
             this.updateCmake('src');
         }
-        
     }
 
     public async updateCmake(partition: string) {
@@ -642,4 +644,58 @@ function replaceTextInDocument(uri: vscode.Uri, regexp: RegExp, replaceText: str
             vscode.window.showTextDocument(uri, {selection: new vscode.Range(start, start.translate({characterDelta: replaceText.length}))});
         }
     });
+}
+
+export async function addNewFindPackage(myPackage?: RosPackage, newPackage?: string[]) {
+    if (!myPackage) {
+        let selectedPackage = await vscode.window.showOpenDialog({
+            canSelectFolders: true,
+            canSelectFiles: false,
+            canSelectMany: false
+        });
+
+        if (!selectedPackage) {
+            return;
+        } else if (!RosPackage.packages.has(selectedPackage[0].fsPath)) {
+            return;
+        }
+
+        myPackage = RosPackage.packages.get(selectedPackage[0].fsPath);
+    }
+
+    if (!newPackage) {
+        let options = [];
+        for (let p of RosPackage.existingPackages.keys()) {
+            // TODO
+            options.push({
+                label: p,
+                value: p,
+                picked: myPackage?.requiredPackages.has(p)
+            });
+        }
+        console.log(options);
+        let selectedPackage = await vscode.window.showQuickPick(
+            // TODO: Can a user manually exclude a package?
+            [...RosPackage.existingPackages.keys()], 
+            {
+                title: "Select an existing ROS Package",
+                canPickMany: true,
+        });
+
+        if (!selectedPackage) {
+            return;
+        }
+
+        newPackage = selectedPackage;
+    }
+
+    for (let p of newPackage) {
+        if (myPackage?.requiredPackages.has(p)) {
+            myPackage.requiredPackages.get(p)?.add('user-defined');
+        } else {
+            myPackage?.requiredPackages.set(p, new Set(['user-defined']));
+        }
+    }
+
+    myPackage?.updateCmake('src');
 }

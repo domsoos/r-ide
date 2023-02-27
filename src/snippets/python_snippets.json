@@ -1,5 +1,4 @@
 {
-<<<<<<< HEAD
 	"def listener example": {
 		"scope": "python",
 		"prefix": "def listener example",
@@ -252,10 +251,8 @@
 		"prefix": "set_param",
 		"body": "rospy.set_param(${1:param_name}, ${0:param_value})",
 		"description": "set_param"
-	}
+	},
 	
-}
-=======
 	"def listener": {
 		"scope": "python",
 		"prefix": "def listener",
@@ -299,4 +296,3 @@
 		"isFileTemplate": true
 	  }
 }
->>>>>>> origin/gavin

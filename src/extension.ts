@@ -12,7 +12,7 @@ import {
 	createSrv
 } from './commands/commands';
 import { 
-	addMsgToPackage, addSrvToPackage, createRosPackage, loadPackages, registerPackage, RosPackage, updateExistingPackages
+	addMsgToPackage, addNewFindPackage, addSrvToPackage, createRosPackage, loadPackages, registerPackage, RosPackage, updateExistingPackages
 } from './RosPackages/RosPackage';
 import { SidebarTopicsProvider } from './SidebarTopicsProvider';
 
@@ -85,6 +85,10 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.commands.registerCommand(
 			"r-ide.update-package-list",
 			updateExistingPackages
+		),
+		vscode.commands.registerCommand(
+			"r-ide.add-new-find-package",
+			addNewFindPackage
 		),
 		vscode.commands.registerCommand("r-ide.open-topic-monitor", () => {
 			TopicMonitorProvider.createOrShow(context.extensionUri);
