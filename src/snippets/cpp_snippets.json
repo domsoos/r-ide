@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 {
     "subscriber node example": {
 		"scope": "source.cpp",
@@ -189,15 +188,8 @@
             "ROS_INFO(\"${1:Message}\");$0"
         ],
         "description": "ROS_INFO Log Statement"
-        }
-          
-    
-    
+        },
 
-}
-=======
-
-{
 "service node example": {
     "scope": "C++",
     "prefix": "service node example",
@@ -265,4 +257,3 @@
     "description": "client node example"
   }
 }
->>>>>>> origin/gavin
