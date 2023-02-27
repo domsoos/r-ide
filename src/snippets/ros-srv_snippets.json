@@ -1,0 +1,17 @@
+{
+    "Create New ROS Service Definition": {
+        "scope": "ros-srv",
+        "prefix": "rossrv",
+        "body": [
+            "# Request message",
+            "message_type: $1",
+            "",
+            "# Response message",
+            "message_type: $2",
+            "",
+            "# Service name",
+            "service_name: '$3'"
+        ],
+        "description": "Create a new ROS service definition"
+    }
+}

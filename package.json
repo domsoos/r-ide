@@ -14,6 +14,19 @@
   ],
   "main": "./out/extension.js",
   "contributes": {
+    "languages": [{
+      "id": "ros-srv",
+      "aliases": ["ROS srv"],
+      "extensions": [".srv"],
+      "configuration": "./language-configuration.json"
+  }],
+  "grammars": [
+    {
+        "language": "ros-srv",
+        "scopeName": "source.ros-srv",
+        "path": "./syntaxes/ros-srv.tmLanguage.json"
+    }
+],
     "viewsContainers": {
       "activitybar": [
         {
@@ -73,6 +86,14 @@
       {
         "language": "python",
         "path": "./src/snippets/snippets.json"
+      },
+      {
+        "language": "cpp",
+        "path": "./src/snippets/cplusplus_snippets.json"
+      },
+      {
+        "language": "ros-srv",
+        "path": "./src/snippets/ros-srv_snippets.json"
       }
     ]
   },

@@ -1,76 +1,107 @@
 {
-	"def listener": {
+	"def listener example": {
 		"scope": "python",
-		"prefix": "def listener",
+		"prefix": "def listener example",
 		"body": [
+		  "#!/usr/bin/env python",
+		  "import rospy",
+		  "from std_msgs.msg import String",
+		  "",
+		  "def callback(data):",
+		  "    rospy.loginfo(rospy.get_caller_id() + \"${1:I heard %s}\", data.data)",
+		  "",
 		  "def listener():",
-		  "    rospy.init_node('listener', anonymous=True)",
-		  "    rospy.Subscriber(\"chatter\", String, callback)",
-		  "    # spin() simply keeps python from exiting until this node is stopped",
-		  "    rospy.spin()"
+		  "",
+		  "    rospy.init_node('${2:listener}', anonymous=True)",
+		  "",
+		  "    rospy.Subscriber(\"${3:chatter}\", ${0:String}, callback)",
+		  "",
+		  "    rospy.spin()",
+		  "",
+		  "if __name__ == '__main__':",
+		  "    listener()",
+		  "",
+		  "# Refernece: http://wiki.ros.org/ROS/Tutorials/WritingPublisherSubscriber%28python%29"
 		],
-		"description": "def listener",
+		"description": "def listener example",
 		"isFileTemplate": true
 	  },
 
-	  "def talker": {
-		"scope": "python",
-		"prefix": "def talker",
+	  "def talker example": {
+		"scope": "python", 
+		"prefix": "def talker example",
 		"body": [
-		  "def obs_gen():",
-		  "    pub = rospy.Publisher('obs_gen_talker', String, queue_size=10)",
-		  "    rospy.init_node('talker', anonymous=True)",
-		  "    rate = rospy.Rate(0.5)",
+		  "#!/usr/bin/env python",
 		  "",
-		  "    gen_rand_bool = lambda: 't' if random.choice([True,False]) else 'f'",
+		  "# license removed for brevity",
+		  "",
+		  "from std_msgs.msg import String",
+		  "",
+		  "def talker():",
+		  "",
+		  "    pub = rospy.Publisher('${1:chatter}', ${2:String}, ${3:queue_size=10})",
+		  "",
+		  "    rospy.init_node('${4:talker}', anonymous=True)",
+		  "",
+		  "    rate = rospy.Rate(10) # 10hz",
+		  "",
 		  "    while not rospy.is_shutdown():",
-		  "        obs = ','.join([gen_rand_bool() for _ in range(OBS_VARS)])",
-		  "        obs = \"{} at {}\".format(obs, rospy.get_time())",
-		  "        rospy.loginfo(obs)",
-		  "        pub.publish(obs)",
+		  "        ${5:hello_str} = \"${0:hello world %s}\" % rospy.get_time()",
+		  "        rospy.loginfo(${5:hello_str})",
+		  "        pub.publish(${5:hello_str})",
 		  "        rate.sleep()",
 		  "",
 		  "if __name__ == '__main__':",
 		  "    try:",
-		  "        obs_gen()",
+		  "        talker()",
 		  "    except rospy.ROSInterruptException:",
-		  "        pass"
+		  "        pass",
+		  "",
+		  "# Reference: http://wiki.ros.org/ROS/Tutorials/WritingPublisherSubscriber%28python%29"
 		],
-		"description": "def talker",
+		"description": "def talker example",
 		"isFileTemplate": true
+		
 	  },
 
 	  "srv example": {
-		"scope": "ros.msg",
+		"scope": "python",
 		"prefix": "srv example",
 		"body": [
-		  "#request constants",
-		  "int8 FOO=1",
-		  "int8 BAR=2",
-		  "#request fields",
-		  "int8 foobar",
-		  "another_pkg/AnotherMessage msg",
-		  "---",
-		  "#response constants",
-		  "uint32 SECRET=123456",
-		  "#response fields",
-		  "another_pkg/YetAnotherMessage val",
-		  "CustomMessageDefinedInThisPackage value",
-		  "uint32 an_integer",
-		  "reference: http://wiki.ros.org/srv"
+		  "#!/usr/bin/env python",
+		  "",
+		  "from __future__ import print_function",
+		  "",
+		  "from beginner_tutorials.srv import AddTwoInts,AddTwoIntsResponse",
+		  "import rospy",
+		  "",
+		  "def handle_add_two_ints(req):",
+		  "    print(\"Returning [%s + %s = %s]\"%(req.a, req.b, (req.a + req.b)))",
+		  "    return AddTwoIntsResponse(req.a + req.b)",
+		  "",
+		  "def add_two_ints_server():",
+		  "    rospy.init_node('add_two_ints_server')",
+		  "    s = rospy.Service('add_two_ints', AddTwoInts, handle_add_two_ints)",
+		  "    print(\"Ready to add two ints.\")",
+		  "    rospy.spin()",
+		  "",
+		  "if __name__ == \"__main__\":",
+		  "    add_two_ints_server()",
+		  "# Reference: http://wiki.ros.org/ROS/Tutorials/WritingServiceClient%28python%29"
 		],
 		"description": "srv example",
 		"isFileTemplate": true
 	  },
 
 	  "msg example": {
-		"scope": "ros.msg",
+		"scope": "python",
 		"prefix": "msg example",
 		"body": [
 		  "int32 X=123",
 		  "int32 Y=-123",
 		  "string FOO=foo",
 		  "string EXAMPLE=\"#comments\" are ignored, and leading and trailing whitespace removed",
+		  "",
 		  "reference: http://wiki.ros.org/msg"
 		],
 		"description": "msg example",
@@ -78,22 +109,148 @@
 	  },
 
 	  "urdf example": {
+		"scope": "xml",
 		"prefix": "urdf example",
 		"body": [
-		  "<?xml version=\"1.0\"?>",
-		  "   <robot name=\"myfirst\">",
-		  "      <link name=\"base_link\">",
-		  "        <visual>",
-		  "          <geometry>",
-		  "            <cylinder length=\"0.6\" radius=\"0.2\"/>",
-		  "          </geometry>",
-		  "        </visual>",
-		  "      </link>",
-		  "   </robot>"
+		  "<robot name=\"test_robot\">",
+		  "  <link name=\"link1\" />",
+		  "  <link name=\"link2\" />",
+		  "  <link name=\"link3\" />",
+		  "  <link name=\"link4\" />",
+		  "",
+		  "  <joint name=\"joint1\" type=\"continuous\">",
+		  "    <parent link=\"link1\"/>",
+		  "    <child link=\"link2\"/>",
+		  "  </joint>",
+		  "",
+		  "  <joint name=\"joint2\" type=\"continuous\">",
+		  "    <parent link=\"link1\"/>",
+		  "    <child link=\"link3\"/>",
+		  "  </joint>",
+		  "",
+		  "  <joint name=\"joint3\" type=\"continuous\">",
+		  "    <parent link=\"link3\"/>",
+		  "    <child link=\"link4\"/>",
+		  "  </joint>",
+		  "</robot>",
+		  "",
+		  "/**",
+		  " * Reference: http://wiki.ros.org/urdf/Tutorials/Create%20your%20own%20urdf%20file",
+		  " */"
 		],
 		"description": "urdf example",
 		"isFileTemplate": true
-	  }
+	  },
 
-	  
+	"<xml>": {
+		"prefix": "<xml>",
+		"body": [
+			"<${1:name}>",
+			"    <$2  >",
+			"    <$0  >",
+			"</${1:name}>"
+		],
+		"description": "<xml>"
+	},
+
+	"<msg>": {
+		"prefix": "<msg",
+		"body": [
+			"strMsg = rosmessage(${1:string_msg}, ${0:string_data})",
+			"msg = rosmessage($1)",
+			"msg.Data = $0"
+		]
+	},
+
+	"subscriber": {
+        "scope": "python",
+        "prefix": "subscriber",
+        "body": "rospy.Subscriber(\"${1:topic}\", ${2:Type}, ${3:callback})\n${0}",
+        "description": "ROS subscriber"
+    },
+
+	"publisher": {
+        "scope": "python",
+        "prefix": "publisher",
+        "body": "${1:message}_pub = rospy.Publisher(\"${2:topic}\", ${3:type}, queue_size=${4:10})\n${0}",
+        "description": "ROS publisher"
+    },
+
+	"initialize node": {
+		"scope": "python",
+		"prefix": "init",
+		"body": "rospy.init_node('${1:node_name}', anonymous=True)",
+		"description": "initialize node"
+	},
+
+	"loginfo": {
+		"scope": "python",
+		"prefix": "loginfo",
+		"body": "rospy.loginfo(${1:msg}, *${0:args})",
+		"description": "loginfo"
+	},
+
+	"spin": {
+		"scope": "python",
+		"prefix": "spin",
+		"body": "rospy.spin()",
+		"description": "spin"
+	},
+
+	"sleep": {
+		"scope": "python",
+		"prefix": "sleep",
+		"body": "rospy.sleep(${0:int})",
+		"description": "sleep"
+	},
+
+	"is_shutdown": {
+		"scope": "python",
+		"prefix": "is_shutdown",
+		"body": "rospy.is_shutdown($0)",
+		"description": "is_shutdown"
+	},
+
+	"on_shutdown": {
+		"scope": "python",
+		"prefix": "on_shutdown",
+		"body": "rospy.on_shutdown(${0:string})",
+		"description": "on_shutdown"
+	},
+
+	"wait_for_service": {
+		"scope": "python",
+		"prefix": "wait_for_service",
+		"body": "rospy.wait_for_service(${1:service}, timeout=${0:None})",
+		"description": "wait_for_service"
+	},
+
+	"rate": {
+		"scope": "python",
+		"prefix": "rate",
+		"body": "rospy.Rate(${0:hz})",
+		"description": "rate"
+	},
+
+	"Service": {
+		"scope": "python",
+		"prefix": "service",
+		"body": "rospy.Service(${1:name}, ${2:service_class}, ${3:handler}, ${0:buff_size=65536})",
+		"description": "service"
+	},
+
+	"get_param": {
+		"scope": "python",
+		"prefix": "get_param",
+		"body": "rospy.get_param(${0:param_name})",
+		"description": "get_param"
+	},
+	
+	"set_param": {
+		"scope": "python",
+		"prefix": "set_param",
+		"body": "rospy.set_param(${1:param_name}, ${0:param_value})",
+		"description": "set_param"
+	}
+	
 }
