@@ -1,0 +1,29 @@
+{
+    "99bf2c4b-29ca-406f-b7a6-23bf82460255": {
+        "event_id": 9960255,
+        "wizard_id": 2296603,
+        "parent_id": null,
+        "template_id": 10,
+        "event_type": "Zcu^vtkTMnrKvW^RHJOl",
+        "event_action": "Rs`[JGfQgZKUjDioyCDphAvXhvnLutWT\\i_pB\\LlMa",
+        "event_action_time": 1675614087.830119
+    },
+    "d2f70b09-3d1f-4502-9cd0-7a52e622dbb8": {
+        "event_id": 6228,
+        "wizard_id": 81797,
+        "parent_id": null,
+        "template_id": 20,
+        "event_type": "r^mMj_bLiFvXgQA\\wrj\\tJ",
+        "event_action": "VOAbGNTfBa",
+        "event_action_time": 1675631095.830213
+    },
+    "d05185dc-a08a-487f-92a1-74b0a2ffd0d6": {
+        "event_id": 5185086,
+        "wizard_id": 1124813,
+        "parent_id": null,
+        "template_id":30,
+        "event_type": "AV[KAc^MQeRPkFNW]jbvVTSeYgT`ZpIT]uCKFbNcT",
+        "event_action": "qsgz_zD\\`H_RKHWCw]]UM",
+        "event_action_time": 1675612315.830309
+    }
+}

@@ -1,5 +1,4 @@
 import * as vscode from "vscode";
-import { TextEncoder } from "util";
 
 export async function createFileFromTemplate(path: string, options: any) {
     // DEBUG
@@ -9,7 +8,7 @@ export async function createFileFromTemplate(path: string, options: any) {
     const uri = vscode.Uri.file(path);
     vscode.window.showInformationMessage(uri.path);
 
-    await vscode.workspace.fs.writeFile(uri, new TextEncoder().encode(''));
+    await vscode.workspace.fs.writeFile(uri, Buffer.from(''));
     await vscode.window.showTextDocument(uri);
 
     switch (options.language.id) {
@@ -30,17 +29,40 @@ export async function createFileFromTemplate(path: string, options: any) {
     vscode.window.activeTextEditor?.document.save();
 }
 
-export async function createMessage(path: string) {
+export async function createMessage(path?: string | vscode.Uri) {
+    if (!path) {
+        path = await vscode.window.showSaveDialog({
+            // eslint-disable-next-line @typescript-eslint/naming-convention
+            filters: {"Text Files": ['msg']},
+            // TODO: This default Uri should be smarter
+            defaultUri: vscode.Uri.file(vscode.workspace.workspaceFolders?.map(folder => folder.uri.path).toString() + "/src/untitled.msg")
+        });
+
+        // Check the user provided a path
+        if (!path) {
+            return;
+        }
+    }
+
+    let uri;
+
+    if (!(path instanceof vscode.Uri)) {
+        uri = vscode.Uri.file(path);
+    } else {
+        uri = path;
+    }
+    
+    
+
     // Update package.xml
-    // TODO: Assumes that msg is placed in ./msg/*.msg, and that the package is at ./package.xml relative to the root of the project
-    let packageLocation = vscode.Uri.joinPath(vscode.Uri.file(path), '../../package.xml');
-    await updatePackageXml(packageLocation);
+    // TODO: Assumes that msg is placed in ./msg/*.msg, and that the package is at ./package.xml relative to the root of the package
+    let packageLocation = vscode.Uri.joinPath(uri, '../../package.xml');
+    updatePackageXml(packageLocation);
 
     // Create Msg File
-    const uri = vscode.Uri.file(path);
+    
     vscode.window.showInformationMessage(uri.path);
-
-    await vscode.workspace.fs.writeFile(uri, new TextEncoder().encode(''));
+    await vscode.workspace.fs.writeFile(uri, Buffer.from(''));
     await vscode.window.showTextDocument(uri);
 
     vscode.commands.executeCommand("editor.action.insertSnippet", { langId: "ros.msg", name: "msg example"});
@@ -49,17 +71,38 @@ export async function createMessage(path: string) {
     
 }
 
-export async function createSrv(path: string) {
+export async function createSrv(path?: string | vscode.Uri) {
+    if (!path) {
+        path = await vscode.window.showSaveDialog({
+            // eslint-disable-next-line @typescript-eslint/naming-convention
+            filters: {"Text Files": ['msg']},
+            // TODO: This default Uri should be smarter
+            defaultUri: vscode.Uri.file(vscode.workspace.workspaceFolders?.map(folder => folder.uri.path).toString() + "/src/untitled.msg")
+        });
+
+        // Check the user provided a path
+        if (!path) {
+            return;
+        }
+    }
+
+    let uri;
+
+    if (!(path instanceof vscode.Uri)) {
+        uri = vscode.Uri.file(path);
+    } else {
+        uri = path;
+    }
+
     // Update package.xml
     // TODO: Assumes that srv is placed in ./srv/*.srv, and that the package is at ./package.xml relatively
-    let packageLocation = vscode.Uri.joinPath(vscode.Uri.file(path), '../../package.xml');
-    await updatePackageXml(packageLocation);
+    let packageLocation = vscode.Uri.joinPath(uri, '../../package.xml');
+    updatePackageXml(packageLocation);
 
     // Create Srv File
-    const uri = vscode.Uri.file(path);
     vscode.window.showInformationMessage(uri.path);
 
-    await vscode.workspace.fs.writeFile(uri, new TextEncoder().encode(''));
+    await vscode.workspace.fs.writeFile(uri, Buffer.from(''));
     await vscode.window.showTextDocument(uri);
 
     vscode.commands.executeCommand("editor.action.insertSnippet", { langId: "ros.msg", name: "srv example"});
@@ -79,7 +122,6 @@ async function updatePackageXml(packagePath: string | vscode.Uri) {
     
     vscode.workspace.openTextDocument(packageLocation).then(document => {
         vscode.window.showTextDocument(document, 1, true).then(editor => {
-            // Regex used
             const dependTag = /<.*?_depend>.*?<\/.*?_depend>/sg;
             let edit = '';
 

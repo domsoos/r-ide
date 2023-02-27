@@ -45,7 +45,6 @@
 
 	function nextButtonClicked(){
 		// TODO: Currently overwrites without warning, should ask for confirmation for overwrites
-
 		if (nodeName === '') {
 		// No given name
 		vscode.postMessage({
@@ -103,7 +102,10 @@
 				}
 			};
 
-			
+			vscode.postMessage({
+				type: 'addEventToDB',
+				value: selectedWizardType + " creation wizard used"
+			});
 			selectedLanguage = languages[selectedWizardType][0];
 		}
 	}
