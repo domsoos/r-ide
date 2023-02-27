@@ -32,7 +32,7 @@ export async function addNewEvent(desc: String, success: boolean){
 
     try {
         await newEvent.save();
-        console.log(`Created new event: ${desc}`)
+        console.log(`Created new event: ${desc}`);
     } catch(error) {
         console.error(error);
     }
@@ -47,7 +47,7 @@ async function uploadTemplate(name:String, text:String, success: boolean): Promi
 
     try {
         await newTemplate.save();
-        console.log(`Created new template: ${name}`)
+        console.log(`Created new template: ${name}`);
     } catch(error) {
         console.error(error);
     }
