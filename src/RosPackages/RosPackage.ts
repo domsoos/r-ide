@@ -193,7 +193,7 @@ export class RosPackage {
     }
 
     private generateFindPackage() {
-        let findPackages = `find_packages(catkin REQUIRED ${this.requiredPackages.size > 0 ? 'COMPONENTS' : '\n# No Packages to add'} ${[...this.requiredPackages.keys()].join('\n    ')}`;
+        let findPackages = `find_packages(catkin REQUIRED ${this.requiredPackages.size > 0 ? 'COMPONENTS\n   ' : '\n# No Packages to add'}${[...this.requiredPackages.keys()].join('\n    ')}`;
 
         const tags = generateRideTags('find_package');
 
@@ -261,10 +261,10 @@ export class RosPackage {
         # START ACTION
         ${disclaimer}
 
-        add_action_files(
-            DIRECTORY <directory_1>
-            FILES <action_files_1>
-        )
+        # add_action_files(
+        #     DIRECTORY <directory_1>
+        #     FILES <action_files_1>
+        # )
 
         # END ACTION`;
     }
