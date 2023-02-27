@@ -666,7 +666,9 @@ export async function addNewFindPackage(myPackage?: RosPackage, newPackage?: str
     if (!newPackage) {
         let options = [];
         for (let p of RosPackage.existingPackages.keys()) {
-            // TODO
+            // TODO: picked is not pre selecting options, not sure why
+
+            // TODO: If a user unselects a package that is defined by a match in a file, should we add a dialogue and "user-excluded" tag to package?
             options.push({
                 label: p,
                 value: p,
@@ -689,6 +691,7 @@ export async function addNewFindPackage(myPackage?: RosPackage, newPackage?: str
         newPackage = selectedPackage;
     }
 
+    // TODO: Should update user-defined to match the list as defined by quick pick dialogue
     for (let p of newPackage) {
         if (myPackage?.requiredPackages.has(p)) {
             myPackage.requiredPackages.get(p)?.add('user-defined');
