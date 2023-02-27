@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 {
     "subscriber node example": {
 		"scope": "source.cpp",
@@ -194,3 +195,74 @@
     
 
 }
+=======
+
+{
+"service node example": {
+    "scope": "C++",
+    "prefix": "service node example",
+    "body": [
+        "bool add(beginner_tutorials::AddTwoInts::Request  &req,",
+        "             beginner_tutorials::AddTwoInts::Response &res)",
+        "    {",
+        "      res.sum = req.a + req.b;",
+        "      ROS_INFO(\"request: x=%ld, y=%ld\", (long int)req.a, (long int)req.b);",
+        "      ROS_INFO(\"sending back response: [%ld]\", (long int)res.sum);",
+        "     return true;",
+        "   }",
+        "",
+        "   int main(int argc, char **argv)",
+        "   {",
+        "     ros::init(argc, argv, \"$0 add_two_ints_server\");",
+        "     ros::NodeHandle n;",
+        "     ",
+        "     ros::ServiceServer service = n.advertiseService(\"$0 add_two_ints\", add);",
+        "     ROS_INFO(\"$0 Ready to add two ints.\");",
+        "     ros::spin();",
+        "     ",
+        "     return 0;",
+        "   }",
+        "   /**",
+        "   * Reference: http://wiki.ros.org/ROS/Tutorials/WritingServiceClient%28c%2B%2B%29",
+        "   */"
+    ],
+    "description": "example service node"
+},
+"client node example": {
+    "scope": "C++",
+    "prefix": "client node example",
+    "body": [
+      "int main(int argc, char **argv)",
+      "{",
+      "  ros::init(argc, argv, \"add_two_ints_client\");",
+      "  if (argc != 3)",
+      "  {",
+      "    ROS_INFO(\"usage: add_two_ints_client X Y\");",
+      "    return 1;",
+      "  }",
+      "",
+      "  ros::NodeHandle n;",
+      "  ros::ServiceClient client = n.serviceClient<beginner_tutorials::AddTwoInts>(\"$1\");",
+      "  beginner_tutorials::AddTwoInts srv;",
+      "  srv.request.a = atoll(argv[1]);",
+      "  srv.request.b = atoll(argv[2]);",
+      "  if (client.call(srv))",
+      "  {",
+      "    ROS_INFO(\"Sum: %ld\", (long int)srv.response.sum);",
+      "  }",
+      "  else",
+      "  {",
+      "    ROS_ERROR(\"Failed to call service $1\");",
+      "    return 1;",
+      "  }",
+      "",
+      "  return 0;",
+      "}",
+      "/**",
+      "* Reference: http://wiki.ros.org/ROS/Tutorials/WritingServiceClient%28c%2B%2B%29",
+      "*/"
+    ],
+    "description": "client node example"
+  }
+}
+>>>>>>> origin/gavin

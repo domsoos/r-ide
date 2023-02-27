@@ -1,4 +1,5 @@
 {
+<<<<<<< HEAD
 	"def listener example": {
 		"scope": "python",
 		"prefix": "def listener example",
@@ -254,3 +255,48 @@
 	}
 	
 }
+=======
+	"def listener": {
+		"scope": "python",
+		"prefix": "def listener",
+		"body": [
+			"def listener():",
+			"    rospy.init_node('listener', anonymous=True)",
+			"    rospy.Subscriber(\"chatter\", String, callback)",
+			"    # spin() simply keeps python from exiting until this node is stopped",
+			"    rospy.spin()",
+			"\n"
+		],
+		"description": "def listener",
+		"isFileTemplate": true
+	},
+
+	"def talker": {
+		"scope": "python",
+		"prefix": "def talker",
+		"body": [
+			"def obs_gen():",
+			"    pub = rospy.Publisher('obs_gen_talker', String, queue_size=10)",
+			"    rospy.init_node('talker', anonymous=True)",
+			"    rate = rospy.Rate(0.5)",
+			"",
+			"    gen_rand_bool = lambda: 't' if random.choice([True,False]) else 'f'",
+			"    while not rospy.is_shutdown():",
+			"        obs = ','.join([gen_rand_bool() for _ in range(OBS_VARS)])",
+			"        obs = \"{} at {}\".format(obs, rospy.get_time())",
+			"        rospy.loginfo(obs)",
+			"        pub.publish(obs)",
+			"        rate.sleep()",
+			"",
+			"if __name__ == '__main__':",
+			"    try:",
+			"        obs_gen()",
+			"    except rospy.ROSInterruptException:",
+			"        pass",
+			"\n"
+		],
+		"description": "def talker",
+		"isFileTemplate": true
+	  }
+}
+>>>>>>> origin/gavin
