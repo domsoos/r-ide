@@ -41,6 +41,7 @@ class ROS {
 
         return new Promise((resolve, reject) => {
             ROS.rosAPI.on('connection', () => {
+                ROS.rosLib = ROSLIB;
                 resolve();
             });
             ROS.rosAPI.on('error', () => {
