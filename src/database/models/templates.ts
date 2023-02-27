@@ -2,8 +2,12 @@ var mongoose = require('mongoose');
 
 
 const templateSchema = new mongoose.Schema({
-    template: {
-        type: String
+    templateName: {
+        type: String,
+        required: true
+    },
+    templateText: {
+        type: String,
         //required: true
     },
     success:{

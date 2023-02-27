@@ -1,3 +1,5 @@
+import { DecorationRangeBehavior } from "vscode";
+
 require('./models/events');
 require('./models/templates');
 require('./models/wizards');
@@ -10,6 +12,12 @@ var wizard = mongoose.model('Wizard')
 
 export async function connectToDB(){
     mongoose.connect("mongodb+srv://rideDB:nl3fP1uYDI9DW8Cx@cluster0.xroyxn3.mongodb.net/?retryWrites=true&w=majority");
+
+    const db = mongoose.connection();
+    db.on('error', console.error.bind(console, 'connection error: '));
+    db.once('open', () => {
+        console.log('connected to mongodb');
+    });
 }
 
 export async function closeConnection(){
@@ -22,9 +30,41 @@ export async function addNewEvent(desc: String, success: boolean){
         success
     });
 
-    newEvent.save();
+    try {
+        await newEvent.save();
+        console.log(`Created new event: ${desc}`)
+    } catch(error) {
+        console.error(error);
+    }
 }
 
-export async function retrieveTemplate(temp:String, success:boolean){
-    var template = 
+async function uploadTemplate(name:String, text:String, success: boolean): Promise<void> {
+    const newTemplate = new template({
+        templateName: name,
+        templateText: text,
+        success: success,
+    });
+
+    try {
+        await newTemplate.save();
+        console.log(`Created new template: ${name}`)
+    } catch(error) {
+        console.error(error);
+    }
+}
+
+
+export async function getTemplateByName(name: string): Promise<string | null> {
+    try {
+        const templateText = await template.findOne({ name: name }).select('template').lean().exec();
+
+        if(template) {
+            return template.template;
+        } else {
+            return null;
+        }
+    } catch(error) {
+        console.error(error);
+        return null;
+    }
 }
