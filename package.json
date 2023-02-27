@@ -85,7 +85,7 @@
     "snippets": [
       {
         "language": "python",
-        "path": "./src/snippets/snippets.json"
+        "path": "./src/snippets/python-snippets.json"
       },
       {
         "language": "cpp",
