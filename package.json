@@ -85,11 +85,11 @@
     "snippets": [
       {
         "language": "python",
-        "path": "./src/snippets/python-snippets.json"
+        "path": "./src/snippets/python_snippets.json"
       },
       {
         "language": "cpp",
-        "path": "./src/snippets/cplusplus_snippets.json"
+        "path": "./src/snippets/cpp_snippets.json"
       },
       {
         "language": "ros-srv",
