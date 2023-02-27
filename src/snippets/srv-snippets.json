@@ -1,6 +1,5 @@
 {
     "service": {
-		"scope": "ros.srv",
 		"prefix": "srv example",
 		"body": [
 		"$0",
