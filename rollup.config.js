@@ -4,6 +4,7 @@ import commonjs from "@rollup/plugin-commonjs";
 import { terser } from "rollup-plugin-terser";
 import sveltePreprocess from "svelte-preprocess";
 import typescript from "@rollup/plugin-typescript";
+import {Slider} from '@bulatdashiev/svelte-slider';
 import path from "path";
 import fs from "fs";
 
@@ -20,19 +21,23 @@ export default fs
         format: "iife",
         name: "app",
         file: "out/compiled/" + name + ".js",
+        globals: {
+          buffer: 'Buffer',
+        },
       },
       plugins: [
+        Slider,
         svelte({
           // enable run-time checks when not in production
-          dev: !production,
+          //dev: !production,
           // we'll extract any component CSS out into
           // a separate file - better for performance
-          css: (css) => {
-            css.write(name + ".css");
-          },
+         // css: (css) => {
+          //  css.write(name + ".css");
+          //},
           preprocess: sveltePreprocess(),
+          emitCss: false
         }),
-
         // If you have external dependencies installed from
         // npm, you'll most likely need these plugins. In
         // some cases you'll need additional configuration -
@@ -41,6 +46,7 @@ export default fs
         resolve({
           browser: true,
           dedupe: ["svelte"],
+          preferBuiltins: false
         }),
         commonjs(),
         typescript({
@@ -66,3 +72,5 @@ export default fs
       },
     };
   });
+
+  

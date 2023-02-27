@@ -45,7 +45,6 @@
 
 	function nextButtonClicked(){
 		// TODO: Currently overwrites without warning, should ask for confirmation for overwrites
-
 		if (nodeName === '') {
 		// No given name
 		vscode.postMessage({
@@ -103,7 +102,10 @@
 				}
 			};
 
-			
+			vscode.postMessage({
+				type: 'addEventToDB',
+				value: selectedWizardType + " creation wizard used"
+			});
 			selectedLanguage = languages[selectedWizardType][0];
 		}
 	}
@@ -117,6 +119,8 @@
 </script>
 
 {#if !isWizardOpen}
+	<h3 style="text-align:center;margin: 10px 0px;">ROS Creation Wizard</h3>
+	<hr style="margin-bottom:10px">
 	<div class="dropdown">
 		<button on:click={() =>{isMenuOpen = !isMenuOpen}}>Create New</button>
 		{#if isMenuOpen}

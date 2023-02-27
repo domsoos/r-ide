@@ -1,27 +1,38 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
-import { TextEncoder } from 'util';
 import * as vscode from 'vscode';
 import { SidebarBagsProvider } from './SidebarBagsProvider';
-import { SidebarTopicsProvider } from './SidebarTopicsProvider';
 import { SidebarVisualsProvider } from './SidebarVisualsProvider';
 import { SidebarWizardsProvider } from './SidebarWizardsProvider';
+import * as dbcontroller from './database/dbcontroller';
+import { TopicMonitorProvider } from './TopicMonitorProvider';
 import { 
 	createFileFromTemplate,
 	createMessage,
 	createSrv
 } from './commands/commands';
+import { 
+	addMsgToPackage, addSrvToPackage, createRosPackage, loadPackages, registerPackage, RosPackage, updateExistingPackages
+} from './RosPackages/RosPackage';
+import { SidebarTopicsProvider } from './SidebarTopicsProvider';
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
-	
+	dbcontroller.connectToDB();
+
 	const sidebarWizardsProvider = new SidebarWizardsProvider(context.extensionUri);
 	const sidebarBagsProvider = new SidebarBagsProvider(context.extensionUri);
 	const sidebarVisualsProvider = new SidebarVisualsProvider(context.extensionUri);
 	const sidebarTopicsProvider = new SidebarTopicsProvider(context.extensionUri);
 
+	loadPackages();
+	updateExistingPackages();
+	console.log(RosPackage.existingPackages);
+	
+
 	context.subscriptions.push(
+		// Webviews
 		vscode.window.registerWebviewViewProvider(
 			"sidebar-wizards",
 			sidebarWizardsProvider
@@ -38,9 +49,16 @@ export function activate(context: vscode.ExtensionContext) {
 			"sidebar-topics",
 			sidebarTopicsProvider
 		),
+
+		// Commands
+		// Create templates and directories
 		vscode.commands.registerCommand(
 			"r-ide.create-file-from-template",
 			createFileFromTemplate
+		),
+		vscode.commands.registerCommand(
+			"r-ide.create-package",
+			createRosPackage
 		),
 		vscode.commands.registerCommand(
 			"r-ide.create-msg", 
@@ -49,9 +67,32 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.commands.registerCommand(
 			"r-ide.create-srv",
 			createSrv
-		)
+		),
+
+		// Register files and packages
+		vscode.commands.registerCommand(
+			"r-ide.register-package",
+			registerPackage
+		),
+		vscode.commands.registerCommand(
+			"r-ide.register-msg",
+			addMsgToPackage
+		),
+		vscode.commands.registerCommand(
+			"r-ide.register-srv",
+			addSrvToPackage
+		),
+		vscode.commands.registerCommand(
+			"r-ide.update-package-list",
+			updateExistingPackages
+		),
+		vscode.commands.registerCommand("r-ide.open-topic-monitor", () => {
+			TopicMonitorProvider.createOrShow(context.extensionUri);
+		}),
 	  );
 }
 
 // This method is called when your extension is deactivated
-export function deactivate() {}
+export function deactivate() {
+	dbcontroller.closeConnection();
+}

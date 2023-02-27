@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import { getNonce } from "./getNonce";
+import * as dbcontroller from "./database/dbcontroller";
 
 
 export class SidebarWizardsProvider implements vscode.WebviewViewProvider {
@@ -59,6 +60,9 @@ export class SidebarWizardsProvider implements vscode.WebviewViewProvider {
             }
           });
           break;
+        }
+        case "addEventToDB" : {
+          dbcontroller.addNewEvent(data.value, true);
         }
       }
     });
