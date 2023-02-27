@@ -3,7 +3,7 @@ var mongoose = require('mongoose');
 
 
 const wizardSchema = new mongoose.Schema({
-    template: {
+    wizardName: {
         type: String
         //required: true
     },
