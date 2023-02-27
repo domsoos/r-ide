@@ -34,6 +34,7 @@
     // holding list of subscirbed topics so i can compare against
     // new list and keep box checked
     let subscribedTopics = [];
+    let expandedTopics = [];
 
     // Actual list of active subscriptions
     let activeSubcriptions = [];
@@ -44,9 +45,8 @@
         activeMediaTopic = null;
         subscribedTopics = [];
         activeSubcriptions = [];
+        expandedTopics = [];
     }
-
-
 
     onMount(async () => {
 
@@ -168,7 +168,11 @@
                         node = {topic: parts[i], children: [], fulltopic: topic.topic, type: topic.type, checked: topic.checked};
                     }
                     else{
-                        node = {topic: parts[i], children: []};
+                        let isExpanded;
+                        if(expandedTopics?.length > 0){
+                            isExpanded = expandedTopics.find(item => item.topic === parts[i]);
+                        }
+                        node = {topic: parts[i], children: [], expanded: isExpanded? true : false};
                     }
                     map[path] = node;
                 if (parent) {
@@ -379,6 +383,15 @@
     return messageData;
     }
 
+    function itemExpanded(item){
+        if(item.expanded){
+            expandedTopics.push(item);
+        }
+        else{
+            let index = expandedTopics.findIndex((obj) => obj.topic === item.topic)
+            expandedTopics.splice(index, 1);
+        }   
+    }
 
 </script>
 
@@ -405,7 +418,7 @@
             
             {#if topics.length > 0}
                 <div class="topics">
-                    <TreeView topics={topics} updateCheckboxes={updateCheckboxes} vscode={vscode}/>   
+                    <TreeView topics={topics} updateCheckboxes={updateCheckboxes} vscode={vscode} onExpand={itemExpanded}/>   
                 </div>
             {/if}
         </div>
@@ -440,7 +453,7 @@
                 <button class="dropbtn"><b>Selected Media:</b> {activeMediaTopic ? activeMediaTopic.name : "None"}<span style="float: right;">&#x25BC</span></button>
                 <div class="dropdown-content">
                     {#each mediaTopics as item, i}
-                        <button on:click={() => {subcribeToMediaTopic(item)}}>{item.topic}</button>
+                        <button class={activeMediaTopic?.name == item.topic ? 'isSelected' : ''} on:click={() => {subcribeToMediaTopic(item)}}>{item.topic}</button>
                     {/each}
                 </div>
               </div>
