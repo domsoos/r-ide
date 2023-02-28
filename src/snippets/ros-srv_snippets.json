@@ -1,5 +1,4 @@
 {
-<<<<<<< HEAD
     "Create New ROS Service Definition": {
         "scope": "ros-srv",
         "prefix": "rossrv",
@@ -14,9 +13,7 @@
             "service_name: '$3'"
         ],
         "description": "Create a new ROS service definition"
-    }
-}
-=======
+    },
     "service": {
 		"prefix": "srv example",
 		"body": [
@@ -32,4 +29,3 @@
 		"isFileTemplate": true
 		}
 }
->>>>>>> origin/gavin
