@@ -107,6 +107,9 @@ export async function createSrv(path?: string | vscode.Uri) {
 
     vscode.commands.executeCommand("editor.action.insertSnippet", { langId: "ros.msg", name: "srv example"});
 
+    const editor = await vscode.window.showTextDocument(uri);
+    const snippet = new vscode.SnippetString("# Request message\n message_type: $1\n\n # Response message\n message_type: $2\n\n # Service name\n service_name: '$3'\n");
+        editor.insertSnippet(snippet);
     vscode.window.activeTextEditor?.document.save();
     
 }
