@@ -55,9 +55,12 @@
             rosApi = ROS.getROSApi();
             rosLib = ROS.getRosLib();
             getROSTopics();
-        } catch (error) {
+        } catch (err) {
             isConnected = false;
-            //console.error(error);
+            vscode.postMessage({
+                type: 'r-ide.noConnection',
+			});
+            //console.error(err);
         }
     });
 
@@ -69,8 +72,9 @@
             rosApi = ROS.getROSApi();
             rosLib = ROS.getRosLib();
             getROSTopics();
-        }).catch(() => {
+        }).catch((err) => {
             isConnected = false;
+            //console.error(err);
         });
     }
 

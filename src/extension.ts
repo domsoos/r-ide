@@ -112,6 +112,21 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.commands.registerCommand("r-ide.open-topic-monitor", () => {
 			TopicMonitorProvider.createOrShow(context.extensionUri);
 		}),
+		vscode.commands.registerCommand("r-ide.no-ros-connection", ()=>{
+			vscode.window.showErrorMessage(
+				'ROS Bridge not detected. Would you like to try to start ROS Bridge?',
+				'Start ROS Bridge', 'Close'
+			  ).then((res) =>{
+				if (res === 'Start ROS Bridge') {
+				  const terminal = vscode.window.createTerminal({
+					name: 'ROS Bridge',
+					shellPath: '/bin/bash',
+					shellArgs: ['-c', 'roslaunch rosbridge_server rosbridge_websocket.launch']
+				  });
+				  terminal.show();
+				}
+			  });
+		})
 		
 	  );
 }

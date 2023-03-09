@@ -113,6 +113,10 @@ export class TopicMonitorProvider {
           vscode.window.showErrorMessage(data.value);
           break;
         }
+        case "r-ide.noConnection":{
+          vscode.commands.executeCommand('r-ide.no-ros-connection');
+          break;
+        }
       }
     });
   }
