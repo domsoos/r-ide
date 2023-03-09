@@ -251,6 +251,5 @@
 		"prefix": "set_param",
 		"body": "rospy.set_param(${1:param_name}, ${0:param_value})",
 		"description": "set_param"
-	},
-	
+	}	
 }
