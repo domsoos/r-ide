@@ -14,19 +14,25 @@
   ],
   "main": "./out/extension.js",
   "contributes": {
-    "languages": [{
-      "id": "ros-srv",
-      "aliases": ["ROS srv"],
-      "extensions": [".srv"],
-      "configuration": "./language-configuration.json"
-  }],
-  "grammars": [
-    {
+    "languages": [
+      {
+        "id": "ros-srv",
+        "aliases": [
+          "ROS srv"
+        ],
+        "extensions": [
+          ".srv"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
         "language": "ros-srv",
         "scopeName": "source.ros-srv",
         "path": "./syntaxes/ros-srv.tmLanguage.json"
-    }
-],
+      }
+    ],
     "viewsContainers": {
       "activitybar": [
         {

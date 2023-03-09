@@ -2,27 +2,38 @@ import * as vscode from "vscode";
 
 export async function createFileFromTemplate(path: string, options: any) {
     // DEBUG
-    // console.log(path);
-    // console.log(options);
+    //console.log(path);
+    //console.log(options);
 
     const uri = vscode.Uri.file(path);
     vscode.window.showInformationMessage(uri.path);
+    vscode.window.showInformationMessage(options);
 
     await vscode.workspace.fs.writeFile(uri, Buffer.from(''));
     await vscode.window.showTextDocument(uri);
 
+    const config = vscode.workspace.getConfiguration();
+    const snippets = config.get('r-ide.snippets');
+    const string = JSON.stringify(snippets);
+    vscode.window.showInformationMessage(string);
+    
     switch (options.language.id) {
         case ('py'): {
             if (options.isPublisher) {
-                vscode.commands.executeCommand("editor.action.insertSnippet", { langId: "python", name: "def talker" });
+                vscode.commands.executeCommand("editor.action.insertSnippet", { langId: "python", name: "def talker example" });
             }
             if (options.isSubscriber) {
-                vscode.commands.executeCommand("editor.action.insertSnippet", { langId: "python", name: "def listener" });
+                vscode.commands.executeCommand("editor.action.insertSnippet", { langId: "python", name: "def listener example" });
             }
             break;
         }
         case ('cpp'): {
-
+            if (options.isPublisher) {
+                vscode.commands.executeCommand("editor.action.insertSnippet", { langId: "cpp", name: "publisher node example" });
+            }
+            if (options.isSubscriber) {
+                vscode.commands.executeCommand("editor.action.insertSnippet", { langId: "cpp", name: "subscriber node example" });
+            }
             break;
         }
     }
