@@ -11,27 +11,28 @@ export async function createFileFromTemplate(path: string, options: any) {
 
     await vscode.workspace.fs.writeFile(uri, Buffer.from(''));
     await vscode.window.showTextDocument(uri);
-
-    const config = vscode.workspace.getConfiguration();
-    const snippets = config.get('r-ide.snippets');
-    const string = JSON.stringify(snippets);
-    vscode.window.showInformationMessage(string);
     
     switch (options.language.id) {
         case ('py'): {
-            if (options.isPublisher) {
+            if(options.isPublisher && options.isSubscriber) {
+                vscode.commands.executeCommand("editor.action.insertSnippet", { langId: "python",name: "publisher subscriber example"});
+            }
+            else if (options.isPublisher) {
                 vscode.commands.executeCommand("editor.action.insertSnippet", { langId: "python", name: "def talker example" });
             }
-            if (options.isSubscriber) {
+            else if (options.isSubscriber) {
                 vscode.commands.executeCommand("editor.action.insertSnippet", { langId: "python", name: "def listener example" });
             }
             break;
         }
         case ('cpp'): {
-            if (options.isPublisher) {
+            if(options.isPublisher && options.isSubscriber) {
+                vscode.commands.executeCommand("editor.action.insertSnippet", { langId: "cpp",name: "publisher subscriber example"});
+            }
+            else if (options.isPublisher) {
                 vscode.commands.executeCommand("editor.action.insertSnippet", { langId: "cpp", name: "publisher node example" });
             }
-            if (options.isSubscriber) {
+            else if (options.isSubscriber) {
                 vscode.commands.executeCommand("editor.action.insertSnippet", { langId: "cpp", name: "subscriber node example" });
             }
             break;
@@ -116,7 +117,7 @@ export async function createSrv(path?: string | vscode.Uri) {
     await vscode.workspace.fs.writeFile(uri, Buffer.from(''));
     await vscode.window.showTextDocument(uri);
 
-    vscode.commands.executeCommand("editor.action.insertSnippet", { langId: "ros.msg", name: "srv example"});
+    vscode.commands.executeCommand("editor.action.insertSnippet", { langId: "ros-srv", name: "Create New ROS Service Definition"});
 
     vscode.window.activeTextEditor?.document.save();
     

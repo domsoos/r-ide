@@ -64,6 +64,47 @@
 		
 	  },
 
+	  "publisher subscriber example": {
+		"scope": "python", 
+		"prefix": "publisher subscriber example",
+		"body": [
+			"#!/usr/bin/env python",
+			"# license removed for brevity",
+			"import rospy",
+			"from std_msgs.msg import String",
+			"",
+			"def callback(data):",
+			"    rospy.loginfo(rospy.get_caller_id() + \"${1:I heard %s}\", data.data)",
+			"",
+			"def talker():",
+			"",
+			"    pub = rospy.Publisher('${1:chatter}', ${2:String}, ${3:queue_size=10})",
+			"",
+			"    rate = rospy.Rate(10) # 10hz",
+			"",
+			"    while not rospy.is_shutdown():",
+			"        ${5:hello_str} = \"${0:hello world %s}\" % rospy.get_time()",
+			"        rospy.loginfo(${5:hello_str})",
+			"        pub.publish(${5:hello_str})",
+			"        rate.sleep()",
+			"",
+			"if __name__ == '__main__':",
+			"    rospy.init_node(\"${2:talker_listener}\", anonymous=True)",
+			"",
+			"    rospy.Subscriber(\"${3:chatter}\", ${0:String}, callback)",
+			"    try:",
+			"        talker()",
+			"    except rospy.ROSInterruptException:",
+			"        pass",
+			"",
+			"# Reference: http://wiki.ros.org/ROS/Tutorials/WritingPublisherSubscriber%28python%29"
+		  ],
+		"description": "publisher subscriber example",
+		"isFileTemplate": true
+		
+	  },
+
+
 	  "srv example": {
 		"scope": "python",
 		"prefix": "srv example",
