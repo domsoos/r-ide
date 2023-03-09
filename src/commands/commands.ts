@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import * as path from 'path';
 
 export async function createFileFromTemplate(path: string, options: any) {
     // DEBUG
@@ -15,9 +16,11 @@ export async function createFileFromTemplate(path: string, options: any) {
         case ('py'): {
             if (options.isPublisher) {
                 vscode.commands.executeCommand("editor.action.insertSnippet", { langId: "python", name: "def talker" });
+
             }
             if (options.isSubscriber) {
                 vscode.commands.executeCommand("editor.action.insertSnippet", { langId: "python", name: "def listener" });
+
             }
             break;
         }
@@ -105,11 +108,9 @@ export async function createSrv(path?: string | vscode.Uri) {
     await vscode.workspace.fs.writeFile(uri, Buffer.from(''));
     await vscode.window.showTextDocument(uri);
 
-    vscode.commands.executeCommand("editor.action.insertSnippet", { langId: "ros.msg", name: "srv example"});
+    vscode.commands.executeCommand("editor.action.insertSnippet", { langId: "ros-srv", name: "Create New ROS Service Definition"});
 
-    const editor = await vscode.window.showTextDocument(uri);
-    const snippet = new vscode.SnippetString("# Request message\n message_type: $1\n\n # Response message\n message_type: $2\n\n # Service name\n service_name: '$3'\n");
-        editor.insertSnippet(snippet);
+
     vscode.window.activeTextEditor?.document.save();
     
 }
