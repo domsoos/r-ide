@@ -2,33 +2,33 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import { SidebarBagsProvider } from './SidebarBagsProvider';
-import { SBTP } from './SidebarTopicsProvider';
 import { SidebarVisualsProvider } from './SidebarVisualsProvider';
 import { SidebarWizardsProvider } from './SidebarWizardsProvider';
-import { TopicMonitorProvider } from './TopicMonitorProvider';
 import * as dbcontroller from './database/dbcontroller';
+import { TopicMonitorProvider } from './TopicMonitorProvider';
 import { 
 	createFileFromTemplate,
 	createMessage,
 	createSrv
 } from './commands/commands';
 import { 
-	addMsgToPackage, addSrvToPackage, createRosPackage, loadPackages, registerPackage
-} from './commands/RosPackage';
+	addMsgToPackage, addSrvToPackage, createRosPackage, loadPackages, registerPackage, RosPackage, updateExistingPackages
+} from './RosPackages/RosPackage';
+import { SidebarTopicsProvider } from './SidebarTopicsProvider';
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
 	dbcontroller.connectToDB();
-	// check if the connection is successful
 
 	const sidebarWizardsProvider = new SidebarWizardsProvider(context.extensionUri);
 	const sidebarBagsProvider = new SidebarBagsProvider(context.extensionUri);
 	const sidebarVisualsProvider = new SidebarVisualsProvider(context.extensionUri);
-	//const sidebarTopicsProvider = new SBTP.SidebarTopicsProvider(context.extensionUri);
-	const topicTree = new SBTP.tree_view();
+	const sidebarTopicsProvider = new SidebarTopicsProvider(context.extensionUri);
 
 	loadPackages();
+	updateExistingPackages();
+	console.log(RosPackage.existingPackages);
 	
 
 	context.subscriptions.push(
@@ -45,16 +45,13 @@ export function activate(context: vscode.ExtensionContext) {
 			"sidebar-visuals",
 			sidebarVisualsProvider
 		),
-		/*
 		vscode.window.registerWebviewViewProvider(
 			"sidebar-topics",
 			sidebarTopicsProvider
 		),
 
 		// Commands
-
 		// Create templates and directories
-		*/
 		vscode.commands.registerCommand(
 			"r-ide.create-file-from-template",
 			createFileFromTemplate
@@ -85,36 +82,14 @@ export function activate(context: vscode.ExtensionContext) {
 			"r-ide.register-srv",
 			addSrvToPackage
 		),
-
-		// Workspace listener
-		vscode.workspace.onDidChangeTextDocument((event) => {
-			switch (event.document.languageId) {
-				case ('python'): {
-					break;
-				}
-
-				case ('cpp'): {
-					break;
-				}
-
-				case ('ros.msg'): {
-					break;
-				}
-
-				default: {
-					console.log(event.document.languageId);
-					break;
-				}
-			}
-		}),
-		/*
+		vscode.commands.registerCommand(
+			"r-ide.update-package-list",
+			updateExistingPackages
+		),
 		vscode.commands.registerCommand("r-ide.open-topic-monitor", () => {
 			TopicMonitorProvider.createOrShow(context.extensionUri);
 		}),
-		*/
-		vscode.window.registerTreeDataProvider('topic-tree-view', topicTree)
 	  );
-	  topicTree.refresh();
 }
 
 // This method is called when your extension is deactivated

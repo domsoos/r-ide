@@ -21,6 +21,9 @@ export default fs
         format: "iife",
         name: "app",
         file: "out/compiled/" + name + ".js",
+        globals: {
+          buffer: 'Buffer',
+        },
       },
       plugins: [
         Slider,
@@ -43,6 +46,7 @@ export default fs
         resolve({
           browser: true,
           dedupe: ["svelte"],
+          preferBuiltins: false
         }),
         commonjs(),
         typescript({
