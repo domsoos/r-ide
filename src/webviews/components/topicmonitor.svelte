@@ -74,6 +74,9 @@
             getROSTopics();
         }).catch((err) => {
             isConnected = false;
+            vscode.postMessage({
+                type: 'r-ide.noConnection',
+			});
             //console.error(err);
         });
     }
@@ -95,6 +98,9 @@
                 isLoading = false;
             }, (err)=>{
                 console.log(err);
+                vscode.postMessage({
+                    type: 'r-ide.noConnection',
+			    });
                 isLoading = false;
                 isConnected = false;
             });
