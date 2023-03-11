@@ -2,7 +2,6 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import { SidebarBagsProvider } from './SidebarBagsProvider';
-import { SidebarTopicsProvider } from './SidebarTopicsProvider';
 import { SidebarVisualsProvider } from './SidebarVisualsProvider';
 import { SidebarWizardsProvider } from './SidebarWizardsProvider';
 import * as dbcontroller from './database/dbcontroller';
@@ -13,16 +12,9 @@ import {
 	createSrv
 } from './commands/commands';
 import { 
-	addMsgToPackage, addSrvToPackage, createRosPackage, loadPackages, registerPackage
-} from './commands/RosPackage';
-
-
-
-/**
- * The sourced ROS environment.
- */
-export let env: any;
-
+	addMsgToPackage, addNewFindPackage, addSrvToPackage, createRosPackage, loadPackages, registerPackage, RosPackage, updateExistingPackages
+} from './RosPackages/RosPackage';
+import { SidebarTopicsProvider } from './SidebarTopicsProvider';
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -35,6 +27,9 @@ export function activate(context: vscode.ExtensionContext) {
 	const sidebarTopicsProvider = new SidebarTopicsProvider(context.extensionUri);
 
 	loadPackages();
+	updateExistingPackages();
+	console.log(RosPackage.existingPackages);
+	
 
 	context.subscriptions.push(
 		// Webviews
@@ -87,28 +82,14 @@ export function activate(context: vscode.ExtensionContext) {
 			"r-ide.register-srv",
 			addSrvToPackage
 		),
-
-		// Workspace listener
-		vscode.workspace.onDidChangeTextDocument((event) => {
-			switch (event.document.languageId) {
-				case ('python'): {
-					break;
-				}
-
-				case ('cpp'): {
-					break;
-				}
-
-				case ('ros.msg'): {
-					break;
-				}
-
-				default: {
-					console.log(event.document.languageId);
-					break;
-				}
-			}
-		}),
+		vscode.commands.registerCommand(
+			"r-ide.update-package-list",
+			updateExistingPackages
+		),
+		vscode.commands.registerCommand(
+			"r-ide.add-new-find-package",
+			addNewFindPackage
+		),
 		vscode.commands.registerCommand("r-ide.open-topic-monitor", () => {
 			TopicMonitorProvider.createOrShow(context.extensionUri);
 		}),
@@ -149,4 +130,6 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 // This method is called when your extension is deactivated
-export function deactivate() {}
+export function deactivate() {
+	dbcontroller.closeConnection();
+}

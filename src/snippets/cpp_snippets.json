@@ -1,0 +1,259 @@
+{
+    "subscriber node example": {
+		"scope": "source.cpp",
+		"prefix": "subscriber node example",
+		"body": [
+		  "#include \"ros/ros.h\"",
+		  "#include \"std_msgs/String.h\"",
+		  "",
+		  "void chatterCallback(const std_msgs::String::ConstPtr& msg)",
+		  "{",
+		  "  ROS_INFO(\"${1:I heard: [%s]}\", msg->data.c_str());",
+		  "}",
+		  "",
+		  "int main(int argc, char **argv)",
+		  "{",
+		  "  ros::init(argc, argv, \"${2:listener}\");",
+		  "",
+		  "  ros::NodeHandle ${3:n};",
+		  "",
+		  "  ros::Subscriber sub = ${3:n}.subscribe(\"${0:chatter}\", 1000, chatterCallback);",
+		  "",
+		  "  ros::spin();",
+		  "",
+		  "  return 0;",
+		  "}",
+		  "/**",
+		  " * Reference: http://wiki.ros.org/ROS/Tutorials/WritingPublisherSubscriber%28c%2B%2B%29",
+		  " */"
+		],
+		"description": "subscriber node example",
+		"isFileTemplate": true
+	  },
+
+    "publisher node example": {
+		"scope": "cpp",
+		"prefix": "publisher node example",
+		"body": [
+		  "#include \"ros/ros.h\"",
+		  "#include \"std_msgs/String.h\"",
+		  "",
+		  "#include <sstream>",
+		  "",
+		  "int main(int argc, char **argv)",
+		  "{",
+		  "  ros::init(argc, argv, \"${1:talker}\");",
+		  "",
+		  "  ros::NodeHandle ${2:n};",
+		  "",
+		  "  ros::Publisher chatter_pub = ${2:n}.advertise<std_msgs::String>(\"${3:chatter}\", 1000);",
+		  "",
+		  "  ros::Rate loop_rate(10);",
+		  "",
+		  "  int count = 0;",
+		  "  while (ros::ok())",
+		  "  {",
+		  "    std_msgs::String msg;",
+		  "",
+		  "    std::stringstream ${5:ss};",
+		  "    ${5:ss} << \"${0:hello world} \" << count;",
+		  "    msg.data = ${5:ss}.str();",
+		  "",
+		  "    ROS_INFO(\"%s\", msg.data.c_str());",
+		  "",
+		  "    chatter_pub.publish(msg);",
+		  "",
+		  "    ros::spinOnce();",
+		  "",
+		  "    loop_rate.sleep();",
+		  "    ++count;",
+		  "  }",
+		  "",
+		  "",
+		  "  return 0;",
+		  "}",
+		  "",
+		  "/**",
+		  " * Reference: http://wiki.ros.org/ROS/Tutorials/WritingPublisherSubscriber%28c%2B%2B%29",
+		  " */"
+		],
+		"description": "publisher node example",
+		"isFileTemplate": true
+	  },
+
+    "class": {
+		"scope": "source.cpp",
+		"prefix": "class",
+		"body": [
+			"class ${1:name}",
+			"{ ",
+			"    ${0:default}",
+			"} "
+		],
+		"description": "class"
+	},
+
+	"if": {
+		"scope": "source.cpp",
+		"prefix": "if",
+		"body": [
+			"if(${1:arg_c})",
+			"{ ",
+			"    ${0:name}",
+			"}"
+		],
+		"description": "if"
+	},
+
+	"else": {
+		"scope": "source.cpp",
+		"prefix": "else",
+		"body": [
+			"else",
+			"{ ",
+			"    $0",
+			"}"
+		],
+		"description": "else"
+	},
+
+	"static": {
+		"scope": "source.cpp",
+		"prefix": "static",
+		"body": [
+			"static ${1:name}(${2:name})",
+			"{ ",
+			"    $0",
+			"} "
+		],
+		"description": "static"
+	},
+
+    "ros::init": {
+    "scope": "cpp",
+    "prefix": "init",
+    "body": "ros::init(argc, argv, \"${0:my_node}\")",
+    "description": "init"
+    },
+
+    "ros::Publisher": {
+        "scope": "cpp",
+        "prefix": "Publisher",
+        "body": [
+            "ros::Publisher ${1:/*pub_name*/};",
+            "${1} = nh.advertise<${2: /*msg_type*/}>(\"${3:/*topic_name*/}\", ${5:10});\n$0"
+        ],
+        "description": "ros::Publisher"
+    },
+
+    "ros::Subscriber": {
+        "scope": "cpp",
+        "prefix": "Subcriber",
+        "body": [
+            "ros::Subscriber ${1:/*sub_name*/};",
+            "${1} = nh.subscribe<${2:/*msg_type*/}>(\"${3:/*topic_name*/}\", ${4:10}, ${5:/*subscribe_callback_name*/});",
+            "$0"
+        ],
+        "description": "ros::Subscriber"
+    },
+
+    "ros::NodeHandle": {
+        "scope": "cpp",
+        "prefix": "nodehandle",
+        "body": "ros::NodeHandle nh(\"${0:my_namespace}\");",
+        "description": "ros::NodeHandle"
+        },
+
+    "ros::spinOnce();": {
+        "scope": "cpp",
+        "prefix": "spinOnce",
+        "body": "ros::spinOnce();",
+        "description": "ros::spinOnce"
+        },
+
+    "ros::Rate::sleep();": {
+        "scope": "cpp",
+        "prefix": "Ratesleep",
+        "body":[ 
+            "ros::Rate loop_rate(${0:int});",
+            "loop_rate.sleep();"
+        ],
+        "description": "ros::spinOnce"
+        },
+
+    "ROS_INFO": {
+		"scope": "cpp",
+        "prefix": "ros_info",
+        "body": [
+            "ROS_INFO(\"${1:Message}\");$0"
+        ],
+        "description": "ROS_INFO Log Statement"
+        },
+
+"service node example": {
+    "scope": "C++",
+    "prefix": "service node example",
+    "body": [
+        "bool add(beginner_tutorials::AddTwoInts::Request  &req,",
+        "             beginner_tutorials::AddTwoInts::Response &res)",
+        "    {",
+        "      res.sum = req.a + req.b;",
+        "      ROS_INFO(\"request: x=%ld, y=%ld\", (long int)req.a, (long int)req.b);",
+        "      ROS_INFO(\"sending back response: [%ld]\", (long int)res.sum);",
+        "     return true;",
+        "   }",
+        "",
+        "   int main(int argc, char **argv)",
+        "   {",
+        "     ros::init(argc, argv, \"$0 add_two_ints_server\");",
+        "     ros::NodeHandle n;",
+        "     ",
+        "     ros::ServiceServer service = n.advertiseService(\"$0 add_two_ints\", add);",
+        "     ROS_INFO(\"$0 Ready to add two ints.\");",
+        "     ros::spin();",
+        "     ",
+        "     return 0;",
+        "   }",
+        "   /**",
+        "   * Reference: http://wiki.ros.org/ROS/Tutorials/WritingServiceClient%28c%2B%2B%29",
+        "   */"
+    ],
+    "description": "example service node"
+},
+"client node example": {
+    "scope": "C++",
+    "prefix": "client node example",
+    "body": [
+      "int main(int argc, char **argv)",
+      "{",
+      "  ros::init(argc, argv, \"add_two_ints_client\");",
+      "  if (argc != 3)",
+      "  {",
+      "    ROS_INFO(\"usage: add_two_ints_client X Y\");",
+      "    return 1;",
+      "  }",
+      "",
+      "  ros::NodeHandle n;",
+      "  ros::ServiceClient client = n.serviceClient<beginner_tutorials::AddTwoInts>(\"$1\");",
+      "  beginner_tutorials::AddTwoInts srv;",
+      "  srv.request.a = atoll(argv[1]);",
+      "  srv.request.b = atoll(argv[2]);",
+      "  if (client.call(srv))",
+      "  {",
+      "    ROS_INFO(\"Sum: %ld\", (long int)srv.response.sum);",
+      "  }",
+      "  else",
+      "  {",
+      "    ROS_ERROR(\"Failed to call service $1\");",
+      "    return 1;",
+      "  }",
+      "",
+      "  return 0;",
+      "}",
+      "/**",
+      "* Reference: http://wiki.ros.org/ROS/Tutorials/WritingServiceClient%28c%2B%2B%29",
+      "*/"
+    ],
+    "description": "client node example"
+  }
+}

@@ -2,11 +2,12 @@
     const vscode = acquireVsCodeApi();
     import Slider from '@bulatdashiev/svelte-slider';
     import { slide } from "svelte/transition";
+    import Ros from '../../ROSManagers/rosmanager';
 
     /* Accordion Code */
     let isAccordionOpen = false
 	const toggle = () => isAccordionOpen = !isAccordionOpen
-    let topics = [{value:"geometry_msgs/Twist"},{value:"geometry_msgs/PoseStamped"},{value:"rosgraph_msgs/Log"},{value:"turtlesim/Pose"}];
+    let topics = [];
     /* Accordion Code END*/
 
 
@@ -23,7 +24,8 @@
 		const message = event.data; // The JSON data our extension sent
 		switch (message.type) {
 			case 'setSelectedBag':{
-                selectedBagPath = message.value;
+                selectedBagPath = message.value.path;
+                topics = message.value.topics;
                 //let regex = /\\|\//;
                 //let pathToArr = selectedBagPath.split(regex);
                 //selectedBag = pathToArr[pathToArr.length - 1];
@@ -34,6 +36,9 @@
             case 'setCloneBagPath':{
                 cloneBagPath = message.value;
 				break;
+            }
+            case 'setTopics': {
+                topics = message.value;
             }
 		}
 	});
@@ -84,7 +89,7 @@
             {#if isAccordionOpen}
                 <ul style="list-style: none" transition:slide={{ duration: 300 }}>
                     {#each topics as item}
-                        <li><input type=checkbox>{item.value}</li>
+                        <li><input type=checkbox>{item}</li>
                     {/each}
                 </ul>
             {/if}

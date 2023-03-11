@@ -316,7 +316,7 @@
                         decodeBGRA8(rawData, width, height, image.data);
                         break;
                     case "bgr8":
-                        case "8UC3":
+                    case "8UC3":
                         decodeBGR8(rawData, width, height, image.data);
                         break;
                     case "32FC1":
