@@ -22,6 +22,7 @@ class Player{
         startTime = null;
         endTime = null;
         bag = null;
+
     }
 
     static addPublisher(name, messageType) {

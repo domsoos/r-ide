@@ -1,7 +1,6 @@
 import * as vscode from "vscode";
 import { getNonce } from "./getNonce";
 import { getTopics } from "./RosBag/rosbag";
-import * as Player from './RosBag/player';
 
 
 export class SidebarBagsProvider implements vscode.WebviewViewProvider {
