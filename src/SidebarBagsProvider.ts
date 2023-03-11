@@ -1,5 +1,7 @@
 import * as vscode from "vscode";
 import { getNonce } from "./getNonce";
+import { getTopics } from "./RosBag/rosbag";
+import * as Player from './RosBag/player';
 
 
 export class SidebarBagsProvider implements vscode.WebviewViewProvider {
@@ -40,12 +42,18 @@ export class SidebarBagsProvider implements vscode.WebviewViewProvider {
         case "getSelectedBag" :{
           vscode.window.showOpenDialog({canSelectFiles: true, canSelectFolders: false, canSelectMany: false}).then((result) =>{
             if(result && result[0].path){
+              const topics = getTopics(result[0]);
+              console.log(topics);
               webviewView.webview.postMessage({
                 type: 'setSelectedBag',
-                value: result[0].path,
+                value: {
+                  path: result[0].path,
+                  topics: topics
+                },
               });
             }
           });
+          
           break;
         }
         case "getCloneBagPath" :{
