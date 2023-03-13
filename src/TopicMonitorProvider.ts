@@ -123,10 +123,10 @@ export class TopicMonitorProvider {
 
   private _getHtmlForWebview(webview: vscode.Webview) {
     const styleResetUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, "src", "styles/reset.css")
+      vscode.Uri.joinPath(this._extensionUri, "styles", "reset.css")
     );
     const styleVSCodeUri = webview.asWebviewUri(
-        vscode.Uri.joinPath(this._extensionUri, "src", "styles/vscode.css")
+        vscode.Uri.joinPath(this._extensionUri, "styles", "vscode.css")
     );
 
     const scriptUri = webview.asWebviewUri(
@@ -134,7 +134,7 @@ export class TopicMonitorProvider {
     );
 
     const styleMainUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, "src", "styles/topicmonitor.css")
+      vscode.Uri.joinPath(this._extensionUri, "styles", "topicmonitor.css")
     );
 
     // // Use a nonce to only allow specific scripts to be run

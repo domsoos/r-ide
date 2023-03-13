@@ -76,10 +76,10 @@ export class SidebarBagsProvider implements vscode.WebviewViewProvider {
 
   private _getHtmlForWebview(webview: vscode.Webview) {
     const styleResetUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, "src", "styles/reset.css")
+      vscode.Uri.joinPath(this._extensionUri, "styles", "reset.css")
     );
     const styleVSCodeUri = webview.asWebviewUri(
-        vscode.Uri.joinPath(this._extensionUri, "src", "styles/vscode.css")
+        vscode.Uri.joinPath(this._extensionUri, "styles", "vscode.css")
     );
 
     const scriptUri = webview.asWebviewUri(
@@ -87,7 +87,7 @@ export class SidebarBagsProvider implements vscode.WebviewViewProvider {
     );
 
     const styleMainUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, "src", "styles/sidebarbags.css")
+      vscode.Uri.joinPath(this._extensionUri, "styles", "sidebarbags.css")
     );
     
 
