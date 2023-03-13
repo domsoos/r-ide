@@ -77,7 +77,7 @@ export async function createMessage(path?: string | vscode.Uri) {
     await vscode.workspace.fs.writeFile(uri, Buffer.from(''));
     await vscode.window.showTextDocument(uri);
 
-    vscode.commands.executeCommand("editor.action.insertSnippet", { langId: "ros.msg", name: "msg example"});
+    vscode.commands.executeCommand("editor.action.insertSnippet", { langId: "python", name: "msg example"});
 
     vscode.window.activeTextEditor?.document.save();
     
