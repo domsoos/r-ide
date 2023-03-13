@@ -1,8 +1,7 @@
-const ROSLIB = require('roslib');
+import ROSLIB = require("roslib");
 
 class ROS {
-    static rosAPI;
-    static rosLib;
+    static rosAPI: ROSLIB.Ros;
 
 
 
@@ -10,16 +9,15 @@ class ROS {
         if (ROS.rosAPI && ROS.rosAPI.isConnected) {
             return Promise.resolve();
         } else {
-            return new Promise((resolve, reject) => {
+            return new Promise(() => {
                 ROS.rosAPI = new ROSLIB.Ros({
                     url: "ws://localhost:9090"
                 });
                 ROS.rosAPI.on('connection', () => {
-                    ROS.rosLib = ROSLIB;
-                    resolve();
+                    console.log('ROS connected');
                 });
-                ROS.rosAPI.on('error', (error) => {
-                    reject(error);
+                ROS.rosAPI.on('error', (error: string) => {
+                    console.log(error);
                 });
             });
         }
@@ -27,10 +25,6 @@ class ROS {
 
     static getROSApi() {
         return ROS.rosAPI;
-    }
-
-    static getRosLib(){
-        return ROS.rosLib;
     }
 
     static reconnect() {
@@ -41,11 +35,10 @@ class ROS {
 
         return new Promise((resolve, reject) => {
             ROS.rosAPI.on('connection', () => {
-                ROS.rosLib = ROSLIB;
-                resolve();
+                console.log('ROS connected');
             });
-            ROS.rosAPI.on('error', () => {
-                reject();
+            ROS.rosAPI.on('error', (error: string) => {
+                console.log(error);
             });
         });
     }

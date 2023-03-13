@@ -2,7 +2,7 @@
     const vscode = acquireVsCodeApi();
     import TreeView from "./TreeView.svelte";
     import MessageTree from "./messageTree.svelte";
-    import ROS from "../../ROSManagers/rosmanager.js"
+    import ROS from "../../ROSManagers/rosmanager.ts"
     import { onMount } from 'svelte';
     import { Buffer } from "buffer";
     import { decodeBGRA8,
@@ -18,9 +18,9 @@
             decodeBayerBGGR8,
             decodeBayerGBRG8,
             decodeBayerGRBG8 } from '../../utils/decoders'
+    import ROSLIB from "roslib";
 
     let rosApi;
-    let rosLib;
 
     let isConnected = true;
     let isLoading = false;
@@ -53,7 +53,6 @@
         try {
             await new ROS();
             rosApi = ROS.getROSApi();
-            rosLib = ROS.getRosLib();
             getROSTopics();
         } catch (error) {
             isConnected = false;
@@ -67,7 +66,6 @@
         isConnected = true;
         ROS.reconnect().then(() => {
             rosApi = ROS.getROSApi();
-            rosLib = ROS.getRosLib();
             getROSTopics();
         }).catch(() => {
             isConnected = false;
@@ -223,7 +221,7 @@
 
     function subscribeToTopic(item){
 
-        let newTopic = new rosLib.Topic({
+        let newTopic = new ROSLIB.Topic({
                 ros : rosApi,
                 name : item.fulltopic,
                 messageType : item.type
@@ -261,7 +259,7 @@
             activeMediaTopic = null;
         }
     
-        let newMediaTopic = new rosLib.Topic({
+        let newMediaTopic = new ROSLIB.Topic({
             ros : rosApi,
             name : item.topic,
             messageType : item.type
