@@ -1,6 +1,6 @@
 import ROSLIB = require("roslib");
 
-class ROS {
+export class ROS {
     static rosAPI: ROSLIB.Ros;
 
 

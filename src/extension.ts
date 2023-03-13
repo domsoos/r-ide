@@ -15,6 +15,7 @@ import {
 	addMsgToPackage, addNewFindPackage, addSrvToPackage, createRosPackage, loadPackages, registerPackage, RosPackage, updateExistingPackages
 } from './RosPackages/RosPackage';
 import { SidebarTopicsProvider } from './SidebarTopicsProvider';
+import { RosBagStatusBar } from './RosBag/RosBagStatusBar';
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -28,7 +29,8 @@ export function activate(context: vscode.ExtensionContext) {
 
 	loadPackages();
 	updateExistingPackages();
-	console.log(RosPackage.existingPackages);
+
+	new RosBagStatusBar();
 	
 
 	context.subscriptions.push(
@@ -93,10 +95,13 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.commands.registerCommand("r-ide.open-topic-monitor", () => {
 			TopicMonitorProvider.createOrShow(context.extensionUri);
 		}),
+		RosBagStatusBar.playPause,
+		RosBagStatusBar.step,
 	  );
 }
 
 // This method is called when your extension is deactivated
 export function deactivate() {
 	dbcontroller.closeConnection();
+	RosBagStatusBar.clearBag();
 }

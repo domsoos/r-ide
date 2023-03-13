@@ -2,7 +2,8 @@
     const vscode = acquireVsCodeApi();
     import Slider from '@bulatdashiev/svelte-slider';
     import { slide } from "svelte/transition";
-    import Ros from '../../ROSManagers/rosmanager';
+    import { onMount } from 'svelte';
+    import ROS from '../../ROSManagers/rosmanager';
 
     /* Accordion Code */
     let isAccordionOpen = false
@@ -18,9 +19,20 @@
     let cloneBagPath = null;
     let isCloneMenuOpen = false;
     
-    let range = [0,100]; 
+    let range = [0,1]; 
+
+    onMount(async () => {
+        try {
+            await new ROS();
+            rosApi = ROS.getROSApi();
+            getROSTopics();
+        } catch (error) {
+            //console.error(error);
+        }
+    });
 
     window.addEventListener('message', event => {
+        console.log(event);
 		const message = event.data; // The JSON data our extension sent
 		switch (message.type) {
 			case 'setSelectedBag':{
@@ -47,6 +59,7 @@
 
 <h3 style="text-align:center;margin: 10px 0px;">ROS Bag Manager</h3>
 <hr style="margin-bottom:10px">
+<!-- Recording a new bag UNIMPLEMENTED -->
 {#if !isBagManagerOpen}
     <button disabled='{isRecording}' on:click={() => {isBagManagerOpen = true;}}>Manage Bags</button>
     {#if !isRecording}
@@ -54,19 +67,30 @@
     {:else}
         <button on:click={() => {isRecording = false;}}>Stop Recording</button>
     {/if}
+
+<!-- Managing existing bags -->
 {:else}
+    <!-- Get new bag -->
     <button on:click={() => {vscode.postMessage({type: 'getSelectedBag'})}}>{selectedBag == null? 'Select Bag..': 'Selected Bag: ...' + selectedBag}</button>
+
+    <!-- Go back one screen -->
     {#if selectedBag === null}
         <button on:click={() => {isBagManagerOpen = false}}>Cancel</button>
     {/if}
+
+    <!-- Manage selected bag -->
     {#if selectedBag !== null}
         <!--<div style="margin:5px 0px;">Selected Bag: .../{selectedBag}</div>-->
+
+        <!-- Play bag -->
         {#if !isCloneMenuOpen}
             <div class="buttons-flex">
                 <button class="bag-buttons" on:click={() => {selectedBag = null; isBagManagerOpen = false}}>Cancel</button>
                 <button class="bag-buttons" on:click={() => {isCloneMenuOpen = true;}}>Clone</button>
-                <button class="bag-buttons">Play</button>
+                <button class="bag-buttons" on:click={() => {}}>Play</button>
             </div>
+
+        <!-- Clone bag menu -->
         {:else}
             <br>
             <br>
