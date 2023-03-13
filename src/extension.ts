@@ -97,6 +97,39 @@ export function activate(context: vscode.ExtensionContext) {
 		}),
 		RosBagStatusBar.playPause,
 		RosBagStatusBar.step,
+		vscode.commands.registerCommand("r-ide.no-ros-connection", ()=>{
+			vscode.window.showErrorMessage(
+				'ROS Bridge not detected. Would you like to try to start ROS Bridge?',
+				'Start ROS Bridge', 'Close'
+			  ).then((res) =>{
+				if (res === 'Start ROS Bridge') {
+
+					let term = vscode.window.terminals.find(item => item.name === 'ROS Bridge');
+
+					if(term){
+						term.sendText('\x03');
+						term.dispose();
+						setTimeout(()=>{
+							const terminal = vscode.window.createTerminal({
+								name: 'ROS Bridge',
+								shellPath: '/bin/bash',
+								shellArgs: ['-c', 'roslaunch rosbridge_server rosbridge_websocket.launch']
+							});
+							terminal.show();
+						},1500);
+					}
+					else{
+						const terminal = vscode.window.createTerminal({
+							name: 'ROS Bridge',
+							shellPath: '/bin/bash',
+							shellArgs: ['-c', 'roslaunch rosbridge_server rosbridge_websocket.launch']
+						});
+						terminal.show();
+					}
+				}
+			  });
+		})
+		
 	  );
 }
 

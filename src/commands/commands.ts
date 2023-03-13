@@ -2,27 +2,39 @@ import * as vscode from "vscode";
 
 export async function createFileFromTemplate(path: string, options: any) {
     // DEBUG
-    // console.log(path);
-    // console.log(options);
+    //console.log(path);
+    //console.log(options);
 
     const uri = vscode.Uri.file(path);
     vscode.window.showInformationMessage(uri.path);
+    vscode.window.showInformationMessage(options);
 
     await vscode.workspace.fs.writeFile(uri, Buffer.from(''));
     await vscode.window.showTextDocument(uri);
-
+    
     switch (options.language.id) {
         case ('py'): {
-            if (options.isPublisher) {
-                vscode.commands.executeCommand("editor.action.insertSnippet", { langId: "python", name: "def talker" });
-            }
-            if (options.isSubscriber) {
-                vscode.commands.executeCommand("editor.action.insertSnippet", { langId: "python", name: "def listener" });
+            if(options.isPublisher) {
+                if(options.isSubscriber) { // both Publisher and Subscriber
+                    vscode.commands.executeCommand("editor.action.insertSnippet", { langId: "python",name: "publisher subscriber example"});
+                } else { // only Publisher
+                    vscode.commands.executeCommand("editor.action.insertSnippet", { langId: "python", name: "def talker example" });
+                }
+            } else { // only Subscriber
+                vscode.commands.executeCommand("editor.action.insertSnippet", { langId: "python", name: "def listener example" });
             }
             break;
         }
         case ('cpp'): {
-
+            if(options.isPublisher) {
+                if(options.isSubscriber) { // both Publisher and Subscriber
+                    vscode.commands.executeCommand("editor.action.insertSnippet", { langId: "cpp",name: "publisher subscriber example"});
+                } else { // only Publisher
+                    vscode.commands.executeCommand("editor.action.insertSnippet", { langId: "cpp", name: "publisher node example" });
+                }
+            } else { // only Subscriber
+                vscode.commands.executeCommand("editor.action.insertSnippet", { langId: "cpp", name: "subscriber node example" });
+            }
             break;
         }
     }
@@ -65,7 +77,7 @@ export async function createMessage(path?: string | vscode.Uri) {
     await vscode.workspace.fs.writeFile(uri, Buffer.from(''));
     await vscode.window.showTextDocument(uri);
 
-    vscode.commands.executeCommand("editor.action.insertSnippet", { langId: "ros.msg", name: "msg example"});
+    vscode.commands.executeCommand("editor.action.insertSnippet", { langId: "python", name: "msg example"});
 
     vscode.window.activeTextEditor?.document.save();
     
@@ -105,7 +117,7 @@ export async function createSrv(path?: string | vscode.Uri) {
     await vscode.workspace.fs.writeFile(uri, Buffer.from(''));
     await vscode.window.showTextDocument(uri);
 
-    vscode.commands.executeCommand("editor.action.insertSnippet", { langId: "ros.msg", name: "srv example"});
+    vscode.commands.executeCommand("editor.action.insertSnippet", { langId: "ros-srv", name: "Create New ROS Service Definition"});
 
     vscode.window.activeTextEditor?.document.save();
     

@@ -54,9 +54,12 @@
             await new ROS();
             rosApi = ROS.getROSApi();
             getROSTopics();
-        } catch (error) {
+        } catch (err) {
             isConnected = false;
-            //console.error(error);
+            vscode.postMessage({
+                type: 'r-ide.noConnection',
+			});
+            //console.error(err);
         }
     });
 
@@ -67,8 +70,12 @@
         ROS.reconnect().then(() => {
             rosApi = ROS.getROSApi();
             getROSTopics();
-        }).catch(() => {
+        }).catch((err) => {
             isConnected = false;
+            vscode.postMessage({
+                type: 'r-ide.noConnection',
+			});
+            //console.error(err);
         });
     }
 
@@ -89,6 +96,9 @@
                 isLoading = false;
             }, (err)=>{
                 console.log(err);
+                vscode.postMessage({
+                    type: 'r-ide.noConnection',
+			    });
                 isLoading = false;
                 isConnected = false;
             });
