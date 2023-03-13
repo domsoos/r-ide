@@ -14,25 +14,25 @@ export async function createFileFromTemplate(path: string, options: any) {
     
     switch (options.language.id) {
         case ('py'): {
-            if(options.isPublisher && options.isSubscriber) {
-                vscode.commands.executeCommand("editor.action.insertSnippet", { langId: "python",name: "publisher subscriber example"});
-            }
-            else if (options.isPublisher) {
-                vscode.commands.executeCommand("editor.action.insertSnippet", { langId: "python", name: "def talker example" });
-            }
-            else if (options.isSubscriber) {
+            if(options.isPublisher) {
+                if(options.isSubscriber) { // both Publisher and Subscriber
+                    vscode.commands.executeCommand("editor.action.insertSnippet", { langId: "python",name: "publisher subscriber example"});
+                } else { // only Publisher
+                    vscode.commands.executeCommand("editor.action.insertSnippet", { langId: "python", name: "def talker example" });
+                }
+            } else { // only Subscriber
                 vscode.commands.executeCommand("editor.action.insertSnippet", { langId: "python", name: "def listener example" });
             }
             break;
         }
         case ('cpp'): {
-            if(options.isPublisher && options.isSubscriber) {
-                vscode.commands.executeCommand("editor.action.insertSnippet", { langId: "cpp",name: "publisher subscriber example"});
-            }
-            else if (options.isPublisher) {
-                vscode.commands.executeCommand("editor.action.insertSnippet", { langId: "cpp", name: "publisher node example" });
-            }
-            else if (options.isSubscriber) {
+            if(options.isPublisher) {
+                if(options.isSubscriber) { // both Publisher and Subscriber
+                    vscode.commands.executeCommand("editor.action.insertSnippet", { langId: "cpp",name: "publisher subscriber example"});
+                } else { // only Publisher
+                    vscode.commands.executeCommand("editor.action.insertSnippet", { langId: "cpp", name: "publisher node example" });
+                }
+            } else { // only Subscriber
                 vscode.commands.executeCommand("editor.action.insertSnippet", { langId: "cpp", name: "subscriber node example" });
             }
             break;
