@@ -4,11 +4,12 @@
     import { slide } from "svelte/transition";
     import { onMount } from 'svelte';
     import ROS from '../../ROSManagers/rosmanager';
+    import RosBagStatusBar from '../../RosBag/RosBagStatusBar';
 
     /* Accordion Code */
     let isAccordionOpen = false
 	const toggle = () => isAccordionOpen = !isAccordionOpen
-    let topics = [];
+    let topics = [{value:"sample"},];
     /* Accordion Code END*/
 
 
@@ -18,6 +19,8 @@
     let selectedBagPath = null;
     let cloneBagPath = null;
     let isCloneMenuOpen = false;
+
+    let rosApi;
     
     let range = [0,1]; 
 
@@ -26,10 +29,24 @@
             await new ROS();
             rosApi = ROS.getROSApi();
             getROSTopics();
-        } catch (error) {
-            //console.error(error);
+        } catch (err) {
+            isConnected = false;
+            vscode.postMessage({
+                type: 'r-ide.noConnection',
+            });
+            //console.error(err);
         }
     });
+
+    function playBag() {
+        if(rosApi?.isConnected){
+            RosBagStatusBar.playBack();
+        }else{
+            vscode.postMessage({
+                type: 'r-ide.noConnection',
+			});
+        }
+    }
 
     window.addEventListener('message', event => {
         console.log(event);
@@ -87,7 +104,7 @@
             <div class="buttons-flex">
                 <button class="bag-buttons" on:click={() => {selectedBag = null; isBagManagerOpen = false}}>Cancel</button>
                 <button class="bag-buttons" on:click={() => {isCloneMenuOpen = true;}}>Clone</button>
-                <button class="bag-buttons" on:click={() => {}}>Play</button>
+                <button class="bag-buttons" on:click={() => {playBag()}}>Play</button>
             </div>
 
         <!-- Clone bag menu -->

@@ -1,9 +1,7 @@
-import ROSLIB = require("roslib");
+import * as ROSLIB from "roslib";
 
 export class ROS {
     static rosAPI: ROSLIB.Ros;
-
-
 
     constructor() {
         if (ROS.rosAPI && ROS.rosAPI.isConnected) {

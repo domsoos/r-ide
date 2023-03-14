@@ -67,6 +67,10 @@ export class SidebarBagsProvider implements vscode.WebviewViewProvider {
           });
           break;
         }
+        case "r-ide.noConnection":{
+          vscode.commands.executeCommand('r-ide.no-ros-connection');
+          break;
+        }
       }
     });
   }
