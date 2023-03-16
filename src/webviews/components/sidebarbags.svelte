@@ -4,13 +4,18 @@
     import { slide } from "svelte/transition";
     import { onMount } from 'svelte';
     import ROS from '../../ROSManagers/rosmanager';
-    import RosBagStatusBar from '../../RosBag/RosBagStatusBar';
+    import ROSLIB, { Ros } from 'roslib';
+    import { open } from 'rosbag';
 
     /* Accordion Code */
     let isAccordionOpen = false
 	const toggle = () => isAccordionOpen = !isAccordionOpen
-    let topics = [{value:"sample"},];
     /* Accordion Code END*/
+
+    let topics;
+    let messages = [];
+    let publishers;
+    let isPlaying = false;
 
 
     let isBagManagerOpen = false;
@@ -19,12 +24,35 @@
     let selectedBagPath = null;
     let cloneBagPath = null;
     let isCloneMenuOpen = false;
+    let isConnected;
 
     let rosApi;
     
     let range = [0,1]; 
 
-    onMount(async () => {
+    function playBag(startTime) {
+        isPlaying = true;
+        let {i, leadup} = findFirstMessage(startTime);
+
+        console.log(messages.length);
+        while (i < messages.length) {
+            const {message, topic, timestamp} = messages[i];
+            setTimeout(() => {
+                console.log(publishers.get(topic));
+                publishers.get(topic).publish(new ROSLIB.Message(message));
+                console.log(message);
+            }, leadup);
+
+            i++;
+
+            // fast convert seconds and nanoseconds into milliseconds
+            const nextTimeStamp = message[i].timestamp;
+            leadup = ((nextTimeStamp.sec - timestamp.sec) * 1000) + ((nextTimeStamp.nsec - timestamp.nsec) >> 20);
+        }
+        
+    }
+
+    async function setupPublishers(connections) {
         try {
             await new ROS();
             rosApi = ROS.getROSApi();
@@ -36,28 +64,44 @@
             });
             //console.error(err);
         }
-    });
 
-    function playBag() {
-        if(rosApi?.isConnected){
-            RosBagStatusBar.playBack();
-        }else{
-            vscode.postMessage({
-                type: 'r-ide.noConnection',
-			});
+        topics = []
+        publishers = new Map();
+        for (let conn of connections) {
+            topics.push(conn.topic);
+            publishers.set(conn.topic, new ROSLIB.Topic({
+                ros: Ros.ROS,
+                messageType: conn.messageType,
+                name: conn.topic
+            }));
         }
     }
 
+    /**
+     * Returns the first index of the first message to play and the wait time to play it
+     * @param startTime The time from the first message that the bag starts. Starts with the first message if startTime === 0
+     */
+    function findFirstMessage(startTime) {
+        if (startTime === 0) {
+            return {i: 0, leadup: 0};
+
+        // After last message
+        } else if (false) {
+            return messages.length;
+        }
+
+        // TODO: Binary search to find first message
+        return {i: 0, leadup: 0};
+    }
+
     window.addEventListener('message', event => {
-        console.log(event);
+        // console.log(event);
 		const message = event.data; // The JSON data our extension sent
 		switch (message.type) {
 			case 'setSelectedBag':{
-                selectedBagPath = message.value.path;
-                topics = message.value.topics;
-                //let regex = /\\|\//;
-                //let pathToArr = selectedBagPath.split(regex);
-                //selectedBag = pathToArr[pathToArr.length - 1];
+                messages = [];
+                topics = [];
+                selectedBagPath = message.value.path;                
                 selectedBag = selectedBagPath.substring(selectedBagPath.lastIndexOf('/'));
                 cloneBagPath = selectedBagPath.substring(0, selectedBagPath.lastIndexOf('/'))
 				break;
@@ -66,8 +110,18 @@
                 cloneBagPath = message.value;
 				break;
             }
-            case 'setTopics': {
-                topics = message.value;
+            case 'getConnections': {
+                let connections = message.value;
+                setupPublishers(connections);
+                break;
+            }
+            case 'getMessages': {
+                if (message.legnth === 0) {
+                    messages = message.value;
+                } else {
+                    messages.push(...message.value);
+                }
+                break;
             }
 		}
 	});
@@ -102,9 +156,9 @@
         <!-- Play bag -->
         {#if !isCloneMenuOpen}
             <div class="buttons-flex">
-                <button class="bag-buttons" on:click={() => {selectedBag = null; isBagManagerOpen = false}}>Cancel</button>
+                <button class="bag-buttons" on:click={() => {isBagManagerOpen = true}}>Cancel</button>
                 <button class="bag-buttons" on:click={() => {isCloneMenuOpen = true;}}>Clone</button>
-                <button class="bag-buttons" on:click={() => {playBag()}}>Play</button>
+                <button class="bag-buttons" on:click={() => {playBag(0)}}>Play</button>
             </div>
 
         <!-- Clone bag menu -->
@@ -137,7 +191,7 @@
 
             <br>
             <div class="buttons-flex">
-                <button class="bag-buttons" on:click={() => {isAccordionOpen = false;selectedBag = null; isBagManagerOpen = false; isCloneMenuOpen = false}}>Cancel</button>
+                <button class="bag-buttons" on:click={() => {isAccordionOpen = false; isBagManagerOpen = true; isCloneMenuOpen = false}}>Cancel</button>
                 <button class="bag-buttons" on:click={() => {isCloneMenuOpen = true;}}>Clone</button>
             </div>
         {/if}

@@ -2,7 +2,7 @@
     const vscode = acquireVsCodeApi();
     import TreeView from "./TreeView.svelte";
     import MessageTree from "./messageTree.svelte";
-    import ROS from "../../ROSManagers/rosmanager.ts"
+    import ROS from "../../ROSManagers/rosmanager"
     import { onMount } from 'svelte';
     import { Buffer } from "buffer";
     import { decodeBGRA8,

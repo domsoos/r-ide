@@ -1,19 +1,16 @@
-import Bag, { open } from "rosbag";
-import ROSLIB = require("roslib");
-import { ROS } from "../ROSManagers/rosmanager";
+import * as ROSLIB from 'roslib';
 import * as vscode from "vscode";
-import { TimeUtil } from "rosbag";
 
 export class RosBagStatusBar {
     // TODO: Add more buttons/features? Restart? Slider? Playback speed?
-    static paused: boolean;
-    static playPause: vscode.StatusBarItem;
-    static step: vscode.StatusBarItem;
-    static bag: Bag | undefined;
-    static bagName: string | undefined;
-    static messages: any[];
-    static publishers: Map<string, ROSLIB.Topic | undefined>;
-    static topics: string[];
+    static paused;
+    static playPause;
+    static step;
+    static bag;
+    static bagName;
+    static messages;
+    static publishers;
+    static topics;
 
     constructor() {
         // Play/Pause
@@ -21,28 +18,7 @@ export class RosBagStatusBar {
         RosBagStatusBar.step = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
     }
 
-    static async setBag(bagPath: vscode.Uri) {
-        // Open the bag
-        RosBagStatusBar.bag = await open(bagPath.fsPath);
-        RosBagStatusBar.bagName = bagPath.fsPath.split('/').at(-1);
-
-        // Load all the messages in timestamp order
-        RosBagStatusBar.messages = [];
-        RosBagStatusBar.publishers = new Map();
-        RosBagStatusBar.topics = [];
-        await RosBagStatusBar.bag.readMessages({}, result => {
-            RosBagStatusBar.messages.push(result);
-        });
-
-        // Setup publishers
-        for (let conn in RosBagStatusBar.bag.connections) {
-            RosBagStatusBar.publishers.set(RosBagStatusBar.bag.connections[conn].topic, new ROSLIB.Topic({
-                ros: ROS.getROSApi(),
-                messageType: RosBagStatusBar.bag.connections[conn].type!,
-                name: RosBagStatusBar.bag.connections[conn].topic
-            }));
-            RosBagStatusBar.topics.push(RosBagStatusBar.bag.connections[conn].topic);
-        }
+    static async setBag(bagPath) {
 
         // Set text and tooltip
         RosBagStatusBar.playPause.text = `${RosBagStatusBar.paused ? '$(debug-pause)' : '$(debug-play)'}${RosBagStatusBar.bagName}`;
@@ -74,7 +50,7 @@ export class RosBagStatusBar {
         RosBagStatusBar.step.hide();
     }
 
-    static async playback(start: number) {
+    static async playback(start) {
         let i = start;
         while (!RosBagStatusBar.paused && i < RosBagStatusBar.messages.length - 1) {
             const {message, topic, timestamp} = RosBagStatusBar.messages[i];
@@ -96,3 +72,5 @@ export class RosBagStatusBar {
         
     }
 }
+
+module.exports = RosBagStatusBar;

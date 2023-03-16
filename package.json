@@ -231,7 +231,6 @@
   ],
   "dependencies": {
     "@types/rosbag": "^2.6.0",
-    "@types/roslib": "^1.3.0",
     "mongoose": "^6.9.2",
     "rosbag": "^3.0.1",
     "roslib": "^1.3.0",

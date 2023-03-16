@@ -1,12 +1,48 @@
 import * as vscode from "vscode";
 import { getNonce } from "./getNonce";
-import { RosBagStatusBar } from "./RosBag/RosBagStatusBar";
+import Bag, { open } from 'rosbag';
+import { listen } from "svelte/internal";
 
 export class SidebarBagsProvider implements vscode.WebviewViewProvider {
   _view?: vscode.WebviewView;
   _doc?: vscode.TextDocument;
 
-  constructor(private readonly _extensionUri: vscode.Uri) {}
+  bag: Bag | undefined;
+
+
+
+  constructor(private readonly _extensionUri: vscode.Uri) {
+  }
+
+  private async openBag(bagPath: string) {
+    let bag: Bag = await open(bagPath);
+
+    const packetSize = 10000;
+    let messagePacket: any[] = [];
+
+    let messages: any[] = [];
+
+    bag.readMessages({}, result => {
+      const {topic, message, timestamp} = result;
+      messagePacket.push({topic: topic, message: message, timestamp: timestamp});
+      if (messagePacket.length >= packetSize) {
+        // console.log(messagePacket);
+        this._view?.webview.postMessage({type: 'getMessages', value: messagePacket});
+        // this.messages = this.messages.concat(messagePacket);
+        messagePacket = [];
+      }
+    }).then(() => {
+      console.log('read all messages');
+      this._view?.webview.postMessage({type: 'getMessages', value: messagePacket});
+    });
+
+    let connections = [];
+    for (let conn in bag.connections) {
+      connections.push(bag.connections[conn]);
+    }
+
+    this._view?.webview.postMessage({type: 'getConnections', value: connections});
+  }
 
   public resolveWebviewView(webviewView: vscode.WebviewView) {
     this._view = webviewView;
@@ -40,15 +76,12 @@ export class SidebarBagsProvider implements vscode.WebviewViewProvider {
         case "getSelectedBag" :{
           await vscode.window.showOpenDialog({canSelectFiles: true, canSelectFolders: false, canSelectMany: false}).then(async (result) =>{
             if(result && result[0].path){
-              RosBagStatusBar.setBag(result[0]);
-              const topics = RosBagStatusBar.topics;
-              console.log(topics);
+              this.openBag(result[0].fsPath);
 
               webviewView.webview.postMessage({
                 type: 'setSelectedBag',
                 value: {
-                  path: result[0].path,
-                  // topics: topics
+                  path: result[0].fsPath,
                 },
               });
             }
@@ -57,11 +90,18 @@ export class SidebarBagsProvider implements vscode.WebviewViewProvider {
           break;
         }
         case "getCloneBagPath" :{
-          vscode.window.showOpenDialog({canSelectFiles: false, canSelectFolders: true, canSelectMany: false, defaultUri: vscode.Uri.file(data.value)}).then((result) =>{
+          vscode.window.showOpenDialog({
+            canSelectFiles: false, 
+            canSelectFolders: true, 
+            canSelectMany: false, 
+            defaultUri: vscode.Uri.file(data.value),
+            // eslint-disable-next-line @typescript-eslint/naming-convention
+            filters: {'Bags': ['.bag']}
+          }).then((result) =>{
             if(result && result[0].path){
               webviewView.webview.postMessage({
                 type: 'setCloneBagPath',
-                value: result[0].path,
+                value: result[0].fsPath,
               });
             }
           });

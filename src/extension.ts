@@ -15,7 +15,6 @@ import {
 	addMsgToPackage, addNewFindPackage, addSrvToPackage, createRosPackage, loadPackages, registerPackage, RosPackage, updateExistingPackages
 } from './RosPackages/RosPackage';
 import { SidebarTopicsProvider } from './SidebarTopicsProvider';
-import { RosBagStatusBar } from './RosBag/RosBagStatusBar';
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -28,10 +27,7 @@ export function activate(context: vscode.ExtensionContext) {
 	const sidebarTopicsProvider = new SidebarTopicsProvider(context.extensionUri);
 
 	loadPackages();
-	updateExistingPackages();
-
-	new RosBagStatusBar();
-	
+	updateExistingPackages();	
 
 	context.subscriptions.push(
 		// Webviews
@@ -95,8 +91,6 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.commands.registerCommand("r-ide.open-topic-monitor", () => {
 			TopicMonitorProvider.createOrShow(context.extensionUri);
 		}),
-		RosBagStatusBar.playPause,
-		RosBagStatusBar.step,
 		vscode.commands.registerCommand("r-ide.no-ros-connection", ()=>{
 			vscode.window.showErrorMessage(
 				'ROS Bridge not detected. Would you like to try to start ROS Bridge?',
@@ -136,5 +130,4 @@ export function activate(context: vscode.ExtensionContext) {
 // This method is called when your extension is deactivated
 export function deactivate() {
 	dbcontroller.closeConnection();
-	RosBagStatusBar.clearBag();
 }
