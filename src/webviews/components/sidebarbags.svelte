@@ -2,10 +2,8 @@
     const vscode = acquireVsCodeApi();
     import Slider from '@bulatdashiev/svelte-slider';
     import { slide } from "svelte/transition";
-    import { onMount } from 'svelte';
     import ROS from '../../ROSManagers/rosmanager';
     import ROSLIB, { Ros } from 'roslib';
-    import { open } from 'rosbag';
 
     /* Accordion Code */
     let isAccordionOpen = false
@@ -46,6 +44,7 @@
             i++;
 
             // fast convert seconds and nanoseconds into milliseconds
+            console.log(message[i]);
             const nextTimeStamp = message[i].timestamp;
             leadup = ((nextTimeStamp.sec - timestamp.sec) * 1000) + ((nextTimeStamp.nsec - timestamp.nsec) >> 20);
         }
@@ -56,13 +55,12 @@
         try {
             await new ROS();
             rosApi = ROS.getROSApi();
-            getROSTopics();
         } catch (err) {
             isConnected = false;
-            vscode.postMessage({
+            console.error(err);
+            await vscode.postMessage({
                 type: 'r-ide.noConnection',
             });
-            //console.error(err);
         }
 
         topics = []

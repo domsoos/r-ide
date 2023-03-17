@@ -1,7 +1,6 @@
 import * as vscode from "vscode";
 import { getNonce } from "./getNonce";
 import Bag, { open } from 'rosbag';
-import { listen } from "svelte/internal";
 
 export class SidebarBagsProvider implements vscode.WebviewViewProvider {
   _view?: vscode.WebviewView;
@@ -69,7 +68,13 @@ export class SidebarBagsProvider implements vscode.WebviewViewProvider {
           break;
         }
         case "getSelectedBag" :{
-          await vscode.window.showOpenDialog({canSelectFiles: true, canSelectFolders: false, canSelectMany: false}).then(async (result) =>{
+          await vscode.window.showOpenDialog({
+            canSelectFiles: true, 
+            canSelectFolders: false, 
+            canSelectMany: false,
+            // eslint-disable-next-line @typescript-eslint/naming-convention
+            // filters: {'Bags': ['.bag']}
+          }).then(async (result) =>{
             if(result && result[0].path){
               this.openBag(result[0].fsPath);
 
@@ -90,8 +95,6 @@ export class SidebarBagsProvider implements vscode.WebviewViewProvider {
             canSelectFolders: true, 
             canSelectMany: false, 
             defaultUri: vscode.Uri.file(data.value),
-            // eslint-disable-next-line @typescript-eslint/naming-convention
-            filters: {'Bags': ['.bag']}
           }).then((result) =>{
             if(result && result[0].path){
               webviewView.webview.postMessage({
