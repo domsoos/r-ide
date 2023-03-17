@@ -35,6 +35,8 @@ export class SidebarBagsProvider implements vscode.WebviewViewProvider {
       connections.push(bag.connections[conn]);
     }
 
+    console.log([connections]);
+
     this._view?.webview.postMessage({type: 'getConnections', value: connections});
   }
 

@@ -4,15 +4,16 @@
     import { slide } from "svelte/transition";
     import ROS from '../../ROSManagers/rosmanager';
     import ROSLIB, { Ros } from 'roslib';
+    import { onMount } from 'svelte';
 
     /* Accordion Code */
     let isAccordionOpen = false
 	const toggle = () => isAccordionOpen = !isAccordionOpen
     /* Accordion Code END*/
 
-    let topics;
+    let topics = [];
     let messages = [];
-    let publishers;
+    let publishers = new Map();
     let isPlaying = false;
 
 
@@ -28,32 +29,9 @@
     
     let range = [0,1]; 
 
-    function playBag(startTime) {
-        isPlaying = true;
-        let {i, leadup} = findFirstMessage(startTime);
-
-        console.log(messages.length);
-        while (i < messages.length) {
-            const {message, topic, timestamp} = messages[i];
-            setTimeout(() => {
-                console.log(publishers.get(topic));
-                publishers.get(topic).publish(new ROSLIB.Message(message));
-                console.log(message);
-            }, leadup);
-
-            i++;
-
-            // fast convert seconds and nanoseconds into milliseconds
-            console.log(message[i]);
-            const nextTimeStamp = message[i].timestamp;
-            leadup = ((nextTimeStamp.sec - timestamp.sec) * 1000) + ((nextTimeStamp.nsec - timestamp.nsec) >> 20);
-        }
-        
-    }
-
-    async function setupPublishers(connections) {
+    onMount(async () => {
         try {
-            await new ROS();
+            new ROS();
             rosApi = ROS.getROSApi();
         } catch (err) {
             isConnected = false;
@@ -62,17 +40,51 @@
                 type: 'r-ide.noConnection',
             });
         }
+    });
 
+    function playBag(startTime) {
+        isPlaying = true;
+        let {i, leadup} = findFirstMessage(startTime);
+
+        console.log(messages.length);
+        while (i < messages.length) {
+            const {message, topic, timestamp} = messages[i];
+            setTimeout(() => {
+                // console.log(publishers.get(topic));
+                publishers.get(topic).publish(new ROSLIB.Message(message));
+                // console.log(message);
+            }, leadup);
+
+            i++;
+
+            // fast convert seconds and nanoseconds into milliseconds
+            // console.log(messages[i]);
+            const nextTimeStamp = messages[i].timestamp;
+            leadup = ((nextTimeStamp.sec - timestamp.sec) * 1000) + ((nextTimeStamp.nsec - timestamp.nsec) >> 20);
+        }
+
+        console.log('finished playing');
+        
+    }
+
+    async function setupPublishers(connections) {
         topics = []
         publishers = new Map();
         for (let conn of connections) {
             topics.push(conn.topic);
-            publishers.set(conn.topic, new ROSLIB.Topic({
+            let newPublisher = new ROSLIB.Topic({
                 ros: rosApi,
-                messageType: conn.messageType,
+                messageType: conn.type,
                 name: conn.topic
-            }));
+            });
+
+            newPublisher.advertise();
+
+            publishers.set(conn.topic, newPublisher);
+
         }
+
+        // console.log([...publishers.values()])
     }
 
     /**
@@ -99,9 +111,17 @@
 			case 'setSelectedBag':{
                 messages = [];
                 topics = [];
+
+                
+                for (let p of publishers.keys()) {
+                    publishers.get(p).unadvertise();
+                }
+                
+                publishers.clear();
+
                 selectedBagPath = message.value.path;                
                 selectedBag = selectedBagPath.substring(selectedBagPath.lastIndexOf('/'));
-                cloneBagPath = selectedBagPath.substring(0, selectedBagPath.lastIndexOf('/'))
+                cloneBagPath = selectedBagPath.substring(0, selectedBagPath.lastIndexOf('/'));
 				break;
             }
             case 'setCloneBagPath':{
