@@ -3,7 +3,7 @@
     import Slider from '@bulatdashiev/svelte-slider';
     import { slide } from "svelte/transition";
     import ROS from '../../ROSManagers/rosmanager';
-    import ROSLIB, { Ros } from 'roslib';
+    import ROSLIB from 'roslib';
     import { onMount } from 'svelte';
 
     /* Accordion Code */
@@ -42,25 +42,32 @@
         }
     });
 
-    function playBag(startTime) {
+    function waitForCondition(leadup) {
+        console.log(leadup);
+        return new Promise((resolve) => {
+            setTimeout(() => {resolve();}, leadup);
+        });
+    }
+
+    async function playBag(startTime) {
         isPlaying = true;
         let {i, leadup} = findFirstMessage(startTime);
 
         console.log(messages.length);
-        while (i < messages.length) {
+        while (i < messages.length - 1) {
             const {message, topic, timestamp} = messages[i];
-            setTimeout(() => {
-                // console.log(publishers.get(topic));
-                publishers.get(topic).publish(new ROSLIB.Message(message));
-                // console.log(message);
-            }, leadup);
+
+            await waitForCondition(leadup);
+
+            publishers.get(topic).publish(messages[i]);
+            // console.log(message);
 
             i++;
 
             // fast convert seconds and nanoseconds into milliseconds
             // console.log(messages[i]);
             const nextTimeStamp = messages[i].timestamp;
-            leadup = ((nextTimeStamp.sec - timestamp.sec) * 1000) + ((nextTimeStamp.nsec - timestamp.nsec) >> 20);
+            leadup = ((nextTimeStamp.sec - timestamp.sec) * 1000) + ((nextTimeStamp.nsec >> 20) - (timestamp.nsec >> 20));
         }
 
         console.log('finished playing');
@@ -84,7 +91,7 @@
 
         }
 
-        // console.log([...publishers.values()])
+        console.log([...publishers.values()])
     }
 
     /**
@@ -135,9 +142,15 @@
             }
             case 'getMessages': {
                 if (message.legnth === 0) {
-                    messages = message.value;
+                    messages = [];
+                    for (let m of message.value) {
+                        messages.push(new ROSLIB.Message(m));
+                        console.log(m);
+                    }
                 } else {
-                    messages.push(...message.value);
+                    for (let m of message.value) {
+                        messages.push(new ROSLIB.Message(m));
+                    }
                 }
                 break;
             }
