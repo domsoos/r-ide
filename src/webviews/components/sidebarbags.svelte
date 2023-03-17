@@ -58,7 +58,7 @@
         } catch (err) {
             isConnected = false;
             console.error(err);
-            await vscode.postMessage({
+            vscode.postMessage({
                 type: 'r-ide.noConnection',
             });
         }
@@ -68,7 +68,7 @@
         for (let conn of connections) {
             topics.push(conn.topic);
             publishers.set(conn.topic, new ROSLIB.Topic({
-                ros: Ros.ROS,
+                ros: rosApi,
                 messageType: conn.messageType,
                 name: conn.topic
             }));
