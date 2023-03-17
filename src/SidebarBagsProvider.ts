@@ -7,12 +7,7 @@ export class SidebarBagsProvider implements vscode.WebviewViewProvider {
   _view?: vscode.WebviewView;
   _doc?: vscode.TextDocument;
 
-  bag: Bag | undefined;
-
-
-
-  constructor(private readonly _extensionUri: vscode.Uri) {
-  }
+  constructor(private readonly _extensionUri: vscode.Uri) {}
 
   private async openBag(bagPath: string) {
     let bag: Bag = await open(bagPath);
@@ -20,7 +15,7 @@ export class SidebarBagsProvider implements vscode.WebviewViewProvider {
     const packetSize = 10000;
     let messagePacket: any[] = [];
 
-    let messages: any[] = [];
+    // let messages: any[] = [];
 
     bag.readMessages({}, result => {
       const {topic, message, timestamp} = result;
