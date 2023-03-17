@@ -3,8 +3,10 @@
   "displayName": "R-IDE",
   "description": "",
   "version": "0.0.1",
+  "icon": "styles/rideLogo.png",
+  "publisher": "TeamOrangeODU2023",
   "engines": {
-    "vscode": "^1.74.0"
+    "vscode": "^1.75.0"
   },
   "categories": [
     "Other"
@@ -167,6 +169,10 @@
       {
         "command": "r-ide.update-package-list",
         "title": "R-IDE: Update the package list from rospack"
+      },
+      {
+        "command": "r-ide.add-new-find-package",
+        "title": "R-IDE: Add a new package to the find package call"
       }
     ],
     "snippets": [
@@ -224,7 +230,10 @@
     "ms-iot.vscode-ros"
   ],
   "dependencies": {
+    "@types/rosbag": "^2.6.0",
+    "@types/roslib": "^1.3.0",
     "mongoose": "^6.9.2",
+    "rosbag": "^3.0.1",
     "roslib": "^1.3.0",
     "slider": "^1.0.4"
   }

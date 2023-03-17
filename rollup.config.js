@@ -32,7 +32,7 @@ export default fs
           //dev: !production,
           // we'll extract any component CSS out into
           // a separate file - better for performance
-         // css: (css) => {
+          //css: (css) => {
           //  css.write(name + ".css");
           //},
           preprocess: sveltePreprocess(),

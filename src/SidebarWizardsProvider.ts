@@ -74,10 +74,10 @@ export class SidebarWizardsProvider implements vscode.WebviewViewProvider {
 
   private _getHtmlForWebview(webview: vscode.Webview) {
     const styleResetUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, "src", "styles/reset.css")
+      vscode.Uri.joinPath(this._extensionUri, "styles", "reset.css")
     );
     const styleVSCodeUri = webview.asWebviewUri(
-        vscode.Uri.joinPath(this._extensionUri, "src", "styles/vscode.css")
+        vscode.Uri.joinPath(this._extensionUri, "styles", "vscode.css")
     );
 
     /*
@@ -90,7 +90,7 @@ export class SidebarWizardsProvider implements vscode.WebviewViewProvider {
     );
 
     const styleMainUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, "src", "styles/sidebarwizards.css")
+      vscode.Uri.joinPath(this._extensionUri, "styles", "sidebarwizards.css")
     );
 
     // TODO: Handle 0 or 2+ folder workspaces open

@@ -12,7 +12,7 @@ import {
 	createSrv
 } from './commands/commands';
 import { 
-	addMsgToPackage, addSrvToPackage, createRosPackage, loadPackages, registerPackage, RosPackage, updateExistingPackages
+	addMsgToPackage, addNewFindPackage, addSrvToPackage, createRosPackage, loadPackages, registerPackage, RosPackage, updateExistingPackages
 } from './RosPackages/RosPackage';
 import { SidebarTopicsProvider } from './SidebarTopicsProvider';
 
@@ -27,9 +27,7 @@ export function activate(context: vscode.ExtensionContext) {
 	const sidebarTopicsProvider = new SidebarTopicsProvider(context.extensionUri);
 
 	loadPackages();
-	updateExistingPackages();
-	console.log(RosPackage.existingPackages);
-	
+	updateExistingPackages();	
 
 	context.subscriptions.push(
 		// Webviews
@@ -86,9 +84,46 @@ export function activate(context: vscode.ExtensionContext) {
 			"r-ide.update-package-list",
 			updateExistingPackages
 		),
+		vscode.commands.registerCommand(
+			"r-ide.add-new-find-package",
+			addNewFindPackage
+		),
 		vscode.commands.registerCommand("r-ide.open-topic-monitor", () => {
 			TopicMonitorProvider.createOrShow(context.extensionUri);
 		}),
+		vscode.commands.registerCommand("r-ide.no-ros-connection", ()=>{
+			vscode.window.showErrorMessage(
+				'ROS Bridge not detected. Would you like to try to start ROS Bridge?',
+				'Start ROS Bridge', 'Close'
+			  ).then((res) =>{
+				if (res === 'Start ROS Bridge') {
+
+					let term = vscode.window.terminals.find(item => item.name === 'ROS Bridge');
+
+					if(term){
+						term.sendText('\x03');
+						term.dispose();
+						setTimeout(()=>{
+							const terminal = vscode.window.createTerminal({
+								name: 'ROS Bridge',
+								shellPath: '/bin/bash',
+								shellArgs: ['-c', 'roslaunch rosbridge_server rosbridge_websocket.launch']
+							});
+							terminal.show();
+						},1500);
+					}
+					else{
+						const terminal = vscode.window.createTerminal({
+							name: 'ROS Bridge',
+							shellPath: '/bin/bash',
+							shellArgs: ['-c', 'roslaunch rosbridge_server rosbridge_websocket.launch']
+						});
+						terminal.show();
+					}
+				}
+			  });
+		})
+		
 	  );
 }
 
