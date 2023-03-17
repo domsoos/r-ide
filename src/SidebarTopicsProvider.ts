@@ -9,6 +9,7 @@ export class SidebarTopicsProvider implements vscode.WebviewViewProvider {
   _view?: vscode.WebviewView;
   _doc?: vscode.TextDocument;
   node: any;
+  private _disposables: vscode.Disposable[] = [];
   //activeTopics: any = [];
 
   constructor(private readonly _extensionUri: vscode.Uri) {}
@@ -23,6 +24,10 @@ export class SidebarTopicsProvider implements vscode.WebviewViewProvider {
 
       localResourceRoots: [this._extensionUri],
     };
+
+    this._view.onDidDispose(() => this.dispose(), null, this._disposables);
+
+    
 
     webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
 
@@ -59,6 +64,7 @@ export class SidebarTopicsProvider implements vscode.WebviewViewProvider {
             // Handle error output
             console.error(data.toString());
             vscode.window.showErrorMessage(data.toString());
+            childProcess.kill();
           });
 
           this.node = childProcess;
@@ -66,6 +72,7 @@ export class SidebarTopicsProvider implements vscode.WebviewViewProvider {
         }
         case "killNode":{
           this.node?.kill();
+          break;
         }
       }
     });
@@ -73,6 +80,17 @@ export class SidebarTopicsProvider implements vscode.WebviewViewProvider {
 
   public revive(panel: vscode.WebviewView) {
     this._view = panel;
+  }
+
+  public dispose() {
+    this.node?.kill();
+
+    while (this._disposables.length) {
+      const x = this._disposables.pop();
+      if (x) {
+        x.dispose();
+      }
+    }
   }
 
   private _getHtmlForWebview(webview: vscode.Webview) {
