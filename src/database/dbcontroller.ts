@@ -13,7 +13,7 @@ var wizard = mongoose.model('Wizard');
 export async function connectToDB(){
     mongoose.connect("mongodb+srv://rideDB:nl3fP1uYDI9DW8Cx@cluster0.xroyxn3.mongodb.net/?retryWrites=true&w=majority");
 
-    const db = mongoose.connection();
+    const db = mongoose.connection;
     db.on('error', console.error.bind(console, 'connection error: '));
     db.once('open', () => {
         console.log('connected to mongodb');

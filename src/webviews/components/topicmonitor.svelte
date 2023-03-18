@@ -349,7 +349,8 @@
                 const canvas = document.getElementById('my-canvas');
                 canvas.width = width;
                 canvas.height = height;
-
+                
+                /*
                 if(width > height){
                     canvas.style.width = '500px';
                     canvas.style.height = 'fit-content';
@@ -358,6 +359,10 @@
                     canvas.style.height = '350px';
                     canvas.style.width = 'fit-content';
                 }
+                */
+                
+                canvas.style.height = '250px';
+                canvas.style.width = 'fit-content';
 
                 const context = canvas.getContext('2d');
                 context.putImageData(image, 0, 0);
