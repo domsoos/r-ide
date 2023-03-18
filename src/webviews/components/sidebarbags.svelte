@@ -2,9 +2,7 @@
     const vscode = acquireVsCodeApi();
     import Slider from '@bulatdashiev/svelte-slider';
     import { slide } from "svelte/transition";
-    import ROS from '../../ROSManagers/rosmanager';
     import ROSLIB from 'roslib';
-    import { onMount } from 'svelte';
 
     /* Accordion Code */
     let isAccordionOpen = false
@@ -29,18 +27,18 @@
     
     let range = [0,1]; 
 
-    onMount(async () => {
-        try {
-            new ROS();
-            rosApi = ROS.getROSApi();
-        } catch (err) {
-            isConnected = false;
-            console.error(err);
-            vscode.postMessage({
-                type: 'r-ide.noConnection',
-            });
-        }
-    });
+    // onMount(async () => {
+    //     try {
+    //         await new ROS();
+    //         rosApi = ROS.getROSApi();
+    //     } catch (err) {
+    //         isConnected = false;
+    //         console.error(err);
+    //         vscode.postMessage({
+    //             type: 'r-ide.noConnection',
+    //         });
+    //     }
+    // });
 
     function waitForCondition(leadup) {
         console.log(leadup);
@@ -142,15 +140,11 @@
             }
             case 'getMessages': {
                 if (message.legnth === 0) {
-                    messages = [];
-                    for (let m of message.value) {
-                        messages.push(new ROSLIB.Message(m));
-                        console.log(m);
-                    }
+                    messages = message.value;
+                    console.log(messages.length);
                 } else {
-                    for (let m of message.value) {
-                        messages.push(new ROSLIB.Message(m));
-                    }
+                    messages.push(...message.value);
+                    console.log(messages.length);
                 }
                 break;
             }
@@ -189,7 +183,7 @@
             <div class="buttons-flex">
                 <button class="bag-buttons" on:click={() => {isBagManagerOpen = true}}>Cancel</button>
                 <button class="bag-buttons" on:click={() => {isCloneMenuOpen = true;}}>Clone</button>
-                <button class="bag-buttons" on:click={() => {playBag(0)}}>Play</button>
+                <button class="bag-buttons" on:click={() => {vscode.postMessage({type: 'playBag'})}}>Play</button>
             </div>
 
         <!-- Clone bag menu -->

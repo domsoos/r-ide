@@ -1,44 +1,100 @@
 import * as vscode from "vscode";
 import { getNonce } from "./getNonce";
 import Bag, { open } from 'rosbag';
+import * as ROSLIB from 'roslib';
 
 export class SidebarBagsProvider implements vscode.WebviewViewProvider {
   _view?: vscode.WebviewView;
   _doc?: vscode.TextDocument;
 
-  constructor(private readonly _extensionUri: vscode.Uri) {}
+  messages: any[];
+  publishers: Map<string, ROSLIB.Topic>;
+  rosapi: ROSLIB.Ros;
+
+  constructor(private readonly _extensionUri: vscode.Uri) {
+
+    this.rosapi = new ROSLIB.Ros({
+      url: "ws://localhost:9090"
+    });
+
+    this.messages = [];
+    this.publishers = new Map();
+
+    console.log(this.rosapi);
+  }
 
   private async openBag(bagPath: string) {
     let bag: Bag = await open(bagPath);
 
-    const packetSize = 10000;
-    let messagePacket: any[] = [];
-
-    // let messages: any[] = [];
-
+    // Read all messages
     bag.readMessages({}, result => {
-      const {topic, message, timestamp} = result;
-      messagePacket.push({topic: topic, message: message, timestamp: timestamp});
-      if (messagePacket.length >= packetSize) {
-        // console.log(messagePacket);
-        this._view?.webview.postMessage({type: 'getMessages', value: messagePacket});
-        // this.messages = this.messages.concat(messagePacket);
-        messagePacket = [];
-      }
+      this.messages.push(result);
     }).then(() => {
       console.log('read all messages');
-      this._view?.webview.postMessage({type: 'getMessages', value: messagePacket});
+      this._view?.webview.postMessage({type: 'FinishedMessages'});
     });
 
-    let connections = [];
+    // Read all topics and create publishers
     for (let conn in bag.connections) {
-      connections.push(bag.connections[conn]);
+      if(bag.connections[conn].type !== "sensor_msgs/Image"){
+        let newPublisher = new ROSLIB.Topic({
+          ros: this.rosapi,
+          messageType: bag.connections[conn].type!,
+          name: bag.connections[conn].topic
+        });
+
+        newPublisher.advertise();
+
+        this.publishers.set(bag.connections[conn].topic, newPublisher);
+      }
     }
 
-    console.log([connections]);
+    console.log([...this.publishers.values()]);
 
-    this._view?.webview.postMessage({type: 'getConnections', value: connections});
+    this._view?.webview.postMessage({type: 'FinishedConnections'});
+    console.log('read all connections');
   }
+
+  private waitForLeadup(leadup: number) {
+    console.log(leadup);
+    return new Promise((resolve) => {
+        setTimeout(() => {resolve(true);}, leadup);
+    });
+}
+
+  private async playBag(startTime: number) {
+    if (!this.rosapi.isConnected) {
+      this.rosapi.close();
+      this.rosapi = await new ROSLIB.Ros({
+        url: "ws://localhost:9090"
+      });
+    }
+    let i = 0, leadup = 0;
+
+    console.log(this.messages.length);
+    while (i < this.messages.length - 1) {
+        const {message, topic, timestamp} = this.messages[i];
+        await this.waitForLeadup(leadup);
+
+        if (topic === "/zed2/zed_node/obj_det/objects") {
+          console.log(message);
+        } else {
+          this.publishers.get(topic)?.publish(new ROSLIB.Message(message));
+        }
+
+        
+        // console.log(message);
+
+        i++;
+
+        // fast convert seconds and nanoseconds into milliseconds
+        // console.log(messages[i]);
+        const nextTimeStamp = this.messages[i].timestamp;
+        leadup = ((nextTimeStamp.sec - timestamp.sec) * 1000) + ((nextTimeStamp.nsec >> 20) - (timestamp.nsec >> 20));
+    }
+
+    console.log('finished playing');
+}
 
   public resolveWebviewView(webviewView: vscode.WebviewView) {
     this._view = webviewView;
@@ -110,6 +166,9 @@ export class SidebarBagsProvider implements vscode.WebviewViewProvider {
         case "r-ide.noConnection":{
           vscode.commands.executeCommand('r-ide.no-ros-connection');
           break;
+        }
+        case "playBag": {
+          this.playBag(0);
         }
       }
     });
