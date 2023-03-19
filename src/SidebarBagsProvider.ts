@@ -2,6 +2,8 @@ import * as vscode from "vscode";
 import { getNonce } from "./getNonce";
 import Bag, { open } from 'rosbag';
 import * as ROSLIB from 'roslib';
+import { Buffer } from "buffer";
+import { encodeMono8 } from "./utils/encoder";
 
 export class SidebarBagsProvider implements vscode.WebviewViewProvider {
   _view?: vscode.WebviewView;
@@ -36,7 +38,13 @@ export class SidebarBagsProvider implements vscode.WebviewViewProvider {
 
     // Read all topics and create publishers
     for (let conn in bag.connections) {
-      if(bag.connections[conn].type !== "sensor_msgs/Image"){
+      if(bag.connections[conn].type === "sensor_msgs/Image"){
+        // console.log(bag.connections[conn]);
+        // this.rosapi.getMessageDetails(bag.connections[conn].type!, (details) => {
+        //   console.log(this.rosapi.decodeTypeDefs(details));
+        // }, (error) => {
+        //   console.log(error);
+        // });
         let newPublisher = new ROSLIB.Topic({
           ros: this.rosapi,
           messageType: bag.connections[conn].type!,
@@ -49,7 +57,7 @@ export class SidebarBagsProvider implements vscode.WebviewViewProvider {
       }
     }
 
-    console.log([...this.publishers.values()]);
+    // console.log([...this.publishers.values()]);
 
     this._view?.webview.postMessage({type: 'FinishedConnections'});
     console.log('read all connections');
@@ -76,10 +84,15 @@ export class SidebarBagsProvider implements vscode.WebviewViewProvider {
         const {message, topic, timestamp} = this.messages[i];
         await this.waitForLeadup(leadup);
 
-        if (topic === "/zed2/zed_node/obj_det/objects") {
-          console.log(message);
-        } else {
+        // if (topic === "/zed2/zed_node/obj_det/objects") {
+        //   console.log(message);
+        // } else 
+        if (this.publishers.has(topic)) {
+          let output: Uint8Array = new Uint8Array(message.data.length);
+          encodeMono8(message.data, this.messages[i].width, this.messages[i].height, output);
+          message.data = Buffer.from(output).toString('base64');
           this.publishers.get(topic)?.publish(new ROSLIB.Message(message));
+          // console.log(this.messages[i]);
         }
 
         
