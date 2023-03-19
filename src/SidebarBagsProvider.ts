@@ -38,7 +38,7 @@ export class SidebarBagsProvider implements vscode.WebviewViewProvider {
 
     // Read all topics and create publishers
     for (let conn in bag.connections) {
-      if(bag.connections[conn].type === "sensor_msgs/Image"){
+      // if(bag.connections[conn].type === "sensor_msgs/Image"){
         // console.log(bag.connections[conn]);
         // this.rosapi.getMessageDetails(bag.connections[conn].type!, (details) => {
         //   console.log(this.rosapi.decodeTypeDefs(details));
@@ -54,7 +54,7 @@ export class SidebarBagsProvider implements vscode.WebviewViewProvider {
         newPublisher.advertise();
 
         this.publishers.set(bag.connections[conn].topic, newPublisher);
-      }
+      // }
     }
 
     // console.log([...this.publishers.values()]);
@@ -64,7 +64,7 @@ export class SidebarBagsProvider implements vscode.WebviewViewProvider {
   }
 
   private waitForLeadup(leadup: number) {
-    console.log(leadup);
+    // console.log(leadup);
     return new Promise((resolve) => {
         setTimeout(() => {resolve(true);}, leadup);
     });
@@ -88,9 +88,11 @@ export class SidebarBagsProvider implements vscode.WebviewViewProvider {
         //   console.log(message);
         // } else 
         if (this.publishers.has(topic)) {
-          let output: Uint8Array = new Uint8Array(message.data.length);
-          encodeMono8(message.data, this.messages[i].width, this.messages[i].height, output);
-          message.data = Buffer.from(output).toString('base64');
+          // let output: Uint8Array = new Uint8Array(message.data.length);
+          // encodeMono8(message.data, this.messages[i].width, this.messages[i].height, output);
+          if ('data' in message) {
+            message.data = Buffer.from(message.data).toString('base64');
+          }
           this.publishers.get(topic)?.publish(new ROSLIB.Message(message));
           // console.log(this.messages[i]);
         }
