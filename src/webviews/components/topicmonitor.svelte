@@ -39,6 +39,10 @@
     // Actual list of active subscriptions
     let activeSubcriptions = [];
 
+
+    // Publisher Variables
+    let selectedTopicToPublish = [];
+
     function clearAllData(){
         topics = [];
         mediaTopics = [];
@@ -408,6 +412,23 @@
         }   
     }
 
+    function onPublishTopicSelected(item){
+        let newItem = structuredClone(item);
+        selectedTopicToPublish = [newItem];
+
+        rosApi.decodeTypeDefs([newItem.type]).then((res) =>{
+            console.log(res);
+        });
+
+
+        /*
+        vscode.postMessage({
+            type: "getMessageTypeFormat",
+            value: newItem
+        });
+        */
+    }
+
 </script>
 
 
@@ -433,7 +454,7 @@
             
             {#if topics.length > 0}
                 <div class="topics">
-                    <TreeView topics={topics} updateCheckboxes={updateCheckboxes} vscode={vscode} onExpand={itemExpanded}/>   
+                    <TreeView topics={topics} updateCheckboxes={updateCheckboxes} vscode={vscode} onExpand={itemExpanded} publishTopicSelected={onPublishTopicSelected}/>   
                 </div>
             {/if}
         </div>
@@ -475,6 +496,23 @@
             <div class="canvas-container">
                 <canvas class="img-canvas" id="my-canvas"></canvas>
             </div>
+
+            <div class="message-publisher-container">
+                <h2 style="text-align: center;">Message Publisher</h2>
+                <hr>
+                {#each selectedTopicToPublish as item}
+                    <!-- svelte-ignore a11y-click-events-have-key-events -->
+                    <div class="message-publisher-block">
+                        <span><b style="color:white">Topic : </b>{item.topic}</span>
+                        <br>
+                        <span><b style="color:white">Type : </b>{item.type}</span>
+                    </div>
+                    <div class="message-publisher-data">
+                        nope
+                    </div>
+                {/each}
+            </div>
+            <!--<button on:click={()=>{vscode.postMessage({type: 'getMessageTypes'});}}>get message types</button>-->
         </div>
 </div>
 

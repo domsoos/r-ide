@@ -1,11 +1,19 @@
 .topic-container{
     width: 27%;
-    height: 577px;
+    height: 650px;
     background-color: #3d3d3d;
     color: white!important;
     padding: 15px;
     border-radius: 10px;
     margin-right: 20px;
+}
+
+.message-publisher-container{
+  margin-top: 10px;
+  border-radius: 10px;
+  background-color: #3d3d3d;
+  height: 324px;
+  padding: 15px;
 }
 
 .container{
@@ -28,7 +36,7 @@
 
 .messages-container{
     width: 37%;
-    height: 577px;
+    height: 650px;
     background-color: #3d3d3d;
     color: white!important;
     padding: 15px;
@@ -39,7 +47,7 @@
 
 .topics{
     padding: 15px 15px 15px 0;
-    max-height: 500px;
+    max-height: 570px;
     overflow: auto;
     color: white!important;
     font-size: 16px;
@@ -122,8 +130,23 @@
     user-select: none;
   }
 
+  .message-publisher-block{
+    border: 1px solid white;
+    min-height: 50px;
+    padding: 10px;
+    font-size: 16px;
+    font-weight: 500;
+    user-select: none;
+  }
+
+  .message-publisher-data{
+    background-color: #222222;
+    padding: 10px;
+    font-size: 14px;
+  }
+
   .message-block-container{
-    max-height: 500px;
+    max-height: 580px;
     overflow-y: auto;
   }
 
