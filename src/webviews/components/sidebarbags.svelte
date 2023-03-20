@@ -21,108 +21,19 @@
     let selectedBagPath = null;
     let cloneBagPath = null;
     let isCloneMenuOpen = false;
-    let isConnected;
-
-    let rosApi;
+    let messagesLoaded = false;
+    let connectionsLoaded = false;
     
     let range = [0,1]; 
-
-    // onMount(async () => {
-    //     try {
-    //         await new ROS();
-    //         rosApi = ROS.getROSApi();
-    //     } catch (err) {
-    //         isConnected = false;
-    //         console.error(err);
-    //         vscode.postMessage({
-    //             type: 'r-ide.noConnection',
-    //         });
-    //     }
-    // });
-
-    function waitForCondition(leadup) {
-        console.log(leadup);
-        return new Promise((resolve) => {
-            setTimeout(() => {resolve();}, leadup);
-        });
-    }
-
-    async function playBag(startTime) {
-        isPlaying = true;
-        let {i, leadup} = findFirstMessage(startTime);
-
-        console.log(messages.length);
-        while (i < messages.length - 1) {
-            const {message, topic, timestamp} = messages[i];
-
-            await waitForCondition(leadup);
-
-            publishers.get(topic).publish(messages[i]);
-            // console.log(message);
-
-            i++;
-
-            // fast convert seconds and nanoseconds into milliseconds
-            // console.log(messages[i]);
-            const nextTimeStamp = messages[i].timestamp;
-            leadup = ((nextTimeStamp.sec - timestamp.sec) * 1000) + ((nextTimeStamp.nsec >> 20) - (timestamp.nsec >> 20));
-        }
-
-        console.log('finished playing');
-        
-    }
-
-    async function setupPublishers(connections) {
-        topics = []
-        publishers = new Map();
-        for (let conn of connections) {
-            topics.push(conn.topic);
-            let newPublisher = new ROSLIB.Topic({
-                ros: rosApi,
-                messageType: conn.type,
-                name: conn.topic
-            });
-
-            newPublisher.advertise();
-
-            publishers.set(conn.topic, newPublisher);
-
-        }
-
-        console.log([...publishers.values()])
-    }
-
-    /**
-     * Returns the first index of the first message to play and the wait time to play it
-     * @param startTime The time from the first message that the bag starts. Starts with the first message if startTime === 0
-     */
-    function findFirstMessage(startTime) {
-        if (startTime === 0) {
-            return {i: 0, leadup: 0};
-
-        // After last message
-        } else if (false) {
-            return messages.length;
-        }
-
-        // TODO: Binary search to find first message
-        return {i: 0, leadup: 0};
-    }
 
     window.addEventListener('message', event => {
         // console.log(event);
 		const message = event.data; // The JSON data our extension sent
 		switch (message.type) {
 			case 'setSelectedBag':{
-                messages = [];
-                topics = [];
-
-                
-                for (let p of publishers.keys()) {
-                    publishers.get(p).unadvertise();
-                }
-                
-                publishers.clear();
+                // TODO: Possible race condition on extremely small bags?
+                connectionsLoaded = false;
+                messagesLoaded = false;
 
                 selectedBagPath = message.value.path;                
                 selectedBag = selectedBagPath.substring(selectedBagPath.lastIndexOf('/'));
@@ -146,6 +57,14 @@
                     messages.push(...message.value);
                     console.log(messages.length);
                 }
+                break;
+            }
+            case 'createdConnections': {
+                connectionsLoaded = true;
+                break;
+            }
+            case 'createdMessages': {
+                messagesLoaded = true;
                 break;
             }
 		}
@@ -183,7 +102,7 @@
             <div class="buttons-flex">
                 <button class="bag-buttons" on:click={() => {isBagManagerOpen = true}}>Cancel</button>
                 <button class="bag-buttons" on:click={() => {isCloneMenuOpen = true;}}>Clone</button>
-                <button class="bag-buttons" on:click={() => {vscode.postMessage({type: 'playBag'})}}>Play</button>
+                <button class="bag-buttons" on:click={() => {vscode.postMessage({type: 'playBag'})}} disabled={!(connectionsLoaded && messagesLoaded)}>Play</button>
             </div>
 
         <!-- Clone bag menu -->
