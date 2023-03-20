@@ -30,6 +30,10 @@ export class SidebarBagsProvider implements vscode.WebviewViewProvider {
 
     // Read all messages
     bag.readMessages({}, result => {
+      // Convert Images from UInt8Array into base64 string
+      if ('data' in result.message) {
+        result.message.data = Buffer.from(result.message.data).toString('base64');
+      }
       this.messages.push(result);
     }).then(() => {
       console.log('read all messages');
@@ -89,10 +93,6 @@ export class SidebarBagsProvider implements vscode.WebviewViewProvider {
         // } else 
         if (this.publishers.has(topic)) {
           // let output: Uint8Array = new Uint8Array(message.data.length);
-          // encodeMono8(message.data, this.messages[i].width, this.messages[i].height, output);
-          if ('data' in message) {
-            message.data = Buffer.from(message.data).toString('base64');
-          }
           this.publishers.get(topic)?.publish(new ROSLIB.Message(message));
           // console.log(this.messages[i]);
         }
