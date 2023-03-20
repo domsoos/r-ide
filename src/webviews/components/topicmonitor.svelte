@@ -269,11 +269,11 @@
             activeMediaTopic = null;
         }
 
-        rosApi.getMessageDetails(item.type, (details) => {
-            console.log(rosApi.decodeTypeDefs(details));
-        }, (error) => {
-            console.log(error);
-        });
+        // rosApi.getMessageDetails(item.type, (details) => {
+        //     console.log(rosApi.decodeTypeDefs(details));
+        // }, (error) => {
+        //     console.log(error);
+        // });
     
         let newMediaTopic = new ROSLIB.Topic({
             ros : rosApi,
@@ -290,7 +290,7 @@
 
     function decodeImageMessage(message){
 
-        console.log(message);
+        // console.log(message);
 
         if(message.data){
             let width = message.width;

@@ -21,11 +21,18 @@ export class SidebarBagsProvider implements vscode.WebviewViewProvider {
 
     this.messages = [];
     this.publishers = new Map();
-
-    console.log(this.rosapi);
   }
 
   private async openBag(bagPath: string) {
+    this.clearBag();
+
+    if (!this.rosapi.isConnected) {
+      this.rosapi.close();
+      this.rosapi = new ROSLIB.Ros({
+        url: "ws://localhost:9090"
+      });
+    }
+    
     let bag: Bag = await open(bagPath);
 
     // Read all messages
@@ -37,7 +44,7 @@ export class SidebarBagsProvider implements vscode.WebviewViewProvider {
       this.messages.push(result);
     }).then(() => {
       console.log('read all messages');
-      this._view?.webview.postMessage({type: 'FinishedMessages'});
+      this._view?.webview.postMessage({type: 'createdMessages'});
     });
 
     // Read all topics and create publishers
@@ -63,7 +70,7 @@ export class SidebarBagsProvider implements vscode.WebviewViewProvider {
 
     // console.log([...this.publishers.values()]);
 
-    this._view?.webview.postMessage({type: 'FinishedConnections'});
+    this._view?.webview.postMessage({type: 'createdConnections'});
     console.log('read all connections');
   }
 
@@ -72,7 +79,7 @@ export class SidebarBagsProvider implements vscode.WebviewViewProvider {
     return new Promise((resolve) => {
         setTimeout(() => {resolve(true);}, leadup);
     });
-}
+  }
 
   private async playBag(startTime: number) {
     if (!this.rosapi.isConnected) {
@@ -109,7 +116,15 @@ export class SidebarBagsProvider implements vscode.WebviewViewProvider {
     }
 
     console.log('finished playing');
-}
+  }
+
+  private clearBag() {
+    this.messages = [];
+    for (let p of [...this.publishers.values()]) {
+      p.unadvertise();
+    }
+    this.publishers.clear();
+  }
 
   public resolveWebviewView(webviewView: vscode.WebviewView) {
     this._view = webviewView;
