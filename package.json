@@ -4,7 +4,7 @@
   "description": "",
   "version": "0.0.1",
   "engines": {
-    "vscode": "^1.74.0"
+    "vscode": "^1.63.0"
   },
   "categories": [
     "Other"
@@ -14,19 +14,25 @@
   ],
   "main": "./out/extension.js",
   "contributes": {
-    "languages": [{
-      "id": "ros-srv",
-      "aliases": ["ROS srv"],
-      "extensions": [".srv"],
-      "configuration": "./language-configuration.json"
-  }],
-  "grammars": [
-    {
+    "languages": [
+      {
+        "id": "ros-srv",
+        "aliases": [
+          "ROS srv"
+        ],
+        "extensions": [
+          ".srv"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
         "language": "ros-srv",
         "scopeName": "source.ros-srv",
         "path": "./syntaxes/ros-srv.tmLanguage.json"
-    }
-],
+      }
+    ],
     "viewsContainers": {
       "activitybar": [
         {
@@ -184,42 +190,50 @@
     "watch": "tsc -watch -p ./",
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src --ext ts",
-    "test": "node ./out/test/runTest.js",
-    "rollup": "rollup -c -w"
+    "test": "jest",
+    "rollup": "rollup -c -w",
+    "clean": "rm -rf .vscode-tes out/"
   },
   "devDependencies": {
+    "@babel/core": "^7.21.3",
+    "@babel/preset-env": "^7.20.2",
     "@bulatdashiev/svelte-slider": "^1.0.3",
     "@rollup/plugin-commonjs": "^24.0.1",
     "@rollup/plugin-node-resolve": "^15.0.1",
     "@rollup/plugin-terser": "^0.4.0",
     "@rollup/plugin-typescript": "^11.0.0",
     "@tsconfig/svelte": "^3.0.0",
+    "@types/chai": "^4.3.4",
     "@types/glob": "^8.0.1",
     "@types/mocha": "^10.0.1",
     "@types/node": "^16.18.12",
-    "@types/vscode": "^1.75.0",
+    "@types/sinon": "^10.0.13",
+    "@types/vscode": "^1.76.0",
     "@typescript-eslint/eslint-plugin": "^5.52.0",
     "@typescript-eslint/parser": "^5.52.0",
     "@vscode/test-electron": "^2.2.3",
+    "babel-jest": "^29.5.0",
     "buffer": "^6.0.3",
+    "chai": "^4.3.7",
     "concurrently": "^7.6.0",
     "eslint": "^8.34.0",
     "glob": "^8.0.3",
+    "jest": "^29.5.0",
     "mocha": "^10.1.0",
     "rollup": "^2.79.1",
     "rollup-plugin-svelte": "^7.1.2",
     "rollup-plugin-terser": "^7.0.2",
+    "sinon": "^15.0.2",
     "svelte": "^3.55.1",
     "svelte-check": "^3.0.3",
     "svelte-preprocess": "^5.0.1",
-    "typescript": "^4.9.5"
+    "typescript": "^4.9.5",
+    "vscode-test": "^1.6.1"
   },
-  "extensionDependencies": [
-    "ms-iot.vscode-ros"
-  ],
   "dependencies": {
     "mongoose": "^6.9.2",
     "roslib": "^1.3.0",
-    "slider": "^1.0.4"
+    "slider": "^1.0.4",
+    "vscode-test": "^1.6.1"
   }
 }

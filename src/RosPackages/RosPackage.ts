@@ -570,7 +570,8 @@ function generateRideTags(marker: string) {
  */
 export function updateExistingPackages() {
     // This command might be limited to some later ros distros
-    RosPackage.existingPackages = new Set(cp.execSync(`rospack list-names`).toString().split('\n'));
+    
+//    RosPackage.existingPackages = new Set(cp.execSync(`rospack list-names`).toString().split('\n'));
 }
 
 /**

@@ -1,8 +1,10 @@
-import * as vscode from "vscode";
+import * as vscode from 'vscode';
 import { SidebarWizardsProvider } from "./SidebarWizardsProvider";
 import { expect } from "chai";
 import { beforeEach, afterEach, describe, it } from "mocha";
 import * as sinon from "sinon";
+
+
 
 describe("SidebarWizardsProvider", () => {
   let sandbox: sinon.SinonSandbox;

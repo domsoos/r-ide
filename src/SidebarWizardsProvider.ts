@@ -1,4 +1,4 @@
-import * as vscode from "vscode";
+import * as vscode from 'vscode';
 import { getNonce } from "./getNonce";
 import * as dbcontroller from "./database/dbcontroller";
 

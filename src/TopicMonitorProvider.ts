@@ -1,5 +1,7 @@
-import * as vscode from "vscode";
+import * as vscode from 'vscode';
 import { getNonce } from "./getNonce";
+
+
 
 export class TopicMonitorProvider {
   /**
@@ -54,7 +56,7 @@ export class TopicMonitorProvider {
     TopicMonitorProvider.currentPanel = new TopicMonitorProvider(panel, extensionUri);
   }
 
-  private constructor(panel: vscode.WebviewPanel, extensionUri: vscode.Uri) {
+  public constructor(panel: vscode.WebviewPanel, extensionUri: vscode.Uri) {
     this._panel = panel;
     this._extensionUri = extensionUri;
 
