@@ -1,20 +1,24 @@
 import * as vscode from 'vscode';
-import { SidebarWizardsProvider } from "./SidebarWizardsProvider";
+import { SidebarWizardsProvider } from "../../SidebarWizardsProvider";
 import { expect } from "chai";
 import { beforeEach, afterEach, describe, it } from "mocha";
 import * as sinon from "sinon";
+import * as path from 'path';
 
-
+console.log(process.env);
 
 describe("SidebarWizardsProvider", () => {
   let sandbox: sinon.SinonSandbox;
   let webviewView: vscode.WebviewView;
   let sidebarWizardsProvider: SidebarWizardsProvider;
+  const extensionUri = vscode.Uri.file("");
 
   beforeEach(() => {
+    
     sandbox = sinon.createSandbox();
-    webviewView = {} as vscode.WebviewView;
-    sidebarWizardsProvider = new SidebarWizardsProvider(vscode.Uri.file(""));
+    sidebarWizardsProvider = new SidebarWizardsProvider(extensionUri);
+    webviewView = sidebarWizardsProvider._view!;
+    
   });
 
   afterEach(() => {
