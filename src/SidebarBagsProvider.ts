@@ -1,43 +1,16 @@
 import * as vscode from "vscode";
 import { getNonce } from "./getNonce";
-import Bag, { open } from 'rosbag';
+import { Rosbag } from "./RosBag/rosbag";
 
 export class SidebarBagsProvider implements vscode.WebviewViewProvider {
   _view?: vscode.WebviewView;
   _doc?: vscode.TextDocument;
 
-  constructor(private readonly _extensionUri: vscode.Uri) {}
+  bag: Rosbag | undefined;
 
-  private async openBag(bagPath: string) {
-    let bag: Bag = await open(bagPath);
-
-    const packetSize = 10000;
-    let messagePacket: any[] = [];
-
-    // let messages: any[] = [];
-
-    bag.readMessages({}, result => {
-      const {topic, message, timestamp} = result;
-      messagePacket.push({topic: topic, message: message, timestamp: timestamp});
-      if (messagePacket.length >= packetSize) {
-        // console.log(messagePacket);
-        this._view?.webview.postMessage({type: 'getMessages', value: messagePacket});
-        // this.messages = this.messages.concat(messagePacket);
-        messagePacket = [];
-      }
-    }).then(() => {
-      console.log('read all messages');
-      this._view?.webview.postMessage({type: 'getMessages', value: messagePacket});
-    });
-
-    let connections = [];
-    for (let conn in bag.connections) {
-      connections.push(bag.connections[conn]);
-    }
-
-    console.log([connections]);
-
-    this._view?.webview.postMessage({type: 'getConnections', value: connections});
+  constructor(private readonly _extensionUri: vscode.Uri) {
+    this.bag = undefined;
+    Rosbag.connect();
   }
 
   public resolveWebviewView(webviewView: vscode.WebviewView) {
@@ -78,7 +51,8 @@ export class SidebarBagsProvider implements vscode.WebviewViewProvider {
             // filters: {'Bags': ['.bag']}
           }).then(async (result) =>{
             if(result && result[0].path){
-              this.openBag(result[0].fsPath);
+              await this.bag?.clearBag();
+              this.bag = new Rosbag(result[0].fsPath, webviewView.webview);
 
               webviewView.webview.postMessage({
                 type: 'setSelectedBag',
@@ -109,6 +83,14 @@ export class SidebarBagsProvider implements vscode.WebviewViewProvider {
         }
         case "r-ide.noConnection":{
           vscode.commands.executeCommand('r-ide.no-ros-connection');
+          break;
+        }
+        case "playBag": {
+          this.bag?.playBag();
+          break;
+        }
+        case "pauseBag": {
+          this.bag?.pauseBag();
           break;
         }
       }
