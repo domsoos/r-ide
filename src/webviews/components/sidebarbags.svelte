@@ -2,7 +2,6 @@
     const vscode = acquireVsCodeApi();
     import Slider from '@bulatdashiev/svelte-slider';
     import { slide } from "svelte/transition";
-    import ROSLIB from 'roslib';
 
     /* Accordion Code */
     let isAccordionOpen = false
@@ -11,7 +10,6 @@
 
     let topics = [];
     let messages = [];
-    let publishers = new Map();
     let isPlaying = false;
 
 
@@ -100,9 +98,13 @@
         <!-- Play bag -->
         {#if !isCloneMenuOpen}
             <div class="buttons-flex">
-                <button class="bag-buttons" on:click={() => {isBagManagerOpen = true}}>Cancel</button>
+                <button class="bag-buttons" on:click={() => {isBagManagerOpen = true;}}>Cancel</button>
                 <button class="bag-buttons" on:click={() => {isCloneMenuOpen = true;}}>Clone</button>
-                <button class="bag-buttons" on:click={() => {vscode.postMessage({type: 'playBag'})}} disabled={!(connectionsLoaded && messagesLoaded)}>Play</button>
+                {#if !isPlaying}
+                    <button class="bag-buttons" on:click={() => {vscode.postMessage({type: 'playBag'}); isPlaying = true}} disabled={!(connectionsLoaded && messagesLoaded)}>Play</button>
+                {:else}
+                    <button class="bag-buttons" on:click={() => {vscode.postMessage({type: 'pauseBag'}); isPlaying = false;}}>Pause</button>               
+                {/if}
             </div>
 
         <!-- Clone bag menu -->
