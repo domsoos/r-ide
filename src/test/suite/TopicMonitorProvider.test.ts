@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as sinon from 'sinon';
 import { expect } from 'chai';
-import { TopicMonitorProvider } from './TopicMonitorProvider';
+import { TopicMonitorProvider } from '../../TopicMonitorProvider';
 
 
 suite('TopicMonitorProvider', () => {

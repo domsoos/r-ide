@@ -211,7 +211,7 @@
     "@types/vscode": "^1.76.0",
     "@typescript-eslint/eslint-plugin": "^5.52.0",
     "@typescript-eslint/parser": "^5.52.0",
-    "@vscode/test-electron": "^2.2.3",
+    "@vscode/test-electron": "^2.3.0",
     "babel-jest": "^29.5.0",
     "buffer": "^6.0.3",
     "chai": "^4.3.7",
@@ -227,13 +227,14 @@
     "svelte": "^3.55.1",
     "svelte-check": "^3.0.3",
     "svelte-preprocess": "^5.0.1",
-    "typescript": "^4.9.5",
-    "vscode-test": "^1.6.1"
+    "typescript": "^4.9.5"
   },
   "dependencies": {
     "mongoose": "^6.9.2",
     "roslib": "^1.3.0",
-    "slider": "^1.0.4",
-    "vscode-test": "^1.6.1"
-  }
+    "slider": "^1.0.4"
+  },
+  "extensionDependencies": [
+    "ms-iot.vscode-ros"
+  ]
 }
