@@ -333,8 +333,8 @@
 		],
 		"description": "def talker",
 		"isFileTemplate": true
-	  }
-}
+	  },
+
 		"prefix": "urdf example",
 		"body": [
 		  "<?xml version=\"1.0\"?>",
@@ -352,5 +352,5 @@
 		"isFileTemplate": true
 	}
 	
-}
+
 
