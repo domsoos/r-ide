@@ -44,8 +44,8 @@ export function activate(context: vscode.ExtensionContext) {
 			sidebarWizardsProvider
 		),
 		vscode.window.registerWebviewViewProvider(
-		  "sidebar-bags",
-		  sidebarBagsProvider
+			"sidebar-bags",
+			sidebarBagsProvider
 		),
 		vscode.window.registerWebviewViewProvider(
 			"sidebar-visuals",
@@ -81,6 +81,9 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.commands.registerCommand(
 			"r-ide.run-catkin-make",
 			() => {
+				// for (let p of RosPackage.packages.values()) {
+
+				// }
 				const terminal = vscode.window.createTerminal();
 				terminal.show();
 				terminal.sendText('catkin_make');
@@ -121,9 +124,8 @@ export function activate(context: vscode.ExtensionContext) {
 					}
 				}
 			  });
-		})
-		
-	  );
+		})	
+	);
 }
 
 // This method is called when your extension is deactivated
