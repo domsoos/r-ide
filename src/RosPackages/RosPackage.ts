@@ -46,7 +46,6 @@ export class RosPackage {
                 this.updateSrvFiles();
             } else if (uri.fsPath.endsWith('.cpp')) {
                 this.cppFiles.add(uri.fsPath);
-                // Update cpp in package stuff
             } else if (uri.fsPath.endsWith('.py')) {
                 this.pyFiles.add(uri.fsPath);
                 this.updatePythonFiles();
@@ -64,7 +63,6 @@ export class RosPackage {
                 this.updateSrvFiles();
             } else if (uri.fsPath.endsWith('.cpp')) {
                 this.cppFiles.delete(uri.fsPath);
-                this.updateCppFiles();
             } else if (uri.fsPath.endsWith('.py')) {
                 this.pyFiles.delete(uri.fsPath);
                 this.updatePythonFiles();
@@ -86,15 +84,13 @@ export class RosPackage {
                 }
             }
 
-            this.updateMsgFiles();
-            this.updateSrvFiles();
-            this.updatePythonFiles();
-            this.updateCppFiles();
+            // this.updateMsgFiles();
+            // this.updateSrvFiles();
+            // this.updatePythonFiles();
         });
     } 
 
     public updateMsgFiles() {
-        // Assumes all message files are in the msg folder
         let files: string[] = [];
         this.msg.forEach((uri) => {
             files.push(relative(this.rootDirectory.fsPath, uri));
@@ -115,7 +111,6 @@ export class RosPackage {
     }
 
     public updateSrvFiles() {
-        // Assumes all service files are in srv folder
         let files: string[] = [];
         this.srv.forEach((uri) => {
             files.push(relative(this.rootDirectory.fsPath, uri));
@@ -135,7 +130,6 @@ export class RosPackage {
     }
     
     public updatePythonFiles() {
-        // Assumes all python scripts are in scripts folder
         let files: string[] = [];
         this.pyFiles.forEach((uri) => {
             files.push(relative(this.rootDirectory.fsPath, uri));
@@ -153,11 +147,21 @@ export class RosPackage {
         replaceTextInDocument(vscode.Uri.joinPath(this.rootDirectory, '/CMakeLists.txt'), regex, replace);
     }
 
-    public updateCppFiles() {
-        // Assumes all cpp files are in src folder
+    public checkCppFiles() {
         let files: string[] = [];
         this.cppFiles.forEach((uri) => {
             files.push(relative(this.rootDirectory.fsPath, uri));
+        });
+
+        console.log(files);
+
+        const regex = /^(\s*?#?\s*?add_(executable|library)\((.*?)\)\s+target_link_libraries\((.*?)\))*/sgmi;
+        vscode.workspace.openTextDocument(vscode.Uri.joinPath(this.rootDirectory, 'CMakeLists.txt')).then((document) => {
+            const text = document.getText();
+
+            let match = text.matchAll(regex);
+            console.log(match);
+
         });
     }
 }
