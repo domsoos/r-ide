@@ -33,6 +33,7 @@
 		"body": [
 		  "#!/usr/bin/env python",
 		  "",
+		  "import rospy",
 		  "# license removed for brevity",
 		  "",
 		  "from std_msgs.msg import String",
