@@ -12,7 +12,7 @@ import {
 	createSrv
 } from './commands/commands';
 import { 
-	addNewFindPackage, identifyPackages, RosPackageQuickPick, updateExistingPackages
+	addNewFindPackage, identifyPackages, updateExistingPackages
 } from './RosPackages/RosPackage';
 import { SidebarTopicsProvider } from './SidebarTopicsProvider';
 import * as cp from 'child_process';
@@ -71,16 +71,21 @@ export function activate(context: vscode.ExtensionContext) {
 			createSrv
 		),
 		vscode.commands.registerCommand(
-			"r-ide.quick-pick",
-			RosPackageQuickPick
-		),
-		vscode.commands.registerCommand(
 			"r-ide.update-package-list",
 			updateExistingPackages
 		),
 		vscode.commands.registerCommand(
 			"r-ide.add-new-find-package",
 			addNewFindPackage
+		),
+		vscode.commands.registerCommand(
+			"r-ide.run-catkin-make",
+			() => {
+				const terminal = vscode.window.createTerminal();
+				terminal.show();
+				terminal.sendText('catkin_make');
+				terminal.sendText('source ./devel/setup.bash');
+			}
 		),
 		vscode.commands.registerCommand("r-ide.open-topic-monitor", () => {
 			TopicMonitorProvider.createOrShow(context.extensionUri);

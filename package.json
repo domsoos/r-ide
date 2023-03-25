@@ -11,9 +11,6 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [
-    "onCommand:r-ide.create-file-from-template"
-  ],
   "main": "./out/extension.js",
   "contributes": {
     "languages": [
@@ -104,65 +101,6 @@
         ]
       },
       {
-        "command": "r-ide.create-package",
-        "title": "R-IDE: Create a new ROS package",
-        "arguments": [
-          {
-            "name": "package_name",
-            "description": "What should the package be named?",
-            "type": "text"
-          },
-          {
-            "name": "directory",
-            "description": "Where should the package be placed",
-            "type": "workspaceFolder"
-          }
-        ]
-      },
-      {
-        "command": "r-ide.register-package",
-        "title": "R-IDE: Register a package",
-        "arguments": [
-          {
-            "name": "packageDirectory",
-            "description": "Select the package direcotry",
-            "type": "workspaceFolder"
-          }
-        ]
-      },
-      {
-        "command": "r-ide.register-msg",
-        "title": "R-IDE: Register a message file with a package",
-        "arguments": [
-          {
-            "name": "package",
-            "description": "Select the package to register",
-            "type": "workspaceFolder"
-          },
-          {
-            "name": "msg",
-            "description": "Select the message files to add",
-            "type": "uri"
-          }
-        ]
-      },
-      {
-        "command": "r-ide.register-srv",
-        "title": "R-IDE: Register a service file with a package",
-        "arguments": [
-          {
-            "name": "package",
-            "description": "Select the package to register",
-            "type": "workspaceFolder"
-          },
-          {
-            "name": "srv",
-            "description": "Select the service files to add",
-            "type": "uri"
-          }
-        ]
-      },
-      {
         "command": "r-ide.open-topic-monitor",
         "title": "R-IDE: Open Topic Monitor"
       },
@@ -173,6 +111,10 @@
       {
         "command": "r-ide.add-new-find-package",
         "title": "R-IDE: Add a new package to the find package call"
+      },
+      {
+        "command": "r-ide.run-catkin-make",
+        "title": "R-IDE: Run catkin_make"
       }
     ],
     "snippets": [

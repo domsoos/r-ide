@@ -1,6 +1,5 @@
 import * as vscode from "vscode";
 import * as cp from "child_process";
-import { Ros } from "roslib";
 import { relative } from "path";
 
 export class RosPackage {
@@ -116,6 +115,14 @@ export class RosPackage {
         const replace = `catkin_install_python(\n    ${["PROGRAMS", ...files].join('\n    ')}\n    DESTINATION \${CATKIN_PACKAGE_BIN_DESTINATION}\n)`;
         replaceTextInDocument(vscode.Uri.joinPath(this.rootDirectory, '/CMakeLists.txt'), regex, replace);
     }
+
+    public updateCppFiles() {
+        // Assumes all cpp files are in src folder
+        let files: string[] = [];
+        this.cppFiles.forEach((uri) => {
+            files.push(relative(this.rootDirectory.fsPath, uri));
+        });
+    }
 }
 
 /**
@@ -156,7 +163,9 @@ export async function RosPackageQuickPick(newPackage: boolean = true) {
  * @param root The root directory to identify packages
  */
 export async function identifyPackages(root: vscode.Uri) {
+    RosPackage.packages.clear();
     console.log(root.fsPath.endsWith("/catkin_ws"));
+    let myPackages = [];
     if (root.fsPath.endsWith("/catkin_ws")) {
         // catkin_ws is the workspace
         root = vscode.Uri.joinPath(root, '/src/');
@@ -166,7 +175,9 @@ export async function identifyPackages(root: vscode.Uri) {
             // If its a folder, check that it has a CMakeLists.txt and package.xml
             if (type === 2) {
                 let hasCmake = false, hasPackageXml = false;
-                for (let [file, _] of await vscode.workspace.fs.readDirectory(vscode.Uri.joinPath(root, folder))) {
+                let uri = vscode.Uri.joinPath(root, folder);
+
+                for (let [file, _] of await vscode.workspace.fs.readDirectory(uri)) {
                     if (file === "CMakeLists.txt") {
                         hasCmake = true;
                     } else if (file === "package.xml") {
@@ -175,7 +186,8 @@ export async function identifyPackages(root: vscode.Uri) {
                 }
                 
                 if (hasCmake && hasPackageXml) {
-                    new RosPackage(vscode.Uri.joinPath(root, folder), folder);
+                    new RosPackage(uri, folder);
+                    myPackages.push(uri);
                 }
             }
         }
@@ -184,8 +196,6 @@ export async function identifyPackages(root: vscode.Uri) {
         const name = root.fsPath.split('/')[-1];
         RosPackage.packages.set(name, new RosPackage(root, name));
     }
-
-    console.log(RosPackage.packages.entries());
 }
 
 /**
