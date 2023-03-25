@@ -10,20 +10,17 @@ export class RosPackage {
     // Get all exisiting packages installed on system
     public static existingPackages: Set<string>;
 
-    msg: Set<vscode.Uri>;
-    srv: Set<vscode.Uri>;
-    actions: Set<vscode.Uri>;
-    pyFiles: Set<vscode.Uri>;
-    cppFiles: Set<vscode.Uri>;
+    msg: Set<string>;
+    srv: Set<string>;
+    actions: Set<string>;
+    pyFiles: Set<string>;
+    cppFiles: Set<string>;
 
     rootDirectory: vscode.Uri;
     projectName: string;
 
     // File watchers
-    msgWatcher: vscode.FileSystemWatcher;
-    srvWatcher: vscode.FileSystemWatcher;
-    pyWatcher: vscode.FileSystemWatcher;
-    cppWatcher: vscode.FileSystemWatcher;
+    fsWatcher: vscode.FileSystemWatcher;
 
     constructor(directory: vscode.Uri, name: string) {
         RosPackage.packages.set(directory.fsPath, this);
@@ -38,77 +35,71 @@ export class RosPackage {
         this.cppFiles = new Set();
 
         // File watchers
-        this.msgWatcher = vscode.workspace.createFileSystemWatcher(`${directory.fsPath}/**/*.msg`);
-        this.srvWatcher = vscode.workspace.createFileSystemWatcher(`${directory.fsPath}/**/*.srv`);
-        this.pyWatcher = vscode.workspace.createFileSystemWatcher(`${directory.fsPath}/**/*.py`);
-        this.cppWatcher = vscode.workspace.createFileSystemWatcher(`${directory.fsPath}/**/*.cpp`);
+        this.fsWatcher = vscode.workspace.createFileSystemWatcher(`${directory.fsPath}/**`);
 
         // On creates
-        this.msgWatcher.onDidCreate((uri) => {
-            this.msg.add(uri);
+        this.fsWatcher.onDidCreate((uri) => {
+            if (uri.fsPath.endsWith('.msg')) {
+                this.msg.add(uri.fsPath);
+                this.updateMsgFiles();
+            } else if (uri.fsPath.endsWith('.srv')) {
+                this.srv.add(uri.fsPath);
+                this.updateSrvFiles();
+            } else if (uri.fsPath.endsWith('.cpp')) {
+                this.cppFiles.add(uri.fsPath);
+                // Update cpp in package stuff
+            } else if (uri.fsPath.endsWith('.py')) {
+                this.pyFiles.add(uri.fsPath);
+                this.updatePythonFiles();
+            } else {
+                console.log(uri);
+            }
         });
 
-        this.srvWatcher.onDidCreate((uri) => {
-            this.srv.add(uri);
+        this.fsWatcher.onDidDelete((uri) => {
+            if (uri.fsPath.endsWith('.msg')) {
+                this.msg.delete(uri.fsPath);
+                this.updateMsgFiles();
+            } else if (uri.fsPath.endsWith('.srv')) {
+                this.srv.delete(uri.fsPath);
+                this.updateSrvFiles();
+            } else if (uri.fsPath.endsWith('.cpp')) {
+                this.cppFiles.delete(uri.fsPath);
+                // Update cpp in package stuff
+            } else if (uri.fsPath.endsWith('.py')) {
+                this.pyFiles.delete(uri.fsPath);
+                this.updatePythonFiles();
+            } else {
+                console.log(uri);
+            }
         });
-
-        this.pyWatcher.onDidCreate((uri) => {
-            this.pyFiles.add(uri);
-        });
-
-        this.cppWatcher.onDidCreate((uri) => {
-            this.cppFiles.add(uri);
-        });
-
-        // On delete
-        this.msgWatcher.onDidDelete((uri) => {
-            this.msg.delete(uri);
-        });
-
-        this.srvWatcher.onDidDelete((uri) => {
-            this.srv.delete(uri);
-        });
-
-        this.pyWatcher.onDidDelete((uri) => {
-            this.pyFiles.delete(uri);
-        });
-
-        this.cppWatcher.onDidDelete((uri) => {
-            this.cppFiles.delete(uri);
-        });
-
-
-        // Update config
-        // TODO: Register config
-        const config = vscode.workspace.getConfiguration('r-ide.packages');
-        config.update('RosPackage.packages', RosPackage.packages);
     } 
 
     public updateMsgFiles() {
-        // Assumes all python scripts are in scripts folder
+        // Assumes all message files are in the msg folder
         let files: string[] = [];
         this.msg.forEach((uri) => {
-            files.push(relative(vscode.Uri.joinPath(this.rootDirectory, "/msg/").fsPath, uri.fsPath));
+            files.push(relative(this.rootDirectory.fsPath, uri));
         });
 
         console.log(files);
 
         const regex = /^\s*?#?\s*?add_message_files\s*?\(.*?\)/sgmi;
-        const replace = `add_message_files(${["FILES", ...files].join('\n    ')}\n)`;
+        const replace = `add_message_files(\n    ${["FILES", ...files].join('\n    ')}\n)`;
         replaceTextInDocument(vscode.Uri.joinPath(this.rootDirectory, '/CMakeLists.txt'), regex, replace);
     }
 
     public updateSrvFiles() {
-        // Assumes all python scripts are in scripts folder
+        // Assumes all service files are in srv folder
         let files: string[] = [];
         this.srv.forEach((uri) => {
-            files.push(relative(vscode.Uri.joinPath(this.rootDirectory, "/srv/").fsPath, uri.fsPath));
+            files.push(relative(this.rootDirectory.fsPath, uri));
         });
 
         console.log(files);
 
         const regex = /^\s*?#?\s*?add_service_files\s*?\(.*?\)/sgmi;
-        const replace = `add_service_files(${["FILES", ...files].join('\n    ')}\n)`;
+        const replace = `add_service_files(\n    ${["FILES", ...files].join('\n    ')}\n)`;
         replaceTextInDocument(vscode.Uri.joinPath(this.rootDirectory, '/CMakeLists.txt'), regex, replace);
     }
     
@@ -116,26 +107,25 @@ export class RosPackage {
         // Assumes all python scripts are in scripts folder
         let files: string[] = [];
         this.pyFiles.forEach((uri) => {
-            files.push(relative(vscode.Uri.joinPath(this.rootDirectory, "/scripts/").fsPath, uri.fsPath));
+            files.push(relative(this.rootDirectory.fsPath, uri));
         });
 
         console.log(files);
 
         const regex = /^\s*?#?\s*?catkin_install_python\s*?\(.*?\)/sgmi;
-        const replace = `catkin_install_python(${["PROGRAMS", ...files].join('\n    ')}\n    DESTINATION \${CATKIN_PACKAGE_BIN_DESTINATION}\n)`;
+        const replace = `catkin_install_python(\n    ${["PROGRAMS", ...files].join('\n    ')}\n    DESTINATION \${CATKIN_PACKAGE_BIN_DESTINATION}\n)`;
         replaceTextInDocument(vscode.Uri.joinPath(this.rootDirectory, '/CMakeLists.txt'), regex, replace);
     }
 }
 
 /**
  * A quick pick object that allows a user to quickly select an existing package
- * @returns 
+ * @param newPackage A boolean on whether to include a new package option
+ * @returns The user selected option
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export async function RosPackageQuickPick() {
-    let options: any[] = [];
-
-    console.log(RosPackage.packages.size);
+export async function RosPackageQuickPick(newPackage: boolean = true) {
+    let options: {label: string, value: RosPackage | undefined}[] = [];
 
     RosPackage.packages.forEach((p, name) => {
         options.push({
@@ -144,7 +134,13 @@ export async function RosPackageQuickPick() {
         });
     });
 
-    console.log(options);
+    if (newPackage) {
+        options.push({label: "New RosPackage", value: undefined});
+    }
+
+    if (options.length === 0) {
+        vscode.window.showErrorMessage("There are no packages available");
+    }
 
     return await vscode.window.showQuickPick(
         [...options],
@@ -164,14 +160,24 @@ export async function identifyPackages(root: vscode.Uri) {
     if (root.fsPath.endsWith("/catkin_ws")) {
         // catkin_ws is the workspace
         root = vscode.Uri.joinPath(root, '/src/');
-        console.log(root.fsPath);
+
         for (let [folder, type] of await vscode.workspace.fs.readDirectory(root)) {
-            console.log(`${folder}, ${type}`);
-            // TODO: Assumes all folders are ros packages, this probably isn't true, check for CMakeLists.txt and package.xml
+
+            // If its a folder, check that it has a CMakeLists.txt and package.xml
             if (type === 2) {
-                new RosPackage(vscode.Uri.joinPath(root, `/${folder}`), folder);
+                let hasCmake = false, hasPackageXml = false;
+                for (let [file, _] of await vscode.workspace.fs.readDirectory(vscode.Uri.joinPath(root, folder))) {
+                    if (file === "CMakeLists.txt") {
+                        hasCmake = true;
+                    } else if (file === "package.xml") {
+                        hasPackageXml = true;
+                    }
+                }
+                
+                if (hasCmake && hasPackageXml) {
+                    new RosPackage(vscode.Uri.joinPath(root, folder), folder);
+                }
             }
-            console.log(RosPackage.packages.size);
         }
     } else {
         // Entire workspace must be one package
@@ -190,20 +196,28 @@ export function updateExistingPackages() {
     RosPackage.existingPackages = new Set(cp.execSync(`rospack list-names`).toString().split('\n'));
 }
 
+/**
+ * Updates find package command in CMakeLists.txt
+ * @param myPackage Select a package
+ * @param newPackage 
+ * @returns 
+ */
 export async function addNewFindPackage(myPackage?: vscode.Uri, newPackage?: string[]) {
     // Select a package
     if (!myPackage) {
-        let selectedPackage = await vscode.window.showOpenDialog({
-            canSelectFolders: true,
-            canSelectFiles: false,
-            canSelectMany: false
+        await RosPackageQuickPick().then((result) => {
+            console.log(result);
+            myPackage = result?.value?.rootDirectory;
         });
 
-        if (!selectedPackage) {
+        console.log(myPackage);
+
+        if (!myPackage) {
             return;
         }
-        myPackage = selectedPackage[0];
     }
+
+    console.log(myPackage);
 
     // Find cmake file
     const cmake = vscode.Uri.joinPath(myPackage, './CMakeLists.txt');
@@ -255,6 +269,12 @@ export async function addNewFindPackage(myPackage?: vscode.Uri, newPackage?: str
     replaceTextInDocument(cmake, regex, replace);
 }
 
+/**
+ * Replaces some text in a document and displays a link to the user
+ * @param uri The document to change
+ * @param regexp The expression to match and replace
+ * @param replaceText The text to be placed
+ */
 function replaceTextInDocument(uri: vscode.Uri, regexp: RegExp, replaceText: string) {
     let start: vscode.Position;
     let end: vscode.Position;

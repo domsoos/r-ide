@@ -52,11 +52,15 @@ export class SidebarWizardsProvider implements vscode.WebviewViewProvider {
           break;
         }
         case "openFileExplorer" :{
-          RosPackageQuickPick().then((result) => {
-            if(result){
+          RosPackageQuickPick(true).then((result) => {
+            console.log(result);
+            if(result !== undefined){
               webviewView.webview.postMessage({
                 type: 'setWorkspace',
-                value: result.rootDirectory,
+                value: {
+                  name: result.value?.projectName,
+                  path: result.value?.rootDirectory.fsPath
+                }
               });
             }
           });
