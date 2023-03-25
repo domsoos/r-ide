@@ -12,7 +12,7 @@ import {
 	createSrv
 } from './commands/commands';
 import { 
-	addMsgToPackage, addNewFindPackage, addSrvToPackage, createRosPackage, loadPackages, registerPackage, RosPackage, updateExistingPackages
+	addNewFindPackage, identifyPackages, RosPackageQuickPick, updateExistingPackages
 } from './RosPackages/RosPackage';
 import { SidebarTopicsProvider } from './SidebarTopicsProvider';
 
@@ -26,8 +26,15 @@ export function activate(context: vscode.ExtensionContext) {
 	const sidebarVisualsProvider = new SidebarVisualsProvider(context.extensionUri);
 	const sidebarTopicsProvider = new SidebarTopicsProvider(context.extensionUri);
 
-	loadPackages();
 	updateExistingPackages();	
+
+	// Get the package in the workspace
+	// TODO: We should not have to do this everytime, we can probably save this as a workspace configuration
+	if (vscode.workspace.workspaceFolders !== undefined) {
+		for (let f of vscode.workspace.workspaceFolders) {
+			identifyPackages(f.uri);
+		}
+	}
 
 	context.subscriptions.push(
 		// Webviews
@@ -55,10 +62,6 @@ export function activate(context: vscode.ExtensionContext) {
 			createFileFromTemplate
 		),
 		vscode.commands.registerCommand(
-			"r-ide.create-package",
-			createRosPackage
-		),
-		vscode.commands.registerCommand(
 			"r-ide.create-msg", 
 			createMessage
 		),
@@ -66,19 +69,9 @@ export function activate(context: vscode.ExtensionContext) {
 			"r-ide.create-srv",
 			createSrv
 		),
-
-		// Register files and packages
 		vscode.commands.registerCommand(
-			"r-ide.register-package",
-			registerPackage
-		),
-		vscode.commands.registerCommand(
-			"r-ide.register-msg",
-			addMsgToPackage
-		),
-		vscode.commands.registerCommand(
-			"r-ide.register-srv",
-			addSrvToPackage
+			"r-ide.quick-pick",
+			RosPackageQuickPick
 		),
 		vscode.commands.registerCommand(
 			"r-ide.update-package-list",
