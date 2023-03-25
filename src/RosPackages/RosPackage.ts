@@ -64,13 +64,32 @@ export class RosPackage {
                 this.updateSrvFiles();
             } else if (uri.fsPath.endsWith('.cpp')) {
                 this.cppFiles.delete(uri.fsPath);
-                // Update cpp in package stuff
+                this.updateCppFiles();
             } else if (uri.fsPath.endsWith('.py')) {
                 this.pyFiles.delete(uri.fsPath);
                 this.updatePythonFiles();
             } else {
                 console.log(uri);
             }
+        });
+
+        vscode.workspace.findFiles(`${this.rootDirectory.fsPath}/**`).then((files) => {
+            for (let uri of files) {
+                if (uri.fsPath.endsWith('.msg')) {
+                    this.msg.add(uri.fsPath);
+                } else if (uri.fsPath.endsWith('.srv')) {
+                    this.srv.add(uri.fsPath);
+                } else if (uri.fsPath.endsWith('.py')) {
+                    this.pyFiles.add(uri.fsPath);
+                } else if (uri.fsPath.endsWith('.cpp')) {
+                    this.cppFiles.add(uri.fsPath);
+                }
+            }
+
+            this.updateMsgFiles();
+            this.updateSrvFiles();
+            this.updatePythonFiles();
+            this.updateCppFiles();
         });
     } 
 
@@ -84,7 +103,14 @@ export class RosPackage {
         console.log(files);
 
         const regex = /^\s*?#?\s*?add_message_files\s*?\(.*?\)/sgmi;
-        const replace = `add_message_files(\n    ${["FILES", ...files].join('\n    ')}\n)`;
+
+        let replace;
+        if (this.msg.size > 0) {
+            replace = `add_message_files(\n    ${["FILES", ...files].join('\n    ')}\n)`;
+        } else {
+            replace = "# add_message_files()";
+        }
+        
         replaceTextInDocument(vscode.Uri.joinPath(this.rootDirectory, '/CMakeLists.txt'), regex, replace);
     }
 
@@ -98,7 +124,13 @@ export class RosPackage {
         console.log(files);
 
         const regex = /^\s*?#?\s*?add_service_files\s*?\(.*?\)/sgmi;
-        const replace = `add_service_files(\n    ${["FILES", ...files].join('\n    ')}\n)`;
+
+        let replace;
+        if (this.srv.size > 0) {
+            replace = `add_service_files(\n    ${["FILES", ...files].join('\n    ')}\n)`;
+        } else {
+            replace = "# add_service_files()";
+        }
         replaceTextInDocument(vscode.Uri.joinPath(this.rootDirectory, '/CMakeLists.txt'), regex, replace);
     }
     
@@ -112,7 +144,12 @@ export class RosPackage {
         console.log(files);
 
         const regex = /^\s*?#?\s*?catkin_install_python\s*?\(.*?\)/sgmi;
-        const replace = `catkin_install_python(\n    ${["PROGRAMS", ...files].join('\n    ')}\n    DESTINATION \${CATKIN_PACKAGE_BIN_DESTINATION}\n)`;
+        let replace;
+        if (this.pyFiles.size > 0) {
+            replace = `catkin_install_python(\n    ${["PROGRAMS", ...files].join('\n    ')}\n    DESTINATION \${CATKIN_PACKAGE_BIN_DESTINATION}\n)`;
+        } else {
+            replace = "# catkin_install_python()";
+        }
         replaceTextInDocument(vscode.Uri.joinPath(this.rootDirectory, '/CMakeLists.txt'), regex, replace);
     }
 
