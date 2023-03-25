@@ -190,13 +190,20 @@ export async function RosPackageQuickPick(newPackage: boolean = true) {
         vscode.window.showErrorMessage("There are no packages available");
     }
 
-    return await vscode.window.showQuickPick(
+    let selected = await vscode.window.showQuickPick(
         [...options],
         {
             title: "Select a package",
             canPickMany: false
         }
     );
+
+    if (selected?.value === undefined && selected?.label === "New RosPackage") {
+        await vscode.commands.executeCommand("ros.createCatkinPackage");
+        return;
+    }
+
+    return selected;
 }
 
 /**

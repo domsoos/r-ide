@@ -33,10 +33,18 @@ export class Rosbag {
         // Read all messages
         bag.readMessages({}, (result: any) => {
             // Convert Images from UInt8Array into base64 string
-            if ('data' in result.message) {
-                result.message.data = Buffer.from(result.message.data).toString('base64');
+            if ("data" in result.message && result.message.data instanceof Uint8Array) {
+                try {
+                    result.message.data = Buffer.from(result.message.data).toString('base64'); 
+                } catch (error) {
+                    console.log(result);
+                }
             }
             this.messages.push(result);
+
+            if (this.messages.length % 5000 === 0) {
+                console.log(`Loaded ${this.messages.length} messages`);
+            }
         }).then(() => {
             console.log('read all messages');
             this.view.postMessage({type: 'createdMessages'});
