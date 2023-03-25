@@ -59,11 +59,15 @@
             }
             case 'createdConnections': {
                 connectionsLoaded = true;
+                topics = [...message.value];
                 break;
             }
             case 'createdMessages': {
                 messagesLoaded = true;
                 break;
+            }
+            case "finishedPlaying": {
+                isPlaying = false;
             }
 		}
 	});

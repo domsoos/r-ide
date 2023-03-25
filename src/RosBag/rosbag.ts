@@ -5,8 +5,8 @@ import * as ROSLIB from 'roslib';
 export class Rosbag {
 
     messages: any[];
-    topics: any[];
     publishers: Map<string, ROSLIB.Topic>;
+    pointer: number;
 
     isPaused: boolean;
 
@@ -18,10 +18,10 @@ export class Rosbag {
 
     constructor(bagPath: string, view: vscode.Webview) {
         this.messages = [];
-        this.topics = [];
         this.publishers = new Map();
         this.view = view;
         this.isPaused = true;
+        this.pointer = 0;
         this.openBag(bagPath);
     }
 
@@ -37,14 +37,13 @@ export class Rosbag {
                 result.message.data = Buffer.from(result.message.data).toString('base64');
             }
             this.messages.push(result);
-            }).then(() => {
+        }).then(() => {
             console.log('read all messages');
             this.view.postMessage({type: 'createdMessages'});
         });
 
         // Read all topics and create publishers
         for (let conn in bag.connections) {
-            this.topics.push(conn);
 
             let newPublisher = new ROSLIB.Topic({
                 ros: Rosbag.rosapi,
@@ -59,26 +58,34 @@ export class Rosbag {
 
         // console.log([...this.publishers.values()]);
         console.log('read all connections');
-        this.view.postMessage({type: 'createdConnections'});
+        this.view.postMessage({type: 'createdConnections', value: [...this.publishers.keys()]});
     }
 
-    public async playBag() {
-        let i = 0, leadup = 0;
+    public async playBag(start?: number) {
+        if (start !== undefined) {
+            this.pointer = start;
+        }
+        let leadup = 0;
         this.isPaused = false;
 
         console.log(this.messages.length);
-        while (i < this.messages.length - 1 && !this.isPaused) {
-            const {message, topic, timestamp} = this.messages[i];
+        while (this.pointer < this.messages.length - 1) {
+            if (this.isPaused) {
+                return;
+            }
+            const {message, topic, timestamp} = this.messages[this.pointer];
             await Rosbag.waitForLeadup(leadup);
 
             this.publishers.get(topic)?.publish(new ROSLIB.Message(message));
 
-            i++;
+            this.pointer++;
 
             // fast convert seconds and nanoseconds into milliseconds
-            const nextTimeStamp = this.messages[i].timestamp;
+            const nextTimeStamp = this.messages[this.pointer].timestamp;
             leadup = ((nextTimeStamp.sec - timestamp.sec) * 1000) + ((nextTimeStamp.nsec >> 20) - (timestamp.nsec >> 20));
         }
+
+        this.pointer = 0;
 
         console.log('finished playing');
         this.view.postMessage({type: 'finishedPlaying'});
@@ -86,7 +93,6 @@ export class Rosbag {
 
     public async clearBag() {
         this.messages = [];
-        this.topics = [];
         for (let p of [...this.publishers.values()]) {
             p.unadvertise();
         }
