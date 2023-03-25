@@ -61,35 +61,42 @@ export class Rosbag {
         this.view.postMessage({type: 'createdConnections', value: [...this.publishers.keys()]});
     }
 
-    public async playBag(start?: number) {
-        if (start !== undefined) {
-            this.pointer = start;
-        }
-        let leadup = 0;
+    private currentIndex: number = 0;
+    private leadupRemaining: number = 0;
+    
+    public async playBag() {
+        let leadup: number;
         this.isPaused = false;
-
-        console.log(this.messages.length);
-        while (this.pointer < this.messages.length - 1) {
-            if (this.isPaused) {
-                return;
+    
+        //console.log(this.messages.length);
+        console.log(this.currentIndex);
+        while (this.currentIndex < this.messages.length - 1 && !this.isPaused) {
+            const {message, topic, timestamp} = this.messages[this.currentIndex];
+            
+            if (this.leadupRemaining === 0) {
+                const nextTimeStamp = this.messages[this.currentIndex + 1].timestamp;
+                leadup = ((nextTimeStamp.sec - timestamp.sec) * 1000) + ((nextTimeStamp.nsec >> 20) - (timestamp.nsec >> 20));
+            } else {
+                leadup = this.leadupRemaining;
+                this.leadupRemaining = 0;
             }
-            const {message, topic, timestamp} = this.messages[this.pointer];
+            
             await Rosbag.waitForLeadup(leadup);
-
+    
             this.publishers.get(topic)?.publish(new ROSLIB.Message(message));
-
-            this.pointer++;
-
-            // fast convert seconds and nanoseconds into milliseconds
-            const nextTimeStamp = this.messages[this.pointer].timestamp;
-            leadup = ((nextTimeStamp.sec - timestamp.sec) * 1000) + ((nextTimeStamp.nsec >> 20) - (timestamp.nsec >> 20));
+    
+            this.currentIndex++;
+    
         }
-
-        this.pointer = 0;
-
-        console.log('finished playing');
-        this.view.postMessage({type: 'finishedPlaying'});
+    
+        if (this.isPaused) {
+            this.view.postMessage({type: 'pausedPlaying'});
+        } else {
+            console.log('finished playing');
+            this.view.postMessage({type: 'finishedPlaying'});
+        }
     }
+    
 
     public async clearBag() {
         this.messages = [];
@@ -102,6 +109,15 @@ export class Rosbag {
 
     public pauseBag() {
         this.isPaused = true;
+        // Calculate remaining leadup time when paused
+        if (this.currentIndex < this.messages.length - 1) {
+            const currentTimestamp = this.messages[this.currentIndex].timestamp;
+            const now = Date.now();
+            const playedTime = now - currentTimestamp.sec * 1000 - currentTimestamp.nsec / 1e6;
+            const nextTimestamp = this.messages[this.currentIndex + 1].timestamp;
+            const totalLeadup = ((nextTimestamp.sec - currentTimestamp.sec) * 1000) + ((nextTimestamp.nsec >> 20) - (currentTimestamp.nsec >> 20));
+            this.leadupRemaining = totalLeadup - playedTime;
+        }
     }
 
     private static async waitForLeadup (leadup: number) {
