@@ -3,6 +3,7 @@
     export let updateCheckboxes;
     export let vscode;
     export let onExpand;
+    export let publishTopicSelected;
 
     const handleChange = (event, topic) => {
         topic.checked = event.target.checked;
@@ -11,6 +12,10 @@
 
     function onExpandChange(item){
         onExpand(item);
+    }
+
+    function onPublishTopicSelected(item){
+        publishTopicSelected(item);
     }
 
 </script>
@@ -25,7 +30,7 @@
                 {item.topic}
             </span>
             {#if item.expanded}
-                <svelte:self topics={item.children}  updateCheckboxes={updateCheckboxes} vscode={vscode} onExpand={onExpandChange}/>
+                <svelte:self topics={item.children}  updateCheckboxes={updateCheckboxes} vscode={vscode} onExpand={onExpandChange} publishTopicSelected={onPublishTopicSelected}/>
             {/if}
         {:else}
             <div style="display: flex; justify-content: space-between;">
@@ -37,7 +42,11 @@
                     </label>
                 </span>
             
-                <input type="checkbox" id="{item.fulltopic}-checkbox" bind:checked={item.checked}  on:change={(e) => handleChange(e, item)}/>
+                <div>
+                    <input type="checkbox" id="{item.fulltopic}-checkbox" bind:checked={item.checked}  on:change={(e) => handleChange(e, item)}/>
+                    <!-- svelte-ignore a11y-click-events-have-key-events -->
+                    <span style="style:margin-left: 5px;cursor:pointer;" on:click={onPublishTopicSelected(item)}>&#x270E</span>
+                </div>
             </div>
 
         {/if}

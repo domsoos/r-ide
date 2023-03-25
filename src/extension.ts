@@ -15,6 +15,7 @@ import {
 	addNewFindPackage, identifyPackages, RosPackageQuickPick, updateExistingPackages
 } from './RosPackages/RosPackage';
 import { SidebarTopicsProvider } from './SidebarTopicsProvider';
+import * as cp from 'child_process';
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -123,4 +124,26 @@ export function activate(context: vscode.ExtensionContext) {
 // This method is called when your extension is deactivated
 export function deactivate() {
 	dbcontroller.closeConnection();
+	stopROSBridge();
+}
+
+function stopROSBridge(){
+	const child = cp.exec(`ps aux | grep rosbridge_websocket.launch | grep -v grep | awk '{ print $2 }'`);
+
+    child?.stdout?.on('data', (data) => {
+		const pid = parseInt(data.toString().trim());
+		console.log(`Found ROS Bridge process with PID ${pid}`);
+  
+		// Send the TERM signal to stop the process
+		process.kill(pid, 'SIGTERM');
+		console.log('ROS Bridge stopped');
+	});
+
+	child.on('exit', (code, signal) => {
+		if (code !== 0) {
+		  console.error(`ps exited with code ${code}, signal ${signal}`);
+		}else{
+			console.log("Ros Bridge finder exited gracefully");
+		}
+	});
 }
