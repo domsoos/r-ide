@@ -1,12 +1,15 @@
 import * as vscode from "vscode";
 import { getNonce } from "./getNonce";
 import * as path from 'path';
+import * as cp from 'child_process';
 
 
 
 export class SidebarTopicsProvider implements vscode.WebviewViewProvider {
   _view?: vscode.WebviewView;
   _doc?: vscode.TextDocument;
+  node: any;
+  private _disposables: vscode.Disposable[] = [];
   //activeTopics: any = [];
 
   constructor(private readonly _extensionUri: vscode.Uri) {}
@@ -21,6 +24,10 @@ export class SidebarTopicsProvider implements vscode.WebviewViewProvider {
 
       localResourceRoots: [this._extensionUri],
     };
+
+    this._view.onDidDispose(() => this.dispose(), null, this._disposables);
+
+    
 
     webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
 
@@ -42,6 +49,30 @@ export class SidebarTopicsProvider implements vscode.WebviewViewProvider {
         }
         case "openTopicMonitor":{
           vscode.commands.executeCommand("r-ide.open-topic-monitor");
+          break;
+        }
+        case "debugRosNode":{
+          const childProcess = cp.spawn('bash', ['-c', '. ~/catkin_ws/devel/setup.bash && rosrun '+ data.value.rosPackage + ' '+ data.value.rosNode]);
+          
+
+          childProcess.stdout.on('data', (data: Buffer) => {
+            // Handle standard output
+            console.log(data.toString());
+          });
+        
+          childProcess.stderr.on('data', (data: Buffer) => {
+            // Handle error output
+            console.error(data.toString());
+            vscode.window.showErrorMessage(data.toString());
+            childProcess.kill();
+          });
+
+          this.node = childProcess;
+          break;
+        }
+        case "killNode":{
+          this.node?.kill();
+          break;
         }
       }
     });
@@ -49,6 +80,17 @@ export class SidebarTopicsProvider implements vscode.WebviewViewProvider {
 
   public revive(panel: vscode.WebviewView) {
     this._view = panel;
+  }
+
+  public dispose() {
+    this.node?.kill();
+
+    while (this._disposables.length) {
+      const x = this._disposables.pop();
+      if (x) {
+        x.dispose();
+      }
+    }
   }
 
   private _getHtmlForWebview(webview: vscode.Webview) {

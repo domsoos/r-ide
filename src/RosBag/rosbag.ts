@@ -5,8 +5,8 @@ import * as ROSLIB from 'roslib';
 export class Rosbag {
 
     messages: any[];
-    topics: any[];
     publishers: Map<string, ROSLIB.Topic>;
+    pointer: number;
 
     isPaused: boolean;
 
@@ -18,10 +18,10 @@ export class Rosbag {
 
     constructor(bagPath: string, view: vscode.Webview) {
         this.messages = [];
-        this.topics = [];
         this.publishers = new Map();
         this.view = view;
         this.isPaused = true;
+        this.pointer = 0;
         this.openBag(bagPath);
     }
 
@@ -37,14 +37,13 @@ export class Rosbag {
                 result.message.data = Buffer.from(result.message.data).toString('base64');
             }
             this.messages.push(result);
-            }).then(() => {
+        }).then(() => {
             console.log('read all messages');
             this.view.postMessage({type: 'createdMessages'});
         });
 
         // Read all topics and create publishers
         for (let conn in bag.connections) {
-            this.topics.push(conn);
 
             let newPublisher = new ROSLIB.Topic({
                 ros: Rosbag.rosapi,
@@ -59,7 +58,7 @@ export class Rosbag {
 
         // console.log([...this.publishers.values()]);
         console.log('read all connections');
-        this.view.postMessage({type: 'createdConnections'});
+        this.view.postMessage({type: 'createdConnections', value: [...this.publishers.keys()]});
     }
 
     private currentIndex: number = 0;
@@ -101,7 +100,6 @@ export class Rosbag {
 
     public async clearBag() {
         this.messages = [];
-        this.topics = [];
         for (let p of [...this.publishers.values()]) {
             p.unadvertise();
         }
