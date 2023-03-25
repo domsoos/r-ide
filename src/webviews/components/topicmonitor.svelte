@@ -457,7 +457,7 @@
                 const jsonString = messageElement.value;
                 const jsonObject = JSON.parse(jsonString);
 
-                var message = new rosLib.Message(jsonObject);
+                var message = new ROSLIB.Message(jsonObject);
                 let freq = hzToMs(messagePublisherFreq);
 
                 if(publisherTimeInterval){
