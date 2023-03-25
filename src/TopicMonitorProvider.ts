@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import { getNonce } from "./getNonce";
+import * as cp from "child_process";
 
 export class TopicMonitorProvider {
   /**
@@ -117,7 +118,98 @@ export class TopicMonitorProvider {
           vscode.commands.executeCommand('r-ide.no-ros-connection');
           break;
         }
+        case "getMessageTypes":{
+          //this.generateMessageFormat();
+          let messageField = await this.getMessageField('actionlib_msgs/GoalID');
+          break;
+        }
+        case "getMessageTypeFormat": {
+          if(data?.value?.type && data?.value?.fulltopic){
+            let messageField = await this.getMessageField(data.value.type);
+            console.log(messageField);
+          }
+          break;
+        }
       }
+    });
+  }
+
+  /**
+   * select topic to publish from topic monitor
+   * get the type from the topic
+   * get the format of the type
+   * 
+   *
+   * return the format
+   */
+
+
+  private async generateMessageFormat(){
+    try {
+      const messageTypes: any = await this.getMessageTypes();
+      const messageFields: Map<any, any> = await Promise.all(messageTypes.map(async (messageType: any) => {
+        return {
+          [messageType]: await this.getMessageField(messageType)
+        };
+      })).then((results) => {
+        return Object.assign({}, ...results);
+      });
+
+      console.log(messageFields);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  private async getMessageField(messageType: any){
+    return new Promise((resolve, reject)=>{
+      //let cpRosMsg = cp.spawn('rosmsg', ['show', messageType]);
+      let cpRosMsg = cp.exec(`rosmsg show ${messageType}`);
+      let messageFields:any = {};
+
+      cpRosMsg.stdout?.on('data', (data) =>{
+        if(data){
+          //const lines = data.toString().trim().split('\n');
+          const lines = data.trim().split('\n');
+          for(const line of lines){
+            const match = line.match(/^\s*(\w+)\s+(\w+)/);
+            if (match) {
+              const fieldType = match[1];
+              const fieldName = match[2];
+              messageFields[fieldName] = fieldType;
+            }
+          }
+        }
+      });
+      cpRosMsg.on('close', (code) => {
+        if (code === 0) {
+          resolve(messageFields);
+        } else {
+          reject(new Error(`rosmsg show exited with code ${code}`));
+        }
+      });
+    });
+  }
+
+  private async getMessageTypes(){
+    return new Promise((resolve, reject) => {
+      let cpRosList = cp.spawn('rosmsg', ['list']);
+      let messageTypes: any = [];
+  
+      cpRosList.stdout?.on('data', (data) => {
+        if (data) {
+          const msgList = data.toString().trim().split('\n');
+          messageTypes.push(...msgList);
+        }
+      });
+  
+      cpRosList.on('close', (code) => {
+        if (code === 0) {
+          resolve(messageTypes);
+        } else {
+          reject(new Error(`rosmsg list exited with code ${code}`));
+        }
+      });
     });
   }
 

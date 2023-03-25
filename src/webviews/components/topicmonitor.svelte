@@ -39,6 +39,10 @@
     // Actual list of active subscriptions
     let activeSubcriptions = [];
 
+
+    // Publisher Variables
+    let selectedTopicToPublish = [];
+
     function clearAllData(){
         topics = [];
         mediaTopics = [];
@@ -355,7 +359,8 @@
                 const canvas = document.getElementById('my-canvas');
                 canvas.width = width;
                 canvas.height = height;
-
+                
+                /*
                 if(width > height){
                     canvas.style.width = '500px';
                     canvas.style.height = 'fit-content';
@@ -364,6 +369,10 @@
                     canvas.style.height = '350px';
                     canvas.style.width = 'fit-content';
                 }
+                */
+                
+                canvas.style.height = '250px';
+                canvas.style.width = 'fit-content';
 
                 const context = canvas.getContext('2d');
                 context.putImageData(image, 0, 0);
@@ -409,6 +418,23 @@
         }   
     }
 
+    function onPublishTopicSelected(item){
+        let newItem = structuredClone(item);
+        selectedTopicToPublish = [newItem];
+
+        rosApi.decodeTypeDefs([newItem.type]).then((res) =>{
+            console.log(res);
+        });
+
+
+        /*
+        vscode.postMessage({
+            type: "getMessageTypeFormat",
+            value: newItem
+        });
+        */
+    }
+
 </script>
 
 
@@ -434,7 +460,7 @@
             
             {#if topics.length > 0}
                 <div class="topics">
-                    <TreeView topics={topics} updateCheckboxes={updateCheckboxes} vscode={vscode} onExpand={itemExpanded}/>   
+                    <TreeView topics={topics} updateCheckboxes={updateCheckboxes} vscode={vscode} onExpand={itemExpanded} publishTopicSelected={onPublishTopicSelected}/>   
                 </div>
             {/if}
         </div>
@@ -476,6 +502,23 @@
             <div class="canvas-container">
                 <canvas class="img-canvas" id="my-canvas"></canvas>
             </div>
+
+            <div class="message-publisher-container">
+                <h2 style="text-align: center;">Message Publisher</h2>
+                <hr>
+                {#each selectedTopicToPublish as item}
+                    <!-- svelte-ignore a11y-click-events-have-key-events -->
+                    <div class="message-publisher-block">
+                        <span><b style="color:white">Topic : </b>{item.topic}</span>
+                        <br>
+                        <span><b style="color:white">Type : </b>{item.type}</span>
+                    </div>
+                    <div class="message-publisher-data">
+                        nope
+                    </div>
+                {/each}
+            </div>
+            <!--<button on:click={()=>{vscode.postMessage({type: 'getMessageTypes'});}}>get message types</button>-->
         </div>
 </div>
 
