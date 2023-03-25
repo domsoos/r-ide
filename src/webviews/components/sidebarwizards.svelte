@@ -22,7 +22,7 @@
 
 		// Get Workspace Directory
 		vscode.postMessage({
-					type: 'getWorkspace'
+			type: 'getWorkspace'
 		});
 	});
 

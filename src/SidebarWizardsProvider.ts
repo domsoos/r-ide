@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 import { getNonce } from "./getNonce";
 import * as dbcontroller from "./database/dbcontroller";
+import { RosPackageQuickPick } from "./RosPackages/RosPackage";
 
 
 export class SidebarWizardsProvider implements vscode.WebviewViewProvider {
@@ -51,11 +52,11 @@ export class SidebarWizardsProvider implements vscode.WebviewViewProvider {
           break;
         }
         case "openFileExplorer" :{
-          vscode.window.showOpenDialog({canSelectFiles: false, canSelectFolders: true, canSelectMany: false, defaultUri: vscode.Uri.file(data.value)}).then((result) =>{
-            if(result && result[0].path){
+          RosPackageQuickPick().then((result) => {
+            if(result){
               webviewView.webview.postMessage({
                 type: 'setWorkspace',
-                value: result[0].path,
+                value: result.rootDirectory,
               });
             }
           });

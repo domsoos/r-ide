@@ -1,100 +1,17 @@
 import * as vscode from "vscode";
 import { getNonce } from "./getNonce";
-import Bag, { open } from 'rosbag';
-import * as ROSLIB from 'roslib';
+import { Rosbag } from "./RosBag/rosbag";
 
 export class SidebarBagsProvider implements vscode.WebviewViewProvider {
   _view?: vscode.WebviewView;
   _doc?: vscode.TextDocument;
 
-  messages: any[];
-  publishers: Map<string, ROSLIB.Topic>;
-  rosapi: ROSLIB.Ros;
+  bag: Rosbag | undefined;
 
   constructor(private readonly _extensionUri: vscode.Uri) {
-
-    this.rosapi = new ROSLIB.Ros({
-      url: "ws://localhost:9090"
-    });
-
-    this.messages = [];
-    this.publishers = new Map();
-
-    console.log(this.rosapi);
+    this.bag = undefined;
+    Rosbag.connect();
   }
-
-  private async openBag(bagPath: string) {
-    let bag: Bag = await open(bagPath);
-
-    // Read all messages
-    bag.readMessages({}, result => {
-      this.messages.push(result);
-    }).then(() => {
-      console.log('read all messages');
-      this._view?.webview.postMessage({type: 'FinishedMessages'});
-    });
-
-    // Read all topics and create publishers
-    for (let conn in bag.connections) {
-      if(bag.connections[conn].type !== "sensor_msgs/Image"){
-        let newPublisher = new ROSLIB.Topic({
-          ros: this.rosapi,
-          messageType: bag.connections[conn].type!,
-          name: bag.connections[conn].topic
-        });
-
-        newPublisher.advertise();
-
-        this.publishers.set(bag.connections[conn].topic, newPublisher);
-      }
-    }
-
-    console.log([...this.publishers.values()]);
-
-    this._view?.webview.postMessage({type: 'FinishedConnections'});
-    console.log('read all connections');
-  }
-
-  private waitForLeadup(leadup: number) {
-    console.log(leadup);
-    return new Promise((resolve) => {
-        setTimeout(() => {resolve(true);}, leadup);
-    });
-}
-
-  private async playBag(startTime: number) {
-    if (!this.rosapi.isConnected) {
-      this.rosapi.close();
-      this.rosapi = await new ROSLIB.Ros({
-        url: "ws://localhost:9090"
-      });
-    }
-    let i = 0, leadup = 0;
-
-    console.log(this.messages.length);
-    while (i < this.messages.length - 1) {
-        const {message, topic, timestamp} = this.messages[i];
-        await this.waitForLeadup(leadup);
-
-        if (topic === "/zed2/zed_node/obj_det/objects") {
-          console.log(message);
-        } else {
-          this.publishers.get(topic)?.publish(new ROSLIB.Message(message));
-        }
-
-        
-        // console.log(message);
-
-        i++;
-
-        // fast convert seconds and nanoseconds into milliseconds
-        // console.log(messages[i]);
-        const nextTimeStamp = this.messages[i].timestamp;
-        leadup = ((nextTimeStamp.sec - timestamp.sec) * 1000) + ((nextTimeStamp.nsec >> 20) - (timestamp.nsec >> 20));
-    }
-
-    console.log('finished playing');
-}
 
   public resolveWebviewView(webviewView: vscode.WebviewView) {
     this._view = webviewView;
@@ -134,7 +51,8 @@ export class SidebarBagsProvider implements vscode.WebviewViewProvider {
             // filters: {'Bags': ['.bag']}
           }).then(async (result) =>{
             if(result && result[0].path){
-              this.openBag(result[0].fsPath);
+              await this.bag?.clearBag();
+              this.bag = new Rosbag(result[0].fsPath, webviewView.webview);
 
               webviewView.webview.postMessage({
                 type: 'setSelectedBag',
@@ -168,7 +86,12 @@ export class SidebarBagsProvider implements vscode.WebviewViewProvider {
           break;
         }
         case "playBag": {
-          this.playBag(0);
+          this.bag?.playBag();
+          break;
+        }
+        case "pauseBag": {
+          this.bag?.pauseBag();
+          break;
         }
       }
     });
