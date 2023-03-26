@@ -1,6 +1,5 @@
 import * as vscode from "vscode";
 import * as cp from "child_process";
-import { Ros } from "roslib";
 import { relative } from "path";
 
 export class RosPackage {
@@ -47,7 +46,6 @@ export class RosPackage {
                 this.updateSrvFiles();
             } else if (uri.fsPath.endsWith('.cpp')) {
                 this.cppFiles.add(uri.fsPath);
-                // Update cpp in package stuff
             } else if (uri.fsPath.endsWith('.py')) {
                 this.pyFiles.add(uri.fsPath);
                 this.updatePythonFiles();
@@ -65,7 +63,6 @@ export class RosPackage {
                 this.updateSrvFiles();
             } else if (uri.fsPath.endsWith('.cpp')) {
                 this.cppFiles.delete(uri.fsPath);
-                // Update cpp in package stuff
             } else if (uri.fsPath.endsWith('.py')) {
                 this.pyFiles.delete(uri.fsPath);
                 this.updatePythonFiles();
@@ -73,10 +70,27 @@ export class RosPackage {
                 console.log(uri);
             }
         });
+
+        vscode.workspace.findFiles(`${this.rootDirectory.fsPath}/**`).then((files) => {
+            for (let uri of files) {
+                if (uri.fsPath.endsWith('.msg')) {
+                    this.msg.add(uri.fsPath);
+                } else if (uri.fsPath.endsWith('.srv')) {
+                    this.srv.add(uri.fsPath);
+                } else if (uri.fsPath.endsWith('.py')) {
+                    this.pyFiles.add(uri.fsPath);
+                } else if (uri.fsPath.endsWith('.cpp')) {
+                    this.cppFiles.add(uri.fsPath);
+                }
+            }
+
+            // this.updateMsgFiles();
+            // this.updateSrvFiles();
+            // this.updatePythonFiles();
+        });
     } 
 
     public updateMsgFiles() {
-        // Assumes all message files are in the msg folder
         let files: string[] = [];
         this.msg.forEach((uri) => {
             files.push(relative(this.rootDirectory.fsPath, uri));
@@ -85,12 +99,18 @@ export class RosPackage {
         console.log(files);
 
         const regex = /^\s*?#?\s*?add_message_files\s*?\(.*?\)/sgmi;
-        const replace = `add_message_files(\n    ${["FILES", ...files].join('\n    ')}\n)`;
+
+        let replace;
+        if (this.msg.size > 0) {
+            replace = `add_message_files(\n    ${["FILES", ...files].join('\n    ')}\n)`;
+        } else {
+            replace = "# add_message_files()";
+        }
+        
         replaceTextInDocument(vscode.Uri.joinPath(this.rootDirectory, '/CMakeLists.txt'), regex, replace);
     }
 
     public updateSrvFiles() {
-        // Assumes all service files are in srv folder
         let files: string[] = [];
         this.srv.forEach((uri) => {
             files.push(relative(this.rootDirectory.fsPath, uri));
@@ -99,12 +119,17 @@ export class RosPackage {
         console.log(files);
 
         const regex = /^\s*?#?\s*?add_service_files\s*?\(.*?\)/sgmi;
-        const replace = `add_service_files(\n    ${["FILES", ...files].join('\n    ')}\n)`;
+
+        let replace;
+        if (this.srv.size > 0) {
+            replace = `add_service_files(\n    ${["FILES", ...files].join('\n    ')}\n)`;
+        } else {
+            replace = "# add_service_files()";
+        }
         replaceTextInDocument(vscode.Uri.joinPath(this.rootDirectory, '/CMakeLists.txt'), regex, replace);
     }
     
     public updatePythonFiles() {
-        // Assumes all python scripts are in scripts folder
         let files: string[] = [];
         this.pyFiles.forEach((uri) => {
             files.push(relative(this.rootDirectory.fsPath, uri));
@@ -113,8 +138,31 @@ export class RosPackage {
         console.log(files);
 
         const regex = /^\s*?#?\s*?catkin_install_python\s*?\(.*?\)/sgmi;
-        const replace = `catkin_install_python(\n    ${["PROGRAMS", ...files].join('\n    ')}\n    DESTINATION \${CATKIN_PACKAGE_BIN_DESTINATION}\n)`;
+        let replace;
+        if (this.pyFiles.size > 0) {
+            replace = `catkin_install_python(\n    ${["PROGRAMS", ...files].join('\n    ')}\n    DESTINATION \${CATKIN_PACKAGE_BIN_DESTINATION}\n)`;
+        } else {
+            replace = "# catkin_install_python()";
+        }
         replaceTextInDocument(vscode.Uri.joinPath(this.rootDirectory, '/CMakeLists.txt'), regex, replace);
+    }
+
+    public checkCppFiles() {
+        let files: string[] = [];
+        this.cppFiles.forEach((uri) => {
+            files.push(relative(this.rootDirectory.fsPath, uri));
+        });
+
+        console.log(files);
+
+        const regex = /^(\s*?#?\s*?add_(executable|library)\((.*?)\)\s+target_link_libraries\((.*?)\))*/sgmi;
+        vscode.workspace.openTextDocument(vscode.Uri.joinPath(this.rootDirectory, 'CMakeLists.txt')).then((document) => {
+            const text = document.getText();
+
+            let match = text.matchAll(regex);
+            console.log(match);
+
+        });
     }
 }
 
@@ -156,7 +204,9 @@ export async function RosPackageQuickPick(newPackage: boolean = true) {
  * @param root The root directory to identify packages
  */
 export async function identifyPackages(root: vscode.Uri) {
+    RosPackage.packages.clear();
     console.log(root.fsPath.endsWith("/catkin_ws"));
+    let myPackages = [];
     if (root.fsPath.endsWith("/catkin_ws")) {
         // catkin_ws is the workspace
         root = vscode.Uri.joinPath(root, '/src/');
@@ -166,7 +216,9 @@ export async function identifyPackages(root: vscode.Uri) {
             // If its a folder, check that it has a CMakeLists.txt and package.xml
             if (type === 2) {
                 let hasCmake = false, hasPackageXml = false;
-                for (let [file, _] of await vscode.workspace.fs.readDirectory(vscode.Uri.joinPath(root, folder))) {
+                let uri = vscode.Uri.joinPath(root, folder);
+
+                for (let [file, _] of await vscode.workspace.fs.readDirectory(uri)) {
                     if (file === "CMakeLists.txt") {
                         hasCmake = true;
                     } else if (file === "package.xml") {
@@ -175,7 +227,8 @@ export async function identifyPackages(root: vscode.Uri) {
                 }
                 
                 if (hasCmake && hasPackageXml) {
-                    new RosPackage(vscode.Uri.joinPath(root, folder), folder);
+                    new RosPackage(uri, folder);
+                    myPackages.push(uri);
                 }
             }
         }
@@ -184,8 +237,6 @@ export async function identifyPackages(root: vscode.Uri) {
         const name = root.fsPath.split('/')[-1];
         RosPackage.packages.set(name, new RosPackage(root, name));
     }
-
-    console.log(RosPackage.packages.entries());
 }
 
 /**
