@@ -42,6 +42,8 @@
 
     // Publisher Variables
     let selectedTopicToPublish = [];
+    let messagePublisherFreq = 1;
+    let publisherTimeInterval;
 
     function clearAllData(){
         topics = [];
@@ -440,14 +442,69 @@
     }
 
     function publishMessage(){
-        let myTopic = activeSubcriptions.find(item => item.name == selectedTopicToPublish[0].fulltopic);
-        const messageElement =  document.getElementById('message-textarea');
-        const jsonString = messageElement.value;
-        const jsonObject = JSON.parse(jsonString);
+        try{
+            let myTopic = activeSubcriptions.find(item => item.name == selectedTopicToPublish[0].fulltopic);
 
-        var message = new rosLib.Message(jsonObject);
+            if(myTopic){
 
-        myTopic.publish(message);
+                const messageElement =  document.getElementById('message-textarea');
+                const jsonString = messageElement.value;
+                const jsonObject = JSON.parse(jsonString);
+
+                var message = new rosLib.Message(jsonObject);
+                let freq = hzToMs(messagePublisherFreq);
+
+                if(publisherTimeInterval){
+                    clearInterval(publisherTimeInterval);
+                    publisherTimeInterval = null;
+                }
+
+                publisherTimeInterval = setInterval(() => {
+                    myTopic.publish(message);
+                }, freq);
+                
+            }else{
+                /*
+                let item = topics.find(item => item.fulltopic == selectedTopicToPublish[0].fulltopic);
+                item.checked = true;
+                updateCheckboxes(item);
+                myTopic = activeSubcriptions.find(item => item.name == selectedTopicToPublish[0].fulltopic);
+                */
+
+                /*
+                console.log(topics);
+                let item = topics.find(item => item.fulltopic == selectedTopicToPublish[0].fulltopic);
+                myTopic = new rosLib.Topic({
+                    ros : rosApi,
+                    name : item.fulltopic,
+                    messageType : item.type
+                });
+
+                myTopic.subscribe((message) => {
+                    setRecentMessage(message, item.fulltopic);
+                });
+
+                activeSubcriptions.push(myTopic);
+                subscribedTopics = [...subscribedTopics, item];
+                */
+            }
+
+        }catch(err){
+            console.log(err);
+        }
+
+
+    }
+
+    function stopPublish(){
+        if(publisherTimeInterval){
+            clearInterval(publisherTimeInterval);
+            publisherTimeInterval = null;
+        }
+    }
+
+    function hzToMs(freqHz) {
+         return 1 / freqHz * 1000;
     }
 
 </script>
@@ -531,11 +588,25 @@
                     </div>
                     -->
                     <div class="message-publisher-data">
-                        <b style="color:white">Topic : </b>{item.topic}
-                        <br>
-                        <b style="color:white">Type : </b>{item.type}
-                        <textarea id="message-textarea" style="height:165px;resize: none;margin-top:5px"></textarea>
-                        <button class="publish-button"  on:click={() => {publishMessage()}}>Publish</button>
+                        <div style="display:flex;justify-content:space-between;">
+                            <div>
+                                <b style="color:white">Topic : </b>{item.topic}
+                                <br>
+                                <b style="color:white">Type : </b>{item.type}
+                            </div>
+                            <div style="display:flex;align-items:center;">
+                                <b style="margin-right:10px;">Freq : </b>
+                                <input type="number" bind:value={messagePublisherFreq} style="width: 50px">
+                            </div>
+                        </div>
+
+
+                        <textarea disabled={publisherTimeInterval} id="message-textarea" style="height:165px;resize: none;margin-top:5px"></textarea>
+                        {#if !publisherTimeInterval}
+                            <button class="publish-button" disabled={messagePublisherFreq <= 0 || messagePublisherFreq > 100} on:click={() => {publishMessage()}}>Publish</button>
+                        {:else}
+                            <button class="publish-button" on:click={() => {stopPublish()}}>Stop</button>
+                        {/if}
                     </div>
                 {/each}
             </div>
