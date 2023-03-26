@@ -4,6 +4,7 @@ import * as ROSLIB from 'roslib';
 
 export class Rosbag {
 
+    bag: Bag | undefined;
     messages: any[];
     publishers: Map<string, ROSLIB.Topic>;
     pointer: number;
@@ -12,9 +13,13 @@ export class Rosbag {
 
     view: vscode.Webview;
 
+    rosoutListener: ROSLIB.Topic | undefined;
+
     static rosapi: ROSLIB.Ros = new ROSLIB.Ros({
-        url: "ws://localhost:9090"
+        url: "ws://localhost:9090",
     });
+
+    private static unpublishNotify = new Set<string>();
 
     constructor(bagPath: string, view: vscode.Webview) {
         this.messages = [];
@@ -28,10 +33,10 @@ export class Rosbag {
     public async openBag(bagPath: string) {
         await Rosbag.connect();
 
-        let bag: Bag = await open(bagPath);
+        this.bag = await open(bagPath);
 
         // Read all messages
-        bag.readMessages({}, (result: any) => {
+        this.bag.readMessages({}, (result: any) => {
             // Convert Images from UInt8Array into base64 string
             if ("data" in result.message && result.message.data instanceof Uint8Array) {
                 try {
@@ -50,23 +55,7 @@ export class Rosbag {
             this.view.postMessage({type: 'createdMessages'});
         });
 
-        // Read all topics and create publishers
-        for (let conn in bag.connections) {
-
-            let newPublisher = new ROSLIB.Topic({
-                ros: Rosbag.rosapi,
-                messageType: bag.connections[conn].type!,
-                name: bag.connections[conn].topic
-            });
-
-            newPublisher.advertise();
-
-            this.publishers.set(bag.connections[conn].topic, newPublisher);
-        }
-
-        // console.log([...this.publishers.values()]);
-        console.log('read all connections');
-        this.view.postMessage({type: 'createdConnections', value: [...this.publishers.keys()]});
+        this.checkPublishers(true);
     }
 
     private currentIndex: number = 0;
@@ -104,6 +93,7 @@ export class Rosbag {
         } else {
             console.log('finished playing');
             this.view.postMessage({type: 'finishedPlaying'});
+            this.currentIndex = 0;
         }
     }
     
@@ -117,24 +107,55 @@ export class Rosbag {
         this.publishers.clear();
     }
 
-    public checkPublishers() {
-        if (!Rosbag.rosapi.isConnected) {
+    public checkPublishers(forceRepublish: boolean = false) {
+        if (!Rosbag.rosapi.isConnected || forceRepublish) {
+            if (!Rosbag.rosapi.isConnected){
+                Rosbag.connect();
+            }
 
-            Rosbag.connect();
+            this.rosoutListener?.unsubscribe();
+            
+            this.rosoutListener = new ROSLIB.Topic({
+                ros: Rosbag.rosapi,
+                messageType: "rosgraph_msgs/Log",
+                name: "rosout_agg"
+            });
 
-            for (let [name, publisher] of this.publishers.entries()) {
-                publisher.unadvertise();
+            this.rosoutListener.subscribe(message => {
+                this.readRosout_agg(message);
+            });
+
+            for (let p of this.publishers.values()) {
+                p.unadvertise();
+            }
+
+            this.publishers.clear();
+
+            // Read all topics and create publishers
+            let conn: any;
+            for (conn in this.bag?.connections) {
 
                 let newPublisher = new ROSLIB.Topic({
                     ros: Rosbag.rosapi,
-                    messageType: publisher.messageType,
-                    name: publisher.name
+                    messageType: this.bag?.connections[conn].type!,
+                    name: this.bag?.connections[conn].topic!
                 });
 
-                newPublisher.advertise();
+                this.publishers.set(this.bag?.connections[conn].topic!, newPublisher);
 
-                this.publishers.set(name, newPublisher);
+                newPublisher.advertise();
             }
+
+            // console.log([...this.publishers.values()]);
+            console.log('read all connections');
+            this.view.postMessage({type: 'createdConnections', value: [...this.publishers.keys()]});
+
+            setTimeout(() => {
+                if (Rosbag.unpublishNotify.size > 0) {
+                    vscode.window.showErrorMessage(`The selected rosbag contained topics that returned errors. R-IDE has unpublished these topics for now. Check the rosbridge terminal for more information.`);
+                    Rosbag.unpublishNotify = new Set();
+                }
+            }, 1000);
         }
     }
 
@@ -157,6 +178,17 @@ export class Rosbag {
             setTimeout(() => {resolve(true);}, leadup);
         });
     };
+
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    private readRosout_agg(message: any) {
+        const regex = /\[Client \d+\] \[id: (publish|advertise):(?<topic>.*?):\d+\] (?<error_code>.*)/;
+        let match = message.msg.match(regex);
+        if (match) {
+            console.log(message.msg)
+            this.publishers.delete(match.groups.topic);
+            Rosbag.unpublishNotify.add(message.msg);
+        }
+    }
 
     static async connect() {
         try {
