@@ -142,16 +142,6 @@ export class TopicMonitorProvider {
     });
   }
 
-  /**
-   * select topic to publish from topic monitor
-   * get the type from the topic
-   * get the format of the type
-   * 
-   *
-   * return the format
-   */
-
-
   private async generateMessageFormat(){
     try {
       const messageTypes: any = await this.getMessageTypes();
@@ -205,7 +195,8 @@ export class TopicMonitorProvider {
           const [_, type, name] = match;
           const isArray = type.endsWith('[]');
           const valueType = isArray ? type.slice(0, -2) : type;
-          const value = isArray ? [{}] : this.defaultValue(valueType);
+          const value = isArray ? [] : this.defaultValue(valueType);
+          //const value = isArray ? [{}] : this.defaultValue(valueType);
   
           // Find the parent object or array for this property
           let parent = stack[Math.floor(depth / 2)];
@@ -214,6 +205,9 @@ export class TopicMonitorProvider {
           }
 
           if (Array.isArray(parent)) {
+            if(!parent[0]){
+              parent[0] = {};
+            }
             //parent.push({[name] : value});
             parent[0][name] = value;
           } 
