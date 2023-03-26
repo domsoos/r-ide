@@ -601,7 +601,7 @@
                                 <b style="color:white">Type : </b>{item.type}
                             </div>
                             <div style="display:flex;align-items:center;">
-                                <b style="margin-right:10px;">Freq : </b>
+                                <b style="margin-right:10px;">Freq(hz) : </b>
                                 <input type="number" bind:value={messagePublisherFreq} style="width: 50px">
                             </div>
                         </div>

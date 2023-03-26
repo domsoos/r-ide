@@ -30,6 +30,10 @@
     }
 </script>
 
+<button style="margin-top:5px;" on:click={() => {openTopicMonitor()}}>ROS Topic Monitor</button>
+
+<!-- Commented out Debug ROS node and Topic publisher button for Beta 
+
 {#if !isDebugging}
     <button on:click={() => {openTopicMonitor()}}>ROS Topic Monitor</button>
     <button>ROS Topic Publisher</button>
@@ -42,6 +46,7 @@
     <input type="text" id="node-name" bind:value={rosNode} style="border:solid 1px black">
     <button on:click={() => {debugRosNode()}}>Debug Node</button>
 {/if}
+-->
 
 
 <!--
