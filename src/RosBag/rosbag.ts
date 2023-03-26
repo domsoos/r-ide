@@ -75,6 +75,8 @@ export class Rosbag {
     public async playBag() {
         let leadup: number;
         this.isPaused = false;
+
+        this.checkPublishers();
     
         //console.log(this.messages.length);
         console.log(this.currentIndex);
@@ -113,6 +115,27 @@ export class Rosbag {
         }
 
         this.publishers.clear();
+    }
+
+    public checkPublishers() {
+        if (!Rosbag.rosapi.isConnected) {
+
+            Rosbag.connect();
+
+            for (let [name, publisher] of this.publishers.entries()) {
+                publisher.unadvertise();
+
+                let newPublisher = new ROSLIB.Topic({
+                    ros: Rosbag.rosapi,
+                    messageType: publisher.messageType,
+                    name: publisher.name
+                });
+
+                newPublisher.advertise();
+
+                this.publishers.set(name, newPublisher);
+            }
+        }
     }
 
     public pauseBag() {
