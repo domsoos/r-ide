@@ -152,6 +152,7 @@
                 });
             }
         }
+
         topics = buildTree(temp);
     }
 
@@ -160,6 +161,11 @@
 		switch (message.type) {
             case 'example':{
                 console.log(message.data);
+                break;
+            }
+            case 'setPublishMessageFormat': {
+                onSetPublishMessageFormat(message.data);
+                break;
             }
 		}
 	});
@@ -360,13 +366,14 @@
                     canvas.style.height = 'fit-content';
                 }
                 else{
-                    canvas.style.height = '350px';
+                    canvas.style.height = '250px';
                     canvas.style.width = 'fit-content';
                 }
                 */
                 
                 canvas.style.height = '250px';
                 canvas.style.width = 'fit-content';
+                
 
                 const context = canvas.getContext('2d');
                 context.putImageData(image, 0, 0);
@@ -416,17 +423,31 @@
         let newItem = structuredClone(item);
         selectedTopicToPublish = [newItem];
 
-        rosApi.decodeTypeDefs([newItem.type]).then((res) =>{
-            console.log(res);
-        });
-
-
-        /*
         vscode.postMessage({
             type: "getMessageTypeFormat",
             value: newItem
         });
+    }
+
+    function onSetPublishMessageFormat(object){
+        const messageElement =  document.getElementById('message-textarea');
+        /*
+        messageElement.value = "# Topic: " + selectedTopicToPublish[0].topic + "\n";
+        messageElement.value += "# Type: " + selectedTopicToPublish[0].type + "\n";
         */
+
+        messageElement.value = JSON.stringify(object, null, 2);
+    }
+
+    function publishMessage(){
+        let myTopic = activeSubcriptions.find(item => item.name == selectedTopicToPublish[0].fulltopic);
+        const messageElement =  document.getElementById('message-textarea');
+        const jsonString = messageElement.value;
+        const jsonObject = JSON.parse(jsonString);
+
+        var message = new rosLib.Message(jsonObject);
+
+        myTopic.publish(message);
     }
 
 </script>
@@ -502,13 +523,19 @@
                 <hr>
                 {#each selectedTopicToPublish as item}
                     <!-- svelte-ignore a11y-click-events-have-key-events -->
+                    <!--
                     <div class="message-publisher-block">
                         <span><b style="color:white">Topic : </b>{item.topic}</span>
                         <br>
                         <span><b style="color:white">Type : </b>{item.type}</span>
                     </div>
+                    -->
                     <div class="message-publisher-data">
-                        nope
+                        <b style="color:white">Topic : </b>{item.topic}
+                        <br>
+                        <b style="color:white">Type : </b>{item.type}
+                        <textarea id="message-textarea" style="height:165px;resize: none;margin-top:5px"></textarea>
+                        <button class="publish-button"  on:click={() => {publishMessage()}}>Publish</button>
                     </div>
                 {/each}
             </div>

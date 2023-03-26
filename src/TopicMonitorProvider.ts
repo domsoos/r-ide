@@ -2,6 +2,10 @@ import * as vscode from "vscode";
 import { getNonce } from "./getNonce";
 import * as cp from "child_process";
 
+interface ParsedObject {
+  [key: string]: any;
+}
+
 export class TopicMonitorProvider {
   /**
    * Track the currently panel. Only allow a single panel to exist at a time.
@@ -126,7 +130,11 @@ export class TopicMonitorProvider {
         case "getMessageTypeFormat": {
           if(data?.value?.type && data?.value?.fulltopic){
             let messageField = await this.getMessageField(data.value.type);
-            console.log(messageField);
+            
+            webview.postMessage({
+              type: 'setPublishMessageFormat',
+              data: messageField 
+            });
           }
           break;
         }
@@ -169,16 +177,7 @@ export class TopicMonitorProvider {
 
       cpRosMsg.stdout?.on('data', (data) =>{
         if(data){
-          //const lines = data.toString().trim().split('\n');
-          const lines = data.trim().split('\n');
-          for(const line of lines){
-            const match = line.match(/^\s*(\w+)\s+(\w+)/);
-            if (match) {
-              const fieldType = match[1];
-              const fieldName = match[2];
-              messageFields[fieldName] = fieldType;
-            }
-          }
+          messageFields = this.parseStringToObject(data.toString());
         }
       });
       cpRosMsg.on('close', (code) => {
@@ -189,6 +188,76 @@ export class TopicMonitorProvider {
         }
       });
     });
+  }
+
+  parseStringToObject(str: string): ParsedObject {
+    const lines = str.split('\n');
+    const parsedObject: ParsedObject = {};
+    const stack: ParsedObject[] = [parsedObject];
+  
+    for (const line of lines) {
+      const trimmedLine = line.trim();
+      if (trimmedLine !== "") {
+        const depth = line.search(/\S/);
+        const match = trimmedLine.match(/^([\w/]+(?:\[\])?)\s+(\w+)(?:\s+\w+)?$/);
+  
+        if (match) {
+          const [_, type, name] = match;
+          const isArray = type.endsWith('[]');
+          const valueType = isArray ? type.slice(0, -2) : type;
+          const value = isArray ? [{}] : this.defaultValue(valueType);
+  
+          // Find the parent object or array for this property
+          let parent = stack[Math.floor(depth / 2)];
+          if (!parent) {
+            throw new Error(`Invalid depth ${depth}`);
+          }
+
+          if (Array.isArray(parent)) {
+            //parent.push({[name] : value});
+            parent[0][name] = value;
+          } 
+          else{
+            parent[name] = value;
+          }
+            
+          stack[Math.floor(depth / 2) + 1] = value;
+        }
+      }
+    }
+
+    return parsedObject;
+  }
+
+ defaultValue(type: string): any {
+    switch (type) {
+      case 'bool':
+        return false;
+      case 'byte':
+      case 'int8':
+      case 'uint8':
+        return 0;
+      case 'char':
+      case 'int16':
+      case 'uint16':
+        return '';
+      case 'int32':
+      case 'uint32':
+        return 0;
+      case 'int64':
+      case 'uint64':
+        return BigInt(0);
+      case 'float32':
+      case 'float64':
+        return 0.0;
+      case 'string':
+        return '';
+      case 'time':
+      case 'duration':
+        return { sec: 0, nsec: 0 };
+      default:
+        return {};
+    }
   }
 
   private async getMessageTypes(){
