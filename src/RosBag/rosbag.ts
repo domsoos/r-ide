@@ -165,4 +165,25 @@ export class Rosbag {
             });
         }
     }
+
+    static isROSConnected(){
+        return new Promise((resolve, reject) => {
+            if (!Rosbag.rosapi.isConnected) {
+              Rosbag.rosapi.close();
+              Rosbag.rosapi = new ROSLIB.Ros({
+                url: "ws://localhost:9090"
+              });
+        
+              Rosbag.rosapi.on('connection', () => {
+                resolve(true);
+              });
+        
+              Rosbag.rosapi.on('error', () => {
+                resolve(false);
+              });
+            } else {
+              resolve(Rosbag.rosapi.isConnected);
+            }
+          });
+    }
 }

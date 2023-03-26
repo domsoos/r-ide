@@ -68,22 +68,41 @@
             }
             case "finishedPlaying": {
                 isPlaying = false;
+                break;
+            }
+            case "ROSConnectionSuccessful": {
+                openBagManager();
+                break;
             }
 		}
 	});
 
+    function openBagManager(){
+        isBagManagerOpen = true;
+    }
+
+    function isROSConnected(){
+        vscode.postMessage({
+            type: 'isROSConnected', 
+        })
+    }
+
 </script>
 
 <h3 style="text-align:center;margin: 10px 0px;">ROS Bag Manager</h3>
+<p style="text-align:center;margin: 10px 0px;color:#ff5a5a;">*Beware: ROS bag manager is currently under development and may not work as intended*</p>
 <hr style="margin-bottom:10px">
 <!-- Recording a new bag UNIMPLEMENTED -->
 {#if !isBagManagerOpen}
-    <button disabled='{isRecording}' on:click={() => {isBagManagerOpen = true;}}>Manage Bags</button>
+    <button disabled='{isRecording}' on:click={() => {isROSConnected()}}>Manage Bags</button>
+    <button disabled={true}>Start Recording (Coming soon)</button>
+    <!-- Beta
     {#if !isRecording}
         <button on:click={() => {isRecording = true;}}>Start Recording</button>
     {:else}
         <button on:click={() => {isRecording = false;}}>Stop Recording</button>
     {/if}
+    -->
 
 <!-- Managing existing bags -->
 {:else}
@@ -102,8 +121,9 @@
         <!-- Play bag -->
         {#if !isCloneMenuOpen}
             <div class="buttons-flex">
-                <button class="bag-buttons" on:click={() => {isBagManagerOpen = true;}}>Cancel</button>
-                <button class="bag-buttons" on:click={() => {isCloneMenuOpen = true;}}>Clone</button>
+                <button class="bag-buttons" on:click={() => {isBagManagerOpen = false;}}>Cancel</button>
+                <!-- BETA<button class="bag-buttons" on:click={() => {isCloneMenuOpen = true;}}>Clone</button>-->
+                <button disabled={true} class="bag-buttons" tooltip="Coming soon">Clone</button>
                 {#if !isPlaying}
                     <button class="bag-buttons" on:click={() => {vscode.postMessage({type: 'playBag'}); isPlaying = true}} disabled={!(connectionsLoaded && messagesLoaded)}>Play</button>
                 {:else}
