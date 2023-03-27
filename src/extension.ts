@@ -12,7 +12,7 @@ import {
 	createSrv
 } from './commands/commands';
 import { 
-	addNewFindPackage, identifyPackages, updateExistingPackages
+	addNewFindPackage, identifyPackages, RosPackageQuickPick, updateExistingPackages
 } from './RosPackages/RosPackage';
 import { SidebarTopicsProvider } from './SidebarTopicsProvider';
 import * as cp from 'child_process';
@@ -77,6 +77,26 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.commands.registerCommand(
 			"r-ide.add-new-find-package",
 			addNewFindPackage
+		),
+		vscode.commands.registerCommand(
+			"r-ide.add-executable",
+			() => {
+				RosPackageQuickPick(false).then((myPackage) => {
+					if (myPackage?.value !== undefined) {
+						myPackage.value.addExecutable();
+					}
+				});
+			}
+		),
+		vscode.commands.registerCommand(
+			"r-ide.add-library",
+			() => {
+				RosPackageQuickPick(false).then((myPackage) => {
+					if (myPackage?.value !== undefined) {
+						myPackage.value.addLibrary();
+					}
+				});
+			}
 		),
 		vscode.commands.registerCommand(
 			"r-ide.run-catkin-make",

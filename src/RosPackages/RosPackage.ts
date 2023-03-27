@@ -71,8 +71,10 @@ export class RosPackage {
             }
         });
 
-        vscode.workspace.findFiles(`${this.rootDirectory.fsPath}/**`).then((files) => {
+        const relativePattern = new vscode.RelativePattern(vscode.workspace.getWorkspaceFolder(this.rootDirectory)!, `src/${this.projectName}/**/*.{msg,srv,py,cpp}`);
+        vscode.workspace.findFiles(relativePattern).then((files) => {
             for (let uri of files) {
+                // console.log(uri);
                 if (uri.fsPath.endsWith('.msg')) {
                     this.msg.add(uri.fsPath);
                 } else if (uri.fsPath.endsWith('.srv')) {
@@ -84,9 +86,11 @@ export class RosPackage {
                 }
             }
 
-            // this.updateMsgFiles();
-            // this.updateSrvFiles();
-            // this.updatePythonFiles();
+            console.log(this.projectName);
+            console.log(this.msg.entries());
+            console.log(this.srv.entries());
+            console.log(this.pyFiles.entries());
+            console.log(this.cppFiles.entries());
         });
     } 
 
@@ -163,6 +167,76 @@ export class RosPackage {
             console.log(match);
 
         });
+    }
+
+    public async addExecutable() {
+        let prefill = this.projectName + "_myExecutable";
+        const name = await vscode.window.showInputBox({
+            prompt: "Enter a name for the executable",
+            title: "Executable name",
+            value: prefill,
+            valueSelection: [this.projectName.length + 1, prefill.length]
+        });
+
+        if (name === undefined) {
+            return;
+        }
+
+        const options = [];
+        for (let cpp of this.cppFiles) {
+            options.push(relative(this.rootDirectory.fsPath, cpp));
+        }
+
+        const selectedCppFiles = await vscode.window.showQuickPick(
+            options,
+            {
+                canPickMany: true,
+                title: "Select the source files"
+            }
+        );
+
+        if (selectedCppFiles === undefined) {
+            return;
+        }
+
+        const regex = /# add_executable\(.*?\)/sgmi;
+        const replace = `# ${name}\nadd_executable(${[name, ...selectedCppFiles].join('\n    ')}\n)\ntarget_link_libraries(${name} \${catkin_LIBRARIES})\n`;
+        replaceTextInDocument(vscode.Uri.joinPath(this.rootDirectory, "CMakeLists.txt"), regex, replace, true);
+    }
+
+    public async addLibrary() {
+        let prefill = this.projectName + "_myLibrary";
+        const name = await vscode.window.showInputBox({
+            prompt: "Enter a name for the library",
+            title: "Library name",
+            value: prefill,
+            valueSelection: [this.projectName.length + 1, prefill.length]
+        });
+
+        if (name === undefined) {
+            return;
+        }
+
+        const options = [];
+        for (let cpp of this.cppFiles) {
+            options.push(relative(this.rootDirectory.fsPath, cpp));
+        }
+
+        const selectedCppFiles = await vscode.window.showQuickPick(
+            options,
+            {
+                canPickMany: true,
+                title: "Select the source files"
+            }
+        );
+
+        if (selectedCppFiles === undefined) {
+            return;
+        }
+
+        const regex = /^# add_library\(.*?\)/sgmi;
+        const replace = `# ${name}\nadd_library(${[name, ...selectedCppFiles].join('\n    ')}\n)\ntarget_link_libraries(${name} \${catkin_LIBRARIES})\n`;
+        replaceTextInDocument(vscode.Uri.joinPath(this.rootDirectory, "CMakeLists.txt"), regex, replace, true);
     }
 }
 
@@ -333,7 +407,7 @@ export async function addNewFindPackage(myPackage?: vscode.Uri, newPackage?: str
  * @param regexp The expression to match and replace
  * @param replaceText The text to be placed
  */
-function replaceTextInDocument(uri: vscode.Uri, regexp: RegExp, replaceText: string) {
+function replaceTextInDocument(uri: vscode.Uri, regexp: RegExp, replaceText: string, addBelow: boolean = false) {
     let start: vscode.Position;
     let end: vscode.Position;
 
@@ -344,12 +418,12 @@ function replaceTextInDocument(uri: vscode.Uri, regexp: RegExp, replaceText: str
 
         if (match?.index) {
 
-            start = document.positionAt(match.index);
+            start = document.positionAt(addBelow ? match.index + match[0].length : match.index);
             end = document.positionAt(match.index + match[0].length);
 
             const edit = new vscode.WorkspaceEdit();
             const editRange = new vscode.Range(start, end);
-            const makeEdit = new vscode.TextEdit(editRange, replaceText);
+            const makeEdit = new vscode.TextEdit(editRange, (addBelow ? "\n" : "") + replaceText);
 
             edit.set(uri, [makeEdit]);
             vscode.workspace.applyEdit(edit);
