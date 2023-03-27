@@ -35,8 +35,11 @@ export class Rosbag {
 
         this.bag = await open(bagPath);
 
+        this.checkPublishers(true);
+
         // Read all messages
-        this.bag.readMessages({}, (result: any) => {
+        this.bag.readMessages({topics: [...this.publishers.keys()]}, (result: any) => {
+
             // Convert Images from UInt8Array into base64 string
             if ("data" in result.message && result.message.data instanceof Uint8Array) {
                 try {
@@ -54,8 +57,6 @@ export class Rosbag {
             console.log('read all messages');
             this.view.postMessage({type: 'createdMessages'});
         });
-
-        this.checkPublishers(true);
     }
 
     private currentIndex: number = 0;
@@ -184,7 +185,8 @@ export class Rosbag {
         const regex = /\[Client \d+\] \[id: (publish|advertise):(?<topic>.*?):\d+\] (?<error_code>.*)/;
         let match = message.msg.match(regex);
         if (match) {
-            console.log(message.msg)
+            // console.log(message.msg);
+            this.publishers.get(match.groups.topic)?.unadvertise();
             this.publishers.delete(match.groups.topic);
             Rosbag.unpublishNotify.add(message.msg);
         }
