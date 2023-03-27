@@ -1,29 +1,32 @@
-Environment Setup
-Windows
-WSL
-ROS 
-ROS Bridge
-VSCode
-Microsoft ROS Ext
-RIDE
-Linux - Ubuntu 20.04
-VM Virtual Box
-ROS
-ROS Bridge
-VSCode
-Microsoft ROS Ext
-RIDE
-Mac?
-VM Virtual Box
-ROS
-ROS Bridge
-VSCode
-Microsoft ROS Ext
-RIDE
+# User Manual
 
-RIDE
-Catkin Workspace
-Create Package (with MS ROS extension)
-Creation Wizard
-Topic Monitor
-Message publisher
+## Table of Contents
+
+1. [Environment Setup](#environment-setup)
+    1. [Windows](#windows)
+        1. [WSL](#wsl)
+        2. [ROS](#ros-windows)
+        3. [ROS Bridge](#ros-bridge-windows)
+        4. [VSCode](#vscode-windows)
+        5. [Microsoft ROS Ext](#microsoft-ros-ext-windows)
+        6. [RIDE](#ride-windows)
+    2. [Linux - Ubuntu 20.04](#linux-ubuntu)
+        1. [VM Virtual Box](#vm-virtual-box-linux)
+        2. [ROS](#ros-linux)
+        3. [ROS Bridge](#ros-bridge-linux)
+        4. [VSCode](#vscode-linux)
+        5. [Microsoft ROS Ext](#microsoft-ros-ext-linux)
+        6. [RIDE](#ride-linux)
+    3. [Mac](#mac)
+        1. [VM Virtual Box](#vm-virtual-box-mac)
+        2. [ROS](#ros-mac)
+        3. [ROS Bridge](#ros-bridge-mac)
+        4. [VSCode](#vscode-mac)
+        5. [Microsoft ROS Ext](#microsoft-ros-ext-mac)
+        6. [RIDE](#ride-mac)
+2. [RIDE](#ride)
+    1. [Catkin Workspace](#catkin-workspace)
+    2. [Create Package (with MS ROS extension)](#create-package)
+    3. [Creation Wizard](#creation-wizard)
+    4. [Topic Monitor](#topic-monitor)
+    5. [Message Publisher](#message-publisher)
