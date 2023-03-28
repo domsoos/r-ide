@@ -21,7 +21,7 @@
 		  "if __name__ == '__main__':",
 		  "    listener()",
 		  "",
-		  "# Refernece: http://wiki.ros.org/ROS/Tutorials/WritingPublisherSubscriber%28python%29"
+		  "# Reference: http://wiki.ros.org/ROS/Tutorials/WritingPublisherSubscriber%28python%29"
 		],
 		"description": "def listener example",
 		"isFileTemplate": true
@@ -33,7 +33,7 @@
 		"body": [
 		  "#!/usr/bin/env python",
 		  "",
-		  "# license removed for brevity",
+		  "import rospy",
 		  "",
 		  "from std_msgs.msg import String",
 		  "",

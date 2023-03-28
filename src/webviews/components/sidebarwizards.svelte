@@ -11,20 +11,22 @@
 	let isSubscriber = false;
 
 	onMount(async () => {
-		window.addEventListener('message', event => {
-		const message = event.data; // The JSON data our extension sent
-			switch (message.type) {
-				case 'setWorkspace':
-					workspaceDirectory = message.value;
-					break;
-			}
-		});
+  window.addEventListener('message', event => {
+    const message = event.data; // The JSON data our extension sent
+    console.log('Received message:', message); 
+    switch (message.type) {
+      case 'setWorkspace':
+        workspaceDirectory = message.value;
+        console.log('Updated workspaceDirectory:', workspaceDirectory); 
+        break;
+    }
+  });
 
-		// Get Workspace Directory
-		vscode.postMessage({
-			type: 'getWorkspace'
-		});
-	});
+  // Get Workspace Directory
+  vscode.postMessage({ 
+	type: 'getWorkspace' 
+});
+ });
 
 
 

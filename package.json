@@ -3,7 +3,6 @@
   "displayName": "R-IDE",
   "description": "",
   "version": "0.0.1",
-  "icon": "styles/rideLogo.png",
   "publisher": "TeamOrangeODU2023",
   "engines": {
     "vscode": "^1.75.0"
@@ -16,6 +15,16 @@
   ],
   "main": "./out/extension.js",
   "contributes": {
+    "configuration": {
+      "title": "My Extension",
+      "properties": {
+        "r-ide.packages.RosPackage.packages": {
+          "type": "array",
+          "default": [],
+          "description": "List of ROS packages to include in the workspace."
+        }
+      }
+    },
     "languages": [
       {
         "id": "ros-srv",
