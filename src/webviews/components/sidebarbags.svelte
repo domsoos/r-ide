@@ -71,7 +71,12 @@
                 break;
             }
             case "ROSConnectionSuccessful": {
-                openBagManager();
+                if (!isBagManagerOpen){
+                   openBagManager(); 
+                } else {
+                    vscode.postMessage({type: 'playBag'}); 
+                    isPlaying = true;
+                }
                 break;
             }
 		}
@@ -125,7 +130,7 @@
                 <!-- BETA<button class="bag-buttons" on:click={() => {isCloneMenuOpen = true;}}>Clone</button>-->
                 <button disabled={true} class="bag-buttons" tooltip="Coming soon">Clone</button>
                 {#if !isPlaying}
-                    <button class="bag-buttons" on:click={() => {vscode.postMessage({type: 'playBag'}); isPlaying = true}} disabled={!(connectionsLoaded && messagesLoaded)}>Play</button>
+                    <button class="bag-buttons" on:click={() => {isROSConnected();}} disabled={!(connectionsLoaded && messagesLoaded)}>Play</button>
                 {:else}
                     <button class="bag-buttons" on:click={() => {vscode.postMessage({type: 'pauseBag'}); isPlaying = false;}}>Pause</button>               
                 {/if}
