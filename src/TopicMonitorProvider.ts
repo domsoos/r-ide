@@ -230,10 +230,10 @@ export class TopicMonitorProvider {
       case 'byte':
       case 'int8':
       case 'uint8':
-        return 0;
-      case 'char':
       case 'int16':
       case 'uint16':
+        return 0;
+      case 'char':
         return '';
       case 'int32':
       case 'uint32':
