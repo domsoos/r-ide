@@ -4,8 +4,11 @@ import * as assert from 'assert';
 // as well as import your extension to test it
 import * as vscode from 'vscode';
 // import * as myExtension from '../../extension';
+function activate(context: vscode.ExtensionContext) {
+	const extensionUri = context.extensionUri;
+  }
 
-suite('Extension Test Suite', () => {
+describe('Extension Test Suite', () => {
 	vscode.window.showInformationMessage('Start all tests.');
 
 	test('Sample test', () => {

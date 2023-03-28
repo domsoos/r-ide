@@ -1,14 +1,19 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
-  transform: {
-    '^.+\\.tsx?$': 'ts-jest',
+  rootDir: '.',
+  testMatch: ['**/src/test/**/*.test.ts'],
+  globals: {
+    'ts-jest': {
+      tsconfig: 'tsconfig.test.json',
+    },
   },
   moduleNameMapper: {
-    '^vscode$': '<rootDir>/__mocks__/vscode.js',
+    '^vscode$': '<rootDir>/src/test/vscode.mock.ts',
   },
-  modulePaths: [
-    "<rootDir>/node_modules",
-    "<rootDir>/node_modules/vscode/dist",
-  ]
+  transform: {
+    '^.+\\.ts?$': 'ts-jest',
+  },
+  transformIgnorePatterns: ['/node_modules/'],
 };

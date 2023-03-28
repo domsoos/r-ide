@@ -4,18 +4,18 @@ import { expect } from 'chai';
 import { TopicMonitorProvider } from '../../TopicMonitorProvider';
 
 
-suite('TopicMonitorProvider', () => {
+describe('TopicMonitorProvider', () => {
   let sandbox: sinon.SinonSandbox;
   let panel: vscode.WebviewPanel;
   let extensionUri: vscode.Uri;
 
-  setup(() => {
+  beforeEach(() => {
     sandbox = sinon.createSandbox();
     panel = {} as vscode.WebviewPanel;
     extensionUri = vscode.Uri.parse('extension://test');
   });
 
-  teardown(() => {
+  afterEach(() => {
     sandbox.restore();
   });
 
