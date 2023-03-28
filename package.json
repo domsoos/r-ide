@@ -115,6 +115,14 @@
       {
         "command": "r-ide.run-catkin-make",
         "title": "R-IDE: Run catkin_make"
+      },
+      {
+        "command": "r-ide.add-executable",
+        "title": "R-IDE: Add an executable to a package"
+      },
+      {
+        "command": "r-ide.add-library",
+        "title": "R-IDE: Add a library to a package"
       }
     ],
     "snippets": [

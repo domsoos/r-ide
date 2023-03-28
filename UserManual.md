@@ -92,9 +92,13 @@ source /opt/ros/noetic/setup.bash
 #### ROS Bridge (Linux)  
 
 1. Install the necessary dependencies:  
-`sudo apt-get update`  
+```bash
+sudo apt-get update
+```  
 and  
-`sudo apt-get install ros-noetic-rosbridge-server`  
+```bash
+sudo apt-get install ros-noetic-rosbridge-server
+```  
 
 2. To start the rosbridge WebSocket server, run:
 `roslaunch rosbridge_server rosbridge_websocket.launch`  
@@ -112,7 +116,9 @@ and
 
 #### R-IDE (Linux)
 
-1. Download and install R-IDE following the official [R-IDE installation guide](https://github.com/RobotWebTools/r-ide).
+1. Open the Extensions view in VSCode by clicking on the Extensions icon in the Activity Bar on the side of the window.
+2. Search for "r-ide" in the search bar.
+3. Click on the icon and then select "Install".
 
 ### Mac
 
@@ -162,8 +168,6 @@ experience.*
 2. Type "ROS: Create Package" and select the command.
 3. Follow the prompts to create your new ROS package.
 
-Tools/r-ide/blob/master/README.md) for using the R-IDE Creation Wizard to create new robot configurations and simulation environments.*
-
 ### Topic Monitor
 
 1. In R-IDE, click the "Topic Monitor" tab.
@@ -173,9 +177,8 @@ Tools/r-ide/blob/master/README.md) for using the R-IDE Creation Wizard to create
 ### Message Publisher
 
 1. In R-IDE, click the "Topic Monitor" tab.
-2. 
-3. The topic name is automatically selected based on the subscribed topics.
-4. Click "Publish" to send the message.
+2. The topic name is automatically selected based on the subscribed topics.
+3. Click "Publish" to send the message.
 
 ### Adding C++ executables
 

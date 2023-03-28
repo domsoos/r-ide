@@ -93,8 +93,23 @@ export class SidebarBagsProvider implements vscode.WebviewViewProvider {
           this.bag?.pauseBag();
           break;
         }
+        case "isROSConnected":{
+          let isConnected = await this.isROSConnected();
+          if(!isConnected){
+            vscode.commands.executeCommand('r-ide.no-ros-connection');
+          }else{
+            webviewView.webview.postMessage({
+              type: 'ROSConnectionSuccessful',
+            });
+          }
+          break;
+        }
       }
     });
+  }
+
+  private async isROSConnected(){
+    return await Rosbag.isROSConnected();
   }
 
   public revive(panel: vscode.WebviewView) {
