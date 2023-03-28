@@ -30,6 +30,8 @@
     3. [Creation Wizard](#creation-wizard)
     4. [Topic Monitor](#topic-monitor)
     5. [Message Publisher](#message-publisher)
+    6. [Add an Executable](#adding-c-executables)
+    7. [Add a Library](#adding-c-libraries)
 
 
 ## Environment Setup
@@ -180,3 +182,26 @@ experience.*
 2. The topic name is automatically selected based on the subscribed topics.
 3. Click "Publish" to send the message.
 
+### Adding C++ executables
+
+After creating a source file, you can add an executable in `CMakeLists.txt`. R-IDE can create a basic template via the command palette.
+
+1. Open the command palette (`Ctrl + Shift + P` or `Cmd + Shift + P`).
+2. Type and select `R-IDE: Add an executable to a package` from the options listed.
+3. VScode will then prompt for an executable name. ROS suggests a name of the format: `$ProjectName_function_node`
+4. Then select the source files used to create the executable. These should be `.cpp` files visible to the catkin package.
+5. R-IDE will then generate a basic function inside `CMakeLists.txt` that will add the executable and link the target libraries.
+
+For further information on `CMakeLists.txt`, go to [the wiki page](http://wiki.ros.org/catkin/CMakeLists.txt)
+
+### Adding C++ libraries
+
+After creating a source file, you can add a library in `CMakeLists.txt`. R-IDE can create a basic template via the command palette.
+
+1. Open the command palette (`Ctrl + Shift + P` or `Cmd + Shift + P`).
+2. Type and select `R-IDE: Add a library to a package` from the options listed.
+3. VScode will then prompt for an library name. ROS suggests a name of the format: `$ProjectName_function_node`
+4. Then select the source files used to create the library. These should be `.cpp` files visible to the catkin package.
+5. R-IDE will then generate a basic function inside `CMakeLists.txt` that will add the library.
+
+For further information on `CMakeLists.txt`, go to [the wiki page](http://wiki.ros.org/catkin/CMakeLists.txt)
