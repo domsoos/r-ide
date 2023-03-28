@@ -171,15 +171,16 @@ experience.*
 ### Topic Monitor
 
 1. In R-IDE, click the "Topic Monitor" tab.
-2. Select the desired topics to monitor from the list.
-3. If ROS Bridge is not running, but is installed then a window will pop up, select "Start ROSBridge". Refer to the [Linux](#ros-bridge-linux), [Windows](#ros-bridge-windows) and [Mac](#ros-bridge-mac) installation guides.
-4. Refresh the status to change to Connected.
+2. If ROS Bridge is not running, but is installed then a window will pop up, select "Start ROSBridge". Refer to the [Linux](#ros-bridge-linux), [Windows](#ros-bridge-windows) and [Mac](#ros-bridge-mac) installation guides.
+3. Refresh the status to change to Connected.
+4. Select the desired topics to monitor from the list by clicking the box.
 3. Observe the real-time messages being published on the selected topics.
 
 ### Message Publisher
 
 1. In R-IDE, click the "Topic Monitor" tab.
-2. The topic name is automatically selected based on the subscribed topics.
+2. Click on the pencil icon next to the topic you to publish to.
+3. The type of the topic is displayed and the user can adjust the frequency
 3. Click "Publish" to send the message.
 
 ### Adding C++ executables
