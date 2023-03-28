@@ -160,8 +160,6 @@ experience.*
 2. Type "ROS: Create Package" and select the command.
 3. Follow the prompts to create your new ROS package.
 
-Tools/r-ide/blob/master/README.md) for using the R-IDE Creation Wizard to create new robot configurations and simulation environments.*
-
 ### Topic Monitor
 
 1. In R-IDE, click the "Topic Monitor" tab.
@@ -171,7 +169,6 @@ Tools/r-ide/blob/master/README.md) for using the R-IDE Creation Wizard to create
 ### Message Publisher
 
 1. In R-IDE, click the "Topic Monitor" tab.
-2. 
-3. The topic name is automatically selected based on the subscribed topics.
-4. Click "Publish" to send the message.
+2. The topic name is automatically selected based on the subscribed topics.
+3. Click "Publish" to send the message.
 
