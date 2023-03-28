@@ -37,7 +37,7 @@
         {
           "id": "ride-sidebar-view",
           "title": "R-IDE",
-          "icon": "src/media/hubot.svg"
+          "icon": "media/hubot.svg"
         }
       ]
     },
