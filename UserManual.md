@@ -32,6 +32,8 @@
     5. [Message Publisher](#message-publisher)
     6. [Add an Executable](#adding-c-executables)
     7. [Add a Library](#adding-c-libraries)
+3. [Other Recommended Extensions]
+    1. 
 
 
 ## Environment Setup
@@ -203,3 +205,17 @@ After creating a source file, you can add a library in `CMakeLists.txt`. R-IDE c
 5. R-IDE will then generate a basic function inside `CMakeLists.txt` that will add the library.
 
 For further information on `CMakeLists.txt`, go to [the wiki page](http://wiki.ros.org/catkin/CMakeLists.txt)
+
+
+#### Other Recommended Extensions
+
+1. Language extension for Python and/or C++  
+   [Python](https://marketplace.visualstudio.com/items?itemName=ms-python.python)  
+   [C++](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools)
+
+2. WSL or SSH extension  
+   [WSL](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-wsl)  
+   [SSH](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-ssh)
+
+3. CMake Extension including Intellisense  
+   [CMake](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cmake-tools)
