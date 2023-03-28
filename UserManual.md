@@ -169,6 +169,38 @@ experience.*
 2. Type "ROS: Create Package" and select the command.
 3. Follow the prompts to create your new ROS package.
 
+### Creation Wizard
+
+1. In R-IDE, click the Wizards tab followed by the Create New tab.
+2. There are currently three option to create a code template for:
+
+#### ROS Node
+
+1. Choose the file type: C++ or Py.
+2. Type the name of the file.
+3. Specify the location of the package to put the node in.
+
+#### ROS Msg
+
+1. Choose the file type: Message File.
+2. Type the name of the file.
+3. Specify the location of the package to put the message file in.
+
+#### ROS Srv
+
+1. Type the service file name.
+2. Specify the location of the package to be created in.
+
+
+### ROS Bags
+
+1. In R-IDE, click the "Topic Monitor" tab.
+2. If ROS Bridge is not running, but is installed then a window will pop up, select "Start ROSBridge". Refer to the [Linux](#ros-bridge-linux), [Windows](#ros-bridge-windows) and [Mac](#ros-bridge-mac) installation guides.
+3. Refresh the status to change to Connected.
+4. In R-IDE, click the "ROS Bags" tab
+5. Currently only the Manage Bags tab is available. 
+6. Select the ROS Bag to play and subscribe to topics to view the message coming through each selected topic.
+
 ### Topic Monitor
 
 1. In R-IDE, click the "Topic Monitor" tab.
@@ -179,7 +211,7 @@ experience.*
 
 ### Message Publisher
 
-1. In R-IDE, click the "Topic Monitor" tab.
+1. In R-IDE, click the "ROS Topic Tools" followed by the "ROS Topic Monitor" tab.
 2. Click on the pencil icon next to the topic you to publish to.
 3. The type of the topic is displayed and the user can adjust the frequency
 3. Click "Publish" to send the message.
