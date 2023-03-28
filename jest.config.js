@@ -13,7 +13,8 @@ module.exports = {
     '^vscode$': '<rootDir>/src/test/vscode.mock.ts',
   },
   transform: {
-    '^.+\\.ts?$': 'ts-jest',
+    '^.+\\.ts?$': ['ts-jest', { tsConfig: './tsconfig.json' }],
   },
   transformIgnorePatterns: ['/node_modules/'],
+  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
 };
