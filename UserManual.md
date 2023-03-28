@@ -32,8 +32,7 @@
     5. [Message Publisher](#message-publisher)
     6. [Add an Executable](#adding-c-executables)
     7. [Add a Library](#adding-c-libraries)
-3. [Other Recommended Extensions]
-    1. 
+3. [Other Recommended Extensions](#other-recommended-extensions)
 
 
 ## Environment Setup
