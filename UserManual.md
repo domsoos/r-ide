@@ -170,6 +170,8 @@ experience.*
 
 1. In R-IDE, click the "Topic Monitor" tab.
 2. Select the desired topics to monitor from the list.
+3. If ROS Bridge is not running, but is installed then a window will pop up, select "Staert ROSBridge". Refer to the [Linux](#ros-bridge-linux), [Windows](#ros-bridge-windows) and [Mac](#ros-bridge-mac) installation guides.
+4. Refresh the status to change to Connected.
 3. Observe the real-time messages being published on the selected topics.
 
 ### Message Publisher
