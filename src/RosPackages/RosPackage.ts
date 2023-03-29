@@ -413,7 +413,6 @@ export async function RosPackageQuickPick(newPackage: boolean = true) {
 export async function identifyPackages(root: vscode.Uri) {
     RosPackage.packages.clear();
     console.log(root.fsPath.endsWith("/catkin_ws"));
-    let myPackages = [];
     if (root.fsPath.endsWith("/catkin_ws")) {
         // catkin_ws is the workspace
         root = vscode.Uri.joinPath(root, '/src/');
@@ -435,12 +434,23 @@ export async function identifyPackages(root: vscode.Uri) {
                 
                 if (hasCmake && hasPackageXml) {
                     new RosPackage(uri, folder);
-                    myPackages.push(uri);
                 }
             }
         }
     } else {
-        // Entire workspace must be one package
+        // Check if workspace is a package
+        let hasCmake = false, hasPackageXml = false;
+        for (let [file, _] of await vscode.workspace.fs.readDirectory(root)) {
+            if (file === "CMakeLists.txt") {
+                hasCmake = true;
+            } else if (file === "package.xml") {
+                hasPackageXml = true;
+            }
+        }
+        if (hasCmake && hasPackageXml) {
+            new RosPackage(root, root.fsPath.split('/')[-1]);
+        }
+
         const name = root.fsPath.split('/')[-1];
         RosPackage.packages.set(name, new RosPackage(root, name));
     }
