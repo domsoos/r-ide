@@ -12,7 +12,7 @@ import {
 	createSrv
 } from './commands/commands';
 import { 
-	addNewFindPackage, identifyPackages, RosPackageQuickPick, updateExistingPackages
+	identifyPackages, RosPackageQuickPick, updateExistingPackages
 } from './RosPackages/RosPackage';
 import { SidebarTopicsProvider } from './SidebarTopicsProvider';
 import * as cp from 'child_process';
@@ -76,7 +76,11 @@ export function activate(context: vscode.ExtensionContext) {
 		),
 		vscode.commands.registerCommand(
 			"r-ide.add-new-find-package",
-			addNewFindPackage
+			() => {
+				RosPackageQuickPick(false).then((result) => {
+					result?.value?.addNewFindPackage();
+				});
+			}
 		),
 		vscode.commands.registerCommand(
 			"r-ide.add-executable",
