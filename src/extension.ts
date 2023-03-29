@@ -12,7 +12,7 @@ import {
 	createSrv
 } from './commands/commands';
 import { 
-	identifyPackages, RosPackageQuickPick, updateExistingPackages
+	identifyPackages, RosPackageQuickPick, updateExistingPackages, RosPackage
 } from './RosPackages/RosPackage';
 import { SidebarTopicsProvider } from './SidebarTopicsProvider';
 import * as cp from 'child_process';
@@ -36,6 +36,24 @@ export function activate(context: vscode.ExtensionContext) {
 			identifyPackages(f.uri);
 		}
 	}
+
+	const newPackageSniffer = vscode.workspace.createFileSystemWatcher("**/*.{txt,xml}");
+	newPackageSniffer.onDidCreate((uri) => {
+		console.log(uri);
+		let root = vscode.Uri.joinPath(uri, "..");
+		let hasCmake = false, hasPackage = false;
+		vscode.workspace.fs.readDirectory(root).then((result) => {
+			for (let [file, _] of result) {
+				hasCmake = hasCmake || file === "CMakeLists.txt";
+				hasPackage = hasPackage || file === "package.xml";
+			}
+
+			if (hasCmake && hasPackage) {
+				new RosPackage(root, uri.fsPath.split('/')[-2]);
+			}
+		});
+	});
+
 
 	context.subscriptions.push(
 		// Webviews
