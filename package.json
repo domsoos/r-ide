@@ -2,10 +2,14 @@
   "name": "r-ide",
   "displayName": "R-IDE",
   "description": "",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "icon": "styles/rideLogo.png",
   "publisher": "TeamOrangeODU2023",
   "extensionKind": ["workspace"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/domsoos/r-ide"
+  },
   "engines": {
     "vscode": "^1.75.0"
   },
@@ -129,15 +133,15 @@
     "snippets": [
       {
         "language": "python",
-        "path": "./src/snippets/python_snippets.json"
+        "path": "./snippets/python_snippets.json"
       },
       {
         "language": "cpp",
-        "path": "./src/snippets/cpp_snippets.json"
+        "path": "./snippets/cpp_snippets.json"
       },
       {
         "language": "ros-srv",
-        "path": "./src/snippets/ros-srv_snippets.json"
+        "path": "./snippets/ros-srv_snippets.json"
       }
     ]
   },
