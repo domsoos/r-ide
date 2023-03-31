@@ -2,7 +2,7 @@
   "name": "r-ide",
   "displayName": "R-IDE",
   "description": "",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "icon": "styles/rideLogo.png",
   "publisher": "TeamOrangeODU2023",
   "extensionKind": ["workspace"],
@@ -189,6 +189,5 @@
     "rosbag": "^3.0.1",
     "roslib": "^1.3.0",
     "slider": "^1.0.4"
-  },
-  "repository": {"url": "https://github.com/domsoos/r-ide"}
+  }
 }
