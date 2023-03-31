@@ -173,10 +173,17 @@ export class Rosbag {
         }
     }
 
+    public replayBag(){
+        this.currentIndex = 0;
+        this.pauseBag();
+        console.log("KuvaszBomba");
+        this.view.postMessage("replayBag");
+    }
+
     private static async waitForLeadup (leadup: number) {
         // console.log(leadup);
         return new Promise((resolve) => {
-            setTimeout(() => {resolve(true);}, leadup);
+            setTimeout(() => {resolve(true);}, leadup  );
         });
     };
 
