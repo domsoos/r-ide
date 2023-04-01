@@ -93,6 +93,13 @@ export class SidebarBagsProvider implements vscode.WebviewViewProvider {
           this.bag?.pauseBag();
           break;
         }
+        case "stopBag": {
+          this.bag?.stopBag();
+        }
+        case "replayBag" : {
+          this.bag?.replayBag();
+          break;
+        }
         case "isROSConnected":{
           let isConnected = await this.isROSConnected();
           if(!isConnected){
