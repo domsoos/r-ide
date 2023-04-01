@@ -174,10 +174,8 @@ export class Rosbag {
     }
 
     public replayBag(){
-        this.currentIndex = 0;
         this.pauseBag();
-        console.log("KuvaszBomba");
-        this.view.postMessage("replayBag");
+        this.currentIndex = 0;
     }
 
     private static async waitForLeadup (leadup: number) {
