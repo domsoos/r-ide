@@ -1,12 +1,17 @@
 import * as vscode from "vscode";
 import { getNonce } from "./getNonce";
-
+import { Rosbag } from "./RosBag/rosbag";
 
 export class SidebarBagsProvider implements vscode.WebviewViewProvider {
   _view?: vscode.WebviewView;
   _doc?: vscode.TextDocument;
 
-  constructor(private readonly _extensionUri: vscode.Uri) {}
+  bag: Rosbag | undefined;
+
+  constructor(private readonly _extensionUri: vscode.Uri) {
+    this.bag = undefined;
+    Rosbag.connect();
+  }
 
   public resolveWebviewView(webviewView: vscode.WebviewView) {
     this._view = webviewView;
@@ -38,29 +43,84 @@ export class SidebarBagsProvider implements vscode.WebviewViewProvider {
           break;
         }
         case "getSelectedBag" :{
-          vscode.window.showOpenDialog({canSelectFiles: true, canSelectFolders: false, canSelectMany: false}).then((result) =>{
+          await vscode.window.showOpenDialog({
+            canSelectFiles: true, 
+            canSelectFolders: false, 
+            canSelectMany: false,
+            // eslint-disable-next-line @typescript-eslint/naming-convention
+            // filters: {'Bags': ['.bag']}
+          }).then(async (result) =>{
             if(result && result[0].path){
+              await this.bag?.clearBag();
+              this.bag = new Rosbag(result[0].fsPath, webviewView.webview);
+
               webviewView.webview.postMessage({
                 type: 'setSelectedBag',
-                value: result[0].path,
+                value: {
+                  path: result[0].fsPath,
+                },
+              });
+            }
+          });
+          
+          break;
+        }
+        case "getCloneBagPath" :{
+          vscode.window.showOpenDialog({
+            canSelectFiles: false, 
+            canSelectFolders: true, 
+            canSelectMany: false, 
+            defaultUri: vscode.Uri.file(data.value),
+          }).then((result) =>{
+            if(result && result[0].path){
+              webviewView.webview.postMessage({
+                type: 'setCloneBagPath',
+                value: result[0].fsPath,
               });
             }
           });
           break;
         }
-        case "getCloneBagPath" :{
-          vscode.window.showOpenDialog({canSelectFiles: false, canSelectFolders: true, canSelectMany: false, defaultUri: vscode.Uri.file(data.value)}).then((result) =>{
-            if(result && result[0].path){
-              webviewView.webview.postMessage({
-                type: 'setCloneBagPath',
-                value: result[0].path,
-              });
-            }
-          });
+        case "r-ide.noConnection":{
+          vscode.commands.executeCommand('r-ide.no-ros-connection');
+          break;
+        }
+        case "playBag": {
+          this.bag?.playBag();
+          break;
+        }
+        case "pauseBag": {
+          this.bag?.pauseBag();
+          break;
+        }
+        case "stopBag": {
+          this.bag?.stopBag();
+        }
+        case "replayBag" : {
+          this.bag?.replayBag();
+          break;
+        }
+        case "isROSConnected":{
+          let isConnected = await this.isROSConnected();
+          if(!isConnected){
+            vscode.commands.executeCommand('r-ide.no-ros-connection');
+          }else{
+            webviewView.webview.postMessage({
+              type: 'ROSConnectionSuccessful',
+            });
+          }
+          break;
+        }
+        case "replayBag": {
+          this.bag?.replayBag();
           break;
         }
       }
     });
+  }
+
+  private async isROSConnected(){
+    return await Rosbag.isROSConnected();
   }
 
   public revive(panel: vscode.WebviewView) {
@@ -69,10 +129,10 @@ export class SidebarBagsProvider implements vscode.WebviewViewProvider {
 
   private _getHtmlForWebview(webview: vscode.Webview) {
     const styleResetUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, "src", "styles/reset.css")
+      vscode.Uri.joinPath(this._extensionUri, "styles", "reset.css")
     );
     const styleVSCodeUri = webview.asWebviewUri(
-        vscode.Uri.joinPath(this._extensionUri, "src", "styles/vscode.css")
+        vscode.Uri.joinPath(this._extensionUri, "styles", "vscode.css")
     );
 
     const scriptUri = webview.asWebviewUri(
@@ -80,7 +140,7 @@ export class SidebarBagsProvider implements vscode.WebviewViewProvider {
     );
 
     const styleMainUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, "src", "styles/sidebarbags.css")
+      vscode.Uri.joinPath(this._extensionUri, "styles", "sidebarbags.css")
     );
     
 

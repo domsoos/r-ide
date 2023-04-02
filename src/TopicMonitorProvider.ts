@@ -1,5 +1,10 @@
 import * as vscode from "vscode";
 import { getNonce } from "./getNonce";
+import * as cp from "child_process";
+
+interface ParsedObject {
+  [key: string]: any;
+}
 
 export class TopicMonitorProvider {
   /**
@@ -113,16 +118,170 @@ export class TopicMonitorProvider {
           vscode.window.showErrorMessage(data.value);
           break;
         }
+        case "r-ide.noConnection":{
+          vscode.commands.executeCommand('r-ide.no-ros-connection');
+          break;
+        }
+        case "getMessageTypes":{
+          //this.generateMessageFormat();
+          let messageField = await this.getMessageField('actionlib_msgs/GoalID');
+          break;
+        }
+        case "getMessageTypeFormat": {
+          if(data?.value?.type && data?.value?.fulltopic){
+            let messageField = await this.getMessageField(data.value.type);
+            
+            webview.postMessage({
+              type: 'setPublishMessageFormat',
+              data: messageField 
+            });
+          }
+          break;
+        }
       }
+    });
+  }
+
+  private async generateMessageFormat(){
+    try {
+      const messageTypes: any = await this.getMessageTypes();
+      const messageFields: Map<any, any> = await Promise.all(messageTypes.map(async (messageType: any) => {
+        return {
+          [messageType]: await this.getMessageField(messageType)
+        };
+      })).then((results) => {
+        return Object.assign({}, ...results);
+      });
+
+      console.log(messageFields);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  private async getMessageField(messageType: any){
+    return new Promise((resolve, reject)=>{
+      //let cpRosMsg = cp.spawn('rosmsg', ['show', messageType]);
+      let cpRosMsg = cp.exec(`rosmsg show ${messageType}`);
+      let messageFields:any = {};
+
+      cpRosMsg.stdout?.on('data', (data) =>{
+        if(data){
+          messageFields = this.parseStringToObject(data.toString());
+        }
+      });
+      cpRosMsg.on('close', (code) => {
+        if (code === 0) {
+          resolve(messageFields);
+        } else {
+          reject(new Error(`rosmsg show exited with code ${code}`));
+        }
+      });
+    });
+  }
+
+  parseStringToObject(str: string): ParsedObject {
+    const lines = str.split('\n');
+    const parsedObject: ParsedObject = {};
+    const stack: ParsedObject[] = [parsedObject];
+  
+    for (const line of lines) {
+      const trimmedLine = line.trim();
+      if (trimmedLine !== "") {
+        const depth = line.search(/\S/);
+        const match = trimmedLine.match(/^([\w/]+(?:\[\])?)\s+(\w+)(?:\s+\w+)?$/);
+  
+        if (match) {
+          const [_, type, name] = match;
+          const isArray = type.endsWith('[]');
+          const valueType = isArray ? type.slice(0, -2) : type;
+          const value = isArray ? [] : this.defaultValue(valueType);
+          //const value = isArray ? [{}] : this.defaultValue(valueType);
+  
+          // Find the parent object or array for this property
+          let parent = stack[Math.floor(depth / 2)];
+          if (!parent) {
+            throw new Error(`Invalid depth ${depth}`);
+          }
+
+          if (Array.isArray(parent)) {
+            if(!parent[0]){
+              parent[0] = {};
+            }
+            //parent.push({[name] : value});
+            parent[0][name] = value;
+          } 
+          else{
+            parent[name] = value;
+          }
+            
+          stack[Math.floor(depth / 2) + 1] = value;
+        }
+      }
+    }
+
+    return parsedObject;
+  }
+
+ defaultValue(type: string): any {
+    switch (type) {
+      case 'bool':
+        return false;
+      case 'byte':
+      case 'int8':
+      case 'uint8':
+      case 'int16':
+      case 'uint16':
+        return 0;
+      case 'char':
+        return '';
+      case 'int32':
+      case 'uint32':
+        return 0;
+      case 'int64':
+      case 'uint64':
+        return BigInt(0);
+      case 'float32':
+      case 'float64':
+        return 0.0;
+      case 'string':
+        return '';
+      case 'time':
+      case 'duration':
+        return { sec: 0, nsec: 0 };
+      default:
+        return {};
+    }
+  }
+
+  private async getMessageTypes(){
+    return new Promise((resolve, reject) => {
+      let cpRosList = cp.spawn('rosmsg', ['list']);
+      let messageTypes: any = [];
+  
+      cpRosList.stdout?.on('data', (data) => {
+        if (data) {
+          const msgList = data.toString().trim().split('\n');
+          messageTypes.push(...msgList);
+        }
+      });
+  
+      cpRosList.on('close', (code) => {
+        if (code === 0) {
+          resolve(messageTypes);
+        } else {
+          reject(new Error(`rosmsg list exited with code ${code}`));
+        }
+      });
     });
   }
 
   private _getHtmlForWebview(webview: vscode.Webview) {
     const styleResetUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, "src", "styles/reset.css")
+      vscode.Uri.joinPath(this._extensionUri, "styles", "reset.css")
     );
     const styleVSCodeUri = webview.asWebviewUri(
-        vscode.Uri.joinPath(this._extensionUri, "src", "styles/vscode.css")
+        vscode.Uri.joinPath(this._extensionUri, "styles", "vscode.css")
     );
 
     const scriptUri = webview.asWebviewUri(
@@ -130,7 +289,7 @@ export class TopicMonitorProvider {
     );
 
     const styleMainUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, "src", "styles/topicmonitor.css")
+      vscode.Uri.joinPath(this._extensionUri, "styles", "topicmonitor.css")
     );
 
     // // Use a nonce to only allow specific scripts to be run

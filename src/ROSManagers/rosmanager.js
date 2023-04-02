@@ -4,8 +4,6 @@ class ROS {
     static rosAPI;
     static rosLib;
 
-
-
     constructor() {
         if (ROS.rosAPI && ROS.rosAPI.isConnected) {
             return Promise.resolve();
@@ -14,11 +12,14 @@ class ROS {
                 ROS.rosAPI = new ROSLIB.Ros({
                     url: "ws://localhost:9090"
                 });
+                console.log('connected');
                 ROS.rosAPI.on('connection', () => {
+                    console.log('ROS connected');
                     ROS.rosLib = ROSLIB;
                     resolve();
                 });
                 ROS.rosAPI.on('error', (error) => {
+                    console.log(error);
                     reject(error);
                 });
             });
@@ -29,7 +30,7 @@ class ROS {
         return ROS.rosAPI;
     }
 
-    static getRosLib(){
+    static getROSLib() {
         return ROS.rosLib;
     }
 
@@ -41,11 +42,13 @@ class ROS {
 
         return new Promise((resolve, reject) => {
             ROS.rosAPI.on('connection', () => {
+                console.log('ROS connected');
                 ROS.rosLib = ROSLIB;
                 resolve();
             });
-            ROS.rosAPI.on('error', () => {
-                reject();
+            ROS.rosAPI.on('error', (error) => {
+                console.log(error);
+                reject(error);
             });
         });
     }

@@ -6,11 +6,48 @@
             type: 'openTopicMonitor',
         });
     };
+
+    let isDebugging = false;
+    let rosPackage = '';
+    let rosNode = '';
+
+    function debugRosNode(){
+        vscode.postMessage({
+            type: 'debugRosNode',
+            value: {
+                rosPackage,
+                rosNode
+            }
+        });
+
+        isDebugging = false;
+    }
+
+    function killNode(){
+        vscode.postMessage({
+            type: 'killNode',
+        });
+    }
 </script>
 
+<button style="margin-top:5px;" on:click={() => {openTopicMonitor()}}>ROS Topic Monitor</button>
 
-<button on:click={() => {openTopicMonitor()}}>ROS Topic Monitor</button>
-<button>ROS Topic Publisher</button>
+<!-- Commented out Debug ROS node and Topic publisher button for Beta 
+
+{#if !isDebugging}
+    <button on:click={() => {openTopicMonitor()}}>ROS Topic Monitor</button>
+    <button>ROS Topic Publisher</button>
+    <button on:click={() => {isDebugging = true;}}>Debug ROS Node</button>
+    <button on:click={() => {killNode()}}>Kill Node</button>
+{:else}
+    <label for="node-package">Package Name:</label>
+    <input type="text" id="node-package" bind:value={rosPackage} style="border:solid 1px black">
+    <label for="node-name">Node Name:</label>
+    <input type="text" id="node-name" bind:value={rosNode} style="border:solid 1px black">
+    <button on:click={() => {debugRosNode()}}>Debug Node</button>
+{/if}
+-->
+
 
 <!--
 <button disabled='{isLoading}'  on:click={() => {getROSTopics();}}>{buttonLabel}</button>

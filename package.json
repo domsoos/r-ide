@@ -2,37 +2,47 @@
   "name": "r-ide",
   "displayName": "R-IDE",
   "description": "",
-  "version": "0.0.1",
+  "version": "0.0.3",
+  "icon": "styles/rideLogo.png",
+  "publisher": "TeamOrangeODU2023",
+  "extensionKind": ["workspace"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/domsoos/r-ide"
+  },
   "engines": {
-    "vscode": "^1.74.0"
+    "vscode": "^1.75.0"
   },
   "categories": [
     "Other"
   ],
-  "activationEvents": [
-    "onCommand:r-ide.create-file-from-template"
-  ],
   "main": "./out/extension.js",
   "contributes": {
-    "languages": [{
-      "id": "ros-srv",
-      "aliases": ["ROS srv"],
-      "extensions": [".srv"],
-      "configuration": "./language-configuration.json"
-  }],
-  "grammars": [
-    {
+    "languages": [
+      {
+        "id": "ros-srv",
+        "aliases": [
+          "ROS srv"
+        ],
+        "extensions": [
+          ".srv"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
         "language": "ros-srv",
         "scopeName": "source.ros-srv",
         "path": "./syntaxes/ros-srv.tmLanguage.json"
-    }
-],
+      }
+    ],
     "viewsContainers": {
       "activitybar": [
         {
           "id": "ride-sidebar-view",
           "title": "R-IDE",
-          "icon": "src/media/hubot.svg"
+          "icon": "media/hubot.svg"
         }
       ]
     },
@@ -96,85 +106,46 @@
         ]
       },
       {
-        "command": "r-ide.create-package",
-        "title": "R-IDE: Create a new ROS package",
-        "arguments": [
-          {
-            "name": "package_name",
-            "description": "What should the package be named?",
-            "type": "text"
-          },
-          {
-            "name": "directory",
-            "description": "Where should the package be placed",
-            "type": "workspaceFolder"
-          }
-        ]
-      },
-      {
-        "command": "r-ide.register-package",
-        "title": "R-IDE: Register a package",
-        "arguments": [
-          {
-            "name": "packageDirectory",
-            "description": "Select the package direcotry",
-            "type": "workspaceFolder"
-          }
-        ]
-      },
-      {
-        "command": "r-ide.register-msg",
-        "title": "R-IDE: Register a message file with a package",
-        "arguments": [
-          {
-            "name": "package",
-            "description": "Select the package to register",
-            "type": "workspaceFolder"
-          },
-          {
-            "name": "msg",
-            "description": "Select the message files to add",
-            "type": "uri"
-          }
-        ]
-      },
-      {
-        "command": "r-ide.register-srv",
-        "title": "R-IDE: Register a service file with a package",
-        "arguments": [
-          {
-            "name": "package",
-            "description": "Select the package to register",
-            "type": "workspaceFolder"
-          },
-          {
-            "name": "srv",
-            "description": "Select the service files to add",
-            "type": "uri"
-          }
-        ]
-      },
-      {
         "command": "r-ide.open-topic-monitor",
         "title": "R-IDE: Open Topic Monitor"
       },
       {
+        "command": "r-ide.open-node-graph",
+        "title": "R-IDE: Open Node Graph"  
+      },
+      {
         "command": "r-ide.update-package-list",
         "title": "R-IDE: Update the package list from rospack"
+      },
+      {
+        "command": "r-ide.add-new-find-package",
+        "title": "R-IDE: Add a new package to the find package call"
+      },
+      {
+        "command": "r-ide.run-catkin-make",
+        "title": "R-IDE: Run catkin_make"
+      },
+      {
+        "command": "r-ide.add-executable",
+        "title": "R-IDE: Add an executable to a package"
+      },
+      {
+        "command": "r-ide.add-library",
+        "title": "R-IDE: Add a library to a package"
       }
     ],
     "snippets": [
       {
         "language": "python",
-        "path": "./src/snippets/python_snippets.json"
+        "path": "./snippets/python_snippets.json"
       },
       {
         "language": "cpp",
-        "path": "./src/snippets/cpp_snippets.json"
+        "path": "./snippets/cpp_snippets.json"
       },
       {
         "language": "ros-srv",
-        "path": "./src/snippets/ros-srv_snippets.json"
+        "path": "./snippets/ros-srv_snippets.json"
       }
     ]
   },
@@ -195,7 +166,6 @@
     "@rollup/plugin-typescript": "^11.0.0",
     "@tsconfig/svelte": "^3.0.0",
     "@types/glob": "^8.0.1",
-    "@types/mocha": "^10.0.1",
     "@types/node": "^16.18.12",
     "@types/vscode": "^1.75.0",
     "@typescript-eslint/eslint-plugin": "^5.52.0",
@@ -205,7 +175,6 @@
     "concurrently": "^7.6.0",
     "eslint": "^8.34.0",
     "glob": "^8.0.3",
-    "mocha": "^10.1.0",
     "rollup": "^2.79.1",
     "rollup-plugin-svelte": "^7.1.2",
     "rollup-plugin-terser": "^7.0.2",
@@ -218,7 +187,10 @@
     "ms-iot.vscode-ros"
   ],
   "dependencies": {
+    "@types/rosbag": "^2.6.0",
+    "@types/roslib": "^1.3.0",
     "mongoose": "^6.9.2",
+    "rosbag": "^3.0.1",
     "roslib": "^1.3.0",
     "slider": "^1.0.4"
   }

@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 import { getNonce } from "./getNonce";
 import * as dbcontroller from "./database/dbcontroller";
+import { RosPackageQuickPick } from "./RosPackages/RosPackage";
 
 
 export class SidebarWizardsProvider implements vscode.WebviewViewProvider {
@@ -51,11 +52,15 @@ export class SidebarWizardsProvider implements vscode.WebviewViewProvider {
           break;
         }
         case "openFileExplorer" :{
-          vscode.window.showOpenDialog({canSelectFiles: false, canSelectFolders: true, canSelectMany: false, defaultUri: vscode.Uri.file(data.value)}).then((result) =>{
-            if(result && result[0].path){
+          RosPackageQuickPick(true).then((result) => {
+            console.log(result);
+            if(result !== undefined){
               webviewView.webview.postMessage({
                 type: 'setWorkspace',
-                value: result[0].path,
+                value: {
+                  name: result.value?.projectName,
+                  path: result.value?.rootDirectory.fsPath
+                }
               });
             }
           });
@@ -74,10 +79,10 @@ export class SidebarWizardsProvider implements vscode.WebviewViewProvider {
 
   private _getHtmlForWebview(webview: vscode.Webview) {
     const styleResetUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, "src", "styles/reset.css")
+      vscode.Uri.joinPath(this._extensionUri, "styles", "reset.css")
     );
     const styleVSCodeUri = webview.asWebviewUri(
-        vscode.Uri.joinPath(this._extensionUri, "src", "styles/vscode.css")
+        vscode.Uri.joinPath(this._extensionUri, "styles", "vscode.css")
     );
 
     /*
@@ -90,7 +95,7 @@ export class SidebarWizardsProvider implements vscode.WebviewViewProvider {
     );
 
     const styleMainUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, "src", "styles/sidebarwizards.css")
+      vscode.Uri.joinPath(this._extensionUri, "styles", "sidebarwizards.css")
     );
 
     // TODO: Handle 0 or 2+ folder workspaces open

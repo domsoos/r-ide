@@ -1,5 +1,6 @@
 <script>
 	const vscode = acquireVsCodeApi();
+	import { onMount } from 'svelte';
 
 	let isMenuOpen = false;
 	let isWizardOpen = false;
@@ -9,34 +10,44 @@
 	let isPublisher = false;
 	let isSubscriber = false;
 
-	// Get Workspace Directory
-	vscode.postMessage({
-                type: 'getWorkspace'
-    });
-	window.addEventListener('message', event => {
+	let packageName = null;
+
+	onMount(async () => {
+		window.addEventListener('message', event => {
 		const message = event.data; // The JSON data our extension sent
-		switch (message.type) {
-			case 'setWorkspace':
-				workspaceDirectory = message.value;
-				//fileLocation = message.value;
-				break;
-		}
+			switch (message.type) {
+				case 'setWorkspace': {
+					const { name, path } = message.value;
+					workspaceDirectory = path;
+					packageName = name;
+					break;
+				}
+			}
+		});
+
+		// Get Workspace Directory
+		vscode.postMessage({
+			type: 'getWorkspace'
+		});
 	});
+
+
+
 
 	let nodeName = '';
 	let wizardTitle = 'Creation Wizard';
 
 	let languages = {
 		"Node": [
-			{id: 'cpp', text: 'C++' , value: ".cpp"},
-			{id: 'py', text: 'Python', value: ".py"}],
+			{id: 'cpp', text: 'C++' , value: ".cpp", dir: "/src/"},
+			{id: 'py', text: 'Python', value: ".py", dir: "/scripts/"}],
 
 		"Srv": [
-			{id: 'srv', text: 'Service File', value: ".srv"}
+			{id: 'srv', text: 'Service File', value: ".srv", dir: "/srv/"}
 		],
 
 		"Msg": [
-			{id: 'msg', text: 'Message File', value: ".msg"}
+			{id: 'msg', text: 'Message File', value: ".msg", dir: "/msg/"}
 		]
 	};
 
@@ -49,7 +60,7 @@
 		// No given name
 		vscode.postMessage({
 			type: 'onError',
-			value: 'The node must have a name'
+			value: 'Please specify a name'
 		});
 		} else {
 			// Success!
@@ -63,7 +74,7 @@
 						value: {
 							command: 'r-ide.create-file-from-template',
 							args: [
-								workspaceDirectory + '/' + nodeName + selectedLanguage.value, 
+								workspaceDirectory + selectedLanguage.dir + '/' + nodeName + selectedLanguage.value, 
 								{
 									language: selectedLanguage,
 									isPublisher: isPublisher,
@@ -81,7 +92,7 @@
 						value: {
 							command: 'r-ide.create-msg',
 							args: [
-								workspaceDirectory + '/' + nodeName + selectedLanguage.value
+								workspaceDirectory + selectedLanguage.dir + '/' + nodeName + selectedLanguage.value
 							]
 						}
 					});
@@ -94,7 +105,7 @@
 						value: {
 							command: 'r-ide.create-srv',
 							args: [
-								workspaceDirectory + '/' + nodeName + selectedLanguage.value
+								workspaceDirectory + selectedLanguage.dir + '/' + nodeName + selectedLanguage.value
 							]
 						}
 					});
@@ -118,65 +129,67 @@
 	}
 </script>
 
-{#if !isWizardOpen}
-	<h3 style="text-align:center;margin: 10px 0px;">ROS Creation Wizard</h3>
-	<hr style="margin-bottom:10px">
-	<div class="dropdown">
-		<button on:click={() =>{isMenuOpen = !isMenuOpen}}>Create New</button>
-		{#if isMenuOpen}
-			<div class="dropdown-content">
-				<button on:click={() =>{wizardSelected("Node")}}>ROS Node</button>
-				<button on:click={() =>{wizardSelected("Msg")}}>ROS Msg</button>
-				<button on:click={() =>{wizardSelected("Srv")}}>ROS Srv</button>
-			</div>
-		{/if}
-	</div>
-{/if}
 
-{#if isWizardOpen}
-	<div class="wizard-container">
-		<!-- Title -->
-		<h3 style="text-align: center;">{wizardTitle}</h3>
-		<hr>
-		<label for="wizard-file-type">File type:</label>
-		<br>
 
-		<!-- File type -->
-		<select name="wizard-file-type" class="width-100 margin-top-5" bind:value={selectedLanguage}>
-			{#each languages[selectedWizardType] as language}
-				<option value="{language}">{language.text}</option>
-			{/each}
-		</select>
-		<br>
-		<br>
+	{#if !isWizardOpen}
+		<h3 style="text-align:center;margin: 10px 0px;">ROS Creation Wizard</h3>
+		<hr style="margin-bottom:10px">
+		<div class="dropdown">
+			<button on:click={() =>{isMenuOpen = !isMenuOpen}}>Create New</button>
+			{#if isMenuOpen}
+				<div class="dropdown-content">
+					<button on:click={() =>{wizardSelected("Node")}}>ROS Node</button>
+					<button on:click={() =>{wizardSelected("Msg")}}>ROS Msg</button>
+					<button on:click={() =>{wizardSelected("Srv")}}>ROS Srv</button>
+				</div>
+			{/if}
+		</div>
+	{/if}
 
-		<!-- Node Name -->	
-		<label for="wizard-node-name">{selectedWizardType} name:</label>
-		<input type="text" bind:value={nodeName} class="margin-top-5" style="border:solid 1px black">
-		<br>
-
-		<!-- File Location -->
-		<label for="wizard-node-location">{selectedWizardType} location:</label>
-		<input type="text" class="margin-top-5 location-input" value="{workspaceDirectory}" style="border:solid 1px black; width:88%">
-		<button class="location-btn" on:click={() => {vscode.postMessage({type: 'openFileExplorer', value:workspaceDirectory})}}>...</button>
-		<br>
-
-		{#if selectedWizardType === 'Node'}
-			<!-- Is Publisher -->
-			<input type="checkbox" name="publisher" id="wizard-node-publisher" bind:checked={isPublisher}>
-			<label for="wizard-node-publisher">Publisher</label>
+	{#if isWizardOpen}
+		<div class="wizard-container">
+			<!-- Title -->
+			<h3 style="text-align: center;">{wizardTitle}</h3>
+			<hr>
+			<label for="wizard-file-type">File type:</label>
 			<br>
 
-			<!-- Is subscriber -->
-			<input type="checkbox" name="subscriber" id="wizard-node-subscriber" class="margin-top-5" bind:checked={isSubscriber}>
-			<label for="wizard-node-subscriber">Subscriber</label>
+			<!-- File type -->
+			<select name="wizard-file-type" class="width-100 margin-top-5" bind:value={selectedLanguage}>
+				{#each languages[selectedWizardType] as language}
+					<option value="{language}">{language.text}</option>
+				{/each}
+			</select>
 			<br>
 			<br>
-		{/if}
-		
-		
-		<!-- Cancel and Next buttons -->
-		<button class="cancel-btn" on:click={() =>{isWizardOpen = false; wizardTitle = 'Creation Wizard'}}>Cancel</button>
-		<button class="next-btn" on:click={nextButtonClicked}>Next</button>
-	</div>
-{/if}
+
+			<!-- Node Name -->	
+			<label for="wizard-node-name">{selectedWizardType} name:</label>
+			<input type="text" bind:value={nodeName} class="margin-top-5" style="border:solid 1px black">
+			<br>
+
+			<!-- File Location -->
+			<label for="wizard-node-location">{selectedWizardType} location:</label>
+			<input type="text" class="margin-top-5 location-input" value="{packageName ? packageName : "Select a package..."}" style="border:solid 1px black; width:88%">
+			<button class="location-btn" on:click={() => {vscode.postMessage({type: 'openFileExplorer', value:workspaceDirectory})}}>...</button>
+			<br>
+
+			{#if selectedWizardType === 'Node'}
+				<!-- Is Publisher -->
+				<input type="checkbox" name="publisher" id="wizard-node-publisher" bind:checked={isPublisher}>
+				<label for="wizard-node-publisher">Publisher</label>
+				<br>
+
+				<!-- Is subscriber -->
+				<input type="checkbox" name="subscriber" id="wizard-node-subscriber" class="margin-top-5" bind:checked={isSubscriber}>
+				<label for="wizard-node-subscriber">Subscriber</label>
+				<br>
+				<br>
+			{/if}
+			
+			
+			<!-- Cancel and Next buttons -->
+			<button class="cancel-btn" on:click={() =>{isWizardOpen = false; wizardTitle = 'Creation Wizard'}}>Cancel</button>
+			<button class="next-btn" on:click={nextButtonClicked}>Next</button>
+		</div>
+	{/if}
