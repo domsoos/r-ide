@@ -189,5 +189,6 @@
     "rosbag": "^3.0.1",
     "roslib": "^1.3.0",
     "slider": "^1.0.4"
-  }
+  },
+  "repository": {"url": "https://github.com/domsoos/r-ide"}
 }

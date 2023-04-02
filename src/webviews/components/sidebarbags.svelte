@@ -149,6 +149,10 @@
               width: 100%;
               height: 100%;
             }
+            .replay {
+                width:80%;
+                height:80%;
+            }
           </style>
         <!-- Play bag -->
         {#if !isCloneMenuOpen}
@@ -163,11 +167,22 @@
                         <svg class="icon" fill="#000000" viewBox="0 0 24 24" id="pause-circle" data-name="Flat Color" xmlns="http://www.w3.org/2000/svg"><circle id="primary" cx="12" cy="12" r="10" style="fill: rgb(0, 0, 0);"></circle><path id="secondary" d="M14,17a1,1,0,0,1-1-1V8a1,1,0,0,1,2,0v8A1,1,0,0,1,14,17Zm-4,0a1,1,0,0,1-1-1V8a1,1,0,0,1,2,0v8A1,1,0,0,1,10,17Z" style="fill: rgb(44, 169, 188);"></path></svg>               
                     </button>
                 {/if}
-                <button class="icon-button">
+                <button class="icon-button" on:click={() => {vscode.postMessage({type: 'stopBag'}); isPlaying=false;}}>
                     <svg class="icon" fill="#000000" viewBox="0 0 24 24" id="stop-circle" data-name="Flat Color" xmlns="http://www.w3.org/2000/svg"><circle id="primary" cx="12" cy="12" r="10" style="fill: rgb(0, 0, 0);"></circle><rect id="secondary" x="9" y="9" width="6" height="6" rx="1" transform="translate(24) rotate(90)" style="fill: rgb(44, 169, 188);"></rect></svg>
                 </button>
-                <button class="icon-button" on:click={() => {vscode.postMessage({type:'replayBag'}); isPlaying = false;}}>
-                    <svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 13C5 16.866 8.13401 20 12 20C15.866 20 19 16.866 19 13C19 9.13401 15.866 6 12 6H7M7 6L10 3M7 6L10 9" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <button class="icon-button" on:click={() => {vscode.postMessage({type:'replayBag'});}}>
+                    <svg class="replay" fill="#000000" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" 
+                        viewBox="0 0 300.003 300.003" xml:space="preserve">
+                        <g>
+                            <g>
+                            <path d="M150.005,0C67.164,0,0.001,67.159,0.001,150c0,82.838,67.162,150.003,150.003,150.003S300.002,232.838,300.002,150
+                                C300.002,67.159,232.844,0,150.005,0z M230.091,172.444c-9.921,37.083-43.801,64.477-83.969,64.477
+                                c-47.93,0-86.923-38.99-86.923-86.923s38.99-86.92,86.923-86.92c21.906,0,41.931,8.157,57.228,21.579l-13.637,23.623
+                                c-11-11.487-26.468-18.664-43.594-18.664c-33.294,0-60.38,27.088-60.38,60.38c0,33.294,27.085,60.38,60.38,60.38
+                                c25.363,0,47.113-15.728,56.038-37.937h-20.765l36.168-62.636l36.166,62.641H230.091z"/>
+                            </g>
+                        </g>
+                    </svg>
                 </button>
             </div>
 
