@@ -110,6 +110,10 @@
         "title": "R-IDE: Open Topic Monitor"
       },
       {
+        "command": "r-ide.open-node-graph",
+        "title": "R-IDE: Open Node Graph"  
+      },
+      {
         "command": "r-ide.update-package-list",
         "title": "R-IDE: Update the package list from rospack"
       },

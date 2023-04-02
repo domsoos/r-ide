@@ -173,10 +173,19 @@ export class Rosbag {
         }
     }
 
+    public replayBag(){
+        this.currentIndex = 0;
+    }
+
+    public stopBag(){
+        this.currentIndex = 0;
+        this.pauseBag();
+    }
+
     private static async waitForLeadup (leadup: number) {
         // console.log(leadup);
         return new Promise((resolve) => {
-            setTimeout(() => {resolve(true);}, leadup);
+            setTimeout(() => {resolve(true);}, leadup  );
         });
     };
 
