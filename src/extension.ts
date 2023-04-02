@@ -6,6 +6,7 @@ import { SidebarVisualsProvider } from './SidebarVisualsProvider';
 import { SidebarWizardsProvider } from './SidebarWizardsProvider';
 import * as dbcontroller from './database/dbcontroller';
 import { TopicMonitorProvider } from './TopicMonitorProvider';
+import { NodeGraphProvider } from './NodeGraphProvider';
 import { 
 	createFileFromTemplate,
 	createMessage,
@@ -112,6 +113,9 @@ export function activate(context: vscode.ExtensionContext) {
 		),
 		vscode.commands.registerCommand("r-ide.open-topic-monitor", () => {
 			TopicMonitorProvider.createOrShow(context.extensionUri);
+		}),
+		vscode.commands.registerCommand("r-ide.open-node-graph", () => {
+			NodeGraphProvider.createOrShow(context.extensionUri);
 		}),
 		vscode.commands.registerCommand("r-ide.no-ros-connection", ()=>{
 			vscode.window.showErrorMessage(

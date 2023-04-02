@@ -15,8 +15,7 @@
     {/if}
     
 {#if !isNodeGraphOpen}
-    <!--<button on:click={() => {vscode.postMessage({type: 'webviewNodeGraph'})}}>Node Graph</button>-->
-    <button disabled={true}>Node Graph</button>
+    <button on:click={() => {vscode.postMessage({type: 'webviewNodeGraph'})}}>Node Graph</button>
     {/if}
     
           
