@@ -143,6 +143,7 @@
     background-color: #222222;
     padding: 10px;
     font-size: 14px;
+    height: 255px;
   }
 
   .message-block-container{
@@ -183,4 +184,11 @@
 
   .isSelected{
     background-color: rgb(104, 177, 255)!important;
+  }
+
+  .publish-button{
+    margin-top: 5px;
+    border-radius: 5px;
+    width: 100px;
+    float: right;
   }

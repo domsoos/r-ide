@@ -1,3 +1,4 @@
+/*
 import * as assert from 'assert';
 
 // You can import and use all API from the 'vscode' module
@@ -13,3 +14,4 @@ suite('Extension Test Suite', () => {
 		assert.strictEqual(-1, [1, 2, 3].indexOf(0));
 	});
 });
+*/

@@ -1,5 +1,3 @@
-import { DecorationRangeBehavior } from "vscode";
-
 require('./models/events');
 require('./models/templates');
 require('./models/wizards');

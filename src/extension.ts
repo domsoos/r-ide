@@ -6,13 +6,14 @@ import { SidebarVisualsProvider } from './SidebarVisualsProvider';
 import { SidebarWizardsProvider } from './SidebarWizardsProvider';
 import * as dbcontroller from './database/dbcontroller';
 import { TopicMonitorProvider } from './TopicMonitorProvider';
+import { NodeGraphProvider } from './NodeGraphProvider';
 import { 
 	createFileFromTemplate,
 	createMessage,
 	createSrv
 } from './commands/commands';
 import { 
-	addNewFindPackage, identifyPackages, RosPackageQuickPick, updateExistingPackages
+	identifyPackages, RosPackageQuickPick, updateExistingPackages, RosPackage
 } from './RosPackages/RosPackage';
 import { SidebarTopicsProvider } from './SidebarTopicsProvider';
 import * as cp from 'child_process';
@@ -37,6 +38,25 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 	}
 
+	const newPackageSniffer = vscode.workspace.createFileSystemWatcher("**/src/*/{CMakeLists.txt,package.xml}");
+	newPackageSniffer.onDidCreate((uri) => {
+		let root = vscode.Uri.joinPath(uri, "..");
+		let pathArr = uri.path.split('/');
+		let packageName = pathArr[pathArr.length - 2];
+		let hasCmake = false, hasPackage = false;
+		vscode.workspace.fs.readDirectory(root).then((result) => {
+			for (let [file, _] of result) {
+				hasCmake = hasCmake || file === "CMakeLists.txt";
+				hasPackage = hasPackage || file === "package.xml";
+			}
+
+			if (hasCmake && hasPackage) {
+				new RosPackage(root, packageName);
+			}
+		});
+	});
+
+
 	context.subscriptions.push(
 		// Webviews
 		vscode.window.registerWebviewViewProvider(
@@ -44,8 +64,8 @@ export function activate(context: vscode.ExtensionContext) {
 			sidebarWizardsProvider
 		),
 		vscode.window.registerWebviewViewProvider(
-		  "sidebar-bags",
-		  sidebarBagsProvider
+			"sidebar-bags",
+			sidebarBagsProvider
 		),
 		vscode.window.registerWebviewViewProvider(
 			"sidebar-visuals",
@@ -71,19 +91,54 @@ export function activate(context: vscode.ExtensionContext) {
 			createSrv
 		),
 		vscode.commands.registerCommand(
-			"r-ide.quick-pick",
-			RosPackageQuickPick
-		),
-		vscode.commands.registerCommand(
 			"r-ide.update-package-list",
 			updateExistingPackages
 		),
 		vscode.commands.registerCommand(
 			"r-ide.add-new-find-package",
-			addNewFindPackage
+			() => {
+				RosPackageQuickPick(false).then((result) => {
+					result?.value?.addNewFindPackage();
+				});
+			}
+		),
+		vscode.commands.registerCommand(
+			"r-ide.add-executable",
+			() => {
+				RosPackageQuickPick(false).then((myPackage) => {
+					if (myPackage?.value !== undefined) {
+						myPackage.value.addExecutable();
+					}
+				});
+			}
+		),
+		vscode.commands.registerCommand(
+			"r-ide.add-library",
+			() => {
+				RosPackageQuickPick(false).then((myPackage) => {
+					if (myPackage?.value !== undefined) {
+						myPackage.value.addLibrary();
+					}
+				});
+			}
+		),
+		vscode.commands.registerCommand(
+			"r-ide.run-catkin-make",
+			() => {
+				// for (let p of RosPackage.packages.values()) {
+
+				// }
+				const terminal = vscode.window.createTerminal();
+				terminal.show();
+				terminal.sendText('catkin_make');
+				terminal.sendText('source ./devel/setup.bash');
+			}
 		),
 		vscode.commands.registerCommand("r-ide.open-topic-monitor", () => {
 			TopicMonitorProvider.createOrShow(context.extensionUri);
+		}),
+		vscode.commands.registerCommand("r-ide.open-node-graph", () => {
+			NodeGraphProvider.createOrShow(context.extensionUri);
 		}),
 		vscode.commands.registerCommand("r-ide.no-ros-connection", ()=>{
 			vscode.window.showErrorMessage(
@@ -116,9 +171,8 @@ export function activate(context: vscode.ExtensionContext) {
 					}
 				}
 			  });
-		})
-		
-	  );
+		})	
+	);
 }
 
 // This method is called when your extension is deactivated

@@ -42,6 +42,8 @@
 
     // Publisher Variables
     let selectedTopicToPublish = [];
+    let messagePublisherFreq = 1;
+    let publisherTimeInterval;
 
     function clearAllData(){
         topics = [];
@@ -150,6 +152,7 @@
                 });
             }
         }
+
         topics = buildTree(temp);
     }
 
@@ -158,6 +161,11 @@
 		switch (message.type) {
             case 'example':{
                 console.log(message.data);
+                break;
+            }
+            case 'setPublishMessageFormat': {
+                onSetPublishMessageFormat(message.data);
+                break;
             }
 		}
 	});
@@ -360,19 +368,18 @@
                 canvas.width = width;
                 canvas.height = height;
                 
-                /*
-                if(width > height){
-                    canvas.style.width = '500px';
+                
+                if(width/height >= 2.2){
+                    canvas.style.width = '530px';
                     canvas.style.height = 'fit-content';
                 }
                 else{
-                    canvas.style.height = '350px';
+                    canvas.style.height = '250px';
                     canvas.style.width = 'fit-content';
                 }
-                */
                 
-                canvas.style.height = '250px';
-                canvas.style.width = 'fit-content';
+                //canvas.style.height = '250px';
+                //canvas.style.width = 'fit-content';
 
                 const context = canvas.getContext('2d');
                 context.putImageData(image, 0, 0);
@@ -422,17 +429,86 @@
         let newItem = structuredClone(item);
         selectedTopicToPublish = [newItem];
 
-        rosApi.decodeTypeDefs([newItem.type]).then((res) =>{
-            console.log(res);
-        });
-
-
-        /*
         vscode.postMessage({
             type: "getMessageTypeFormat",
             value: newItem
         });
+    }
+
+    function onSetPublishMessageFormat(object){
+        const messageElement =  document.getElementById('message-textarea');
+        /*
+        messageElement.value = "# Topic: " + selectedTopicToPublish[0].topic + "\n";
+        messageElement.value += "# Type: " + selectedTopicToPublish[0].type + "\n";
         */
+
+        messageElement.value = JSON.stringify(object, null, 2);
+    }
+
+    function publishMessage(){
+        try{
+            let myTopic = activeSubcriptions.find(item => item.name == selectedTopicToPublish[0].fulltopic);
+
+            if(myTopic){
+
+                const messageElement =  document.getElementById('message-textarea');
+                const jsonString = messageElement.value;
+                const jsonObject = JSON.parse(jsonString);
+
+                var message = new ROSLIB.Message(jsonObject);
+                let freq = hzToMs(messagePublisherFreq);
+
+                if(publisherTimeInterval){
+                    clearInterval(publisherTimeInterval);
+                    publisherTimeInterval = null;
+                }
+
+                publisherTimeInterval = setInterval(() => {
+                    myTopic.publish(message);
+                }, freq);
+                
+            }else{
+                /*
+                let item = topics.find(item => item.fulltopic == selectedTopicToPublish[0].fulltopic);
+                item.checked = true;
+                updateCheckboxes(item);
+                myTopic = activeSubcriptions.find(item => item.name == selectedTopicToPublish[0].fulltopic);
+                */
+
+                /*
+                console.log(topics);
+                let item = topics.find(item => item.fulltopic == selectedTopicToPublish[0].fulltopic);
+                myTopic = new rosLib.Topic({
+                    ros : rosApi,
+                    name : item.fulltopic,
+                    messageType : item.type
+                });
+
+                myTopic.subscribe((message) => {
+                    setRecentMessage(message, item.fulltopic);
+                });
+
+                activeSubcriptions.push(myTopic);
+                subscribedTopics = [...subscribedTopics, item];
+                */
+            }
+
+        }catch(err){
+            console.log(err);
+        }
+
+
+    }
+
+    function stopPublish(){
+        if(publisherTimeInterval){
+            clearInterval(publisherTimeInterval);
+            publisherTimeInterval = null;
+        }
+    }
+
+    function hzToMs(freqHz) {
+         return 1 / freqHz * 1000;
     }
 
 </script>
@@ -508,13 +584,33 @@
                 <hr>
                 {#each selectedTopicToPublish as item}
                     <!-- svelte-ignore a11y-click-events-have-key-events -->
+                    <!--
                     <div class="message-publisher-block">
                         <span><b style="color:white">Topic : </b>{item.topic}</span>
                         <br>
                         <span><b style="color:white">Type : </b>{item.type}</span>
                     </div>
+                    -->
                     <div class="message-publisher-data">
-                        nope
+                        <div style="display:flex;justify-content:space-between;">
+                            <div>
+                                <b style="color:white">Topic : </b>{item.topic}
+                                <br>
+                                <b style="color:white">Type : </b>{item.type}
+                            </div>
+                            <div style="display:flex;align-items:center;">
+                                <b style="margin-right:10px;">Freq(hz) : </b>
+                                <input type="number" bind:value={messagePublisherFreq} style="width: 50px">
+                            </div>
+                        </div>
+
+
+                        <textarea disabled={publisherTimeInterval} id="message-textarea" style="height:165px;resize: none;margin-top:5px"></textarea>
+                        {#if !publisherTimeInterval}
+                            <button class="publish-button" disabled={messagePublisherFreq <= 0 || messagePublisherFreq > 100} on:click={() => {publishMessage()}}>Publish</button>
+                        {:else}
+                            <button class="publish-button" on:click={() => {stopPublish()}}>Stop</button>
+                        {/if}
                     </div>
                 {/each}
             </div>

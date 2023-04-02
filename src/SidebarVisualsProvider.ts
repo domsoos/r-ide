@@ -47,13 +47,16 @@ export class SidebarVisualsProvider implements vscode.WebviewViewProvider {
           break;
         }
         case "webviewNodeGraph": {
+          vscode.commands.executeCommand('r-ide.open-node-graph');
+
+          /*
           {
             vscode.window.createWebviewPanel(
             'dog',
             'dog',
             vscode.ViewColumn.One,
             {});
-          }
+          }*/
           break;
         }  
       }
