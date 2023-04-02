@@ -7,6 +7,9 @@
     let rosApi;
 
     let isLoading = false;
+    let isConnected = false;
+
+    let nodes = [];
 
 
     onMount(async () => {
@@ -14,7 +17,7 @@
     try {
         await new ROS();
         rosApi = ROS.getROSApi();
-        //getROSNodes();
+        getROSNodes();
     } catch (err) {
         isConnected = false;
         vscode.postMessage({
@@ -24,15 +27,19 @@
     }
     });
 
-    /*
+    
+    function clearAllData(){
+
+    }
+
+
     function getROSNodes(){
         isLoading = true;
 
         if(rosApi?.isConnected){
-            rosApi.getTopics((res) => {
+            rosApi.getNodes((res) => {
                 if (res) {
-                    updateTopicTree(res);
-                    topicsStatus = "Connected";
+                    getNodeDetails(res);
                 } else {
                     console.log("failed");
                     isConnected = false;
@@ -52,8 +59,14 @@
             clearAllData();
         }
     }
-    */
 
+    function getNodeDetails(nodes){
+        for(let node of nodes){
+            rosApi.getNodeDetails(node, (res) => {
+                console.log(res);
+            })
+        }
+    }
 
 </script>
 
