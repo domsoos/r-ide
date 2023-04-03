@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { describe, it } from "mocha";
+import { describe, it, beforeEach, afterEach } from "mocha";
 import sinon, { SinonStub, SinonFakeTimers } from 'sinon';
 import * as vscode from "vscode";
 import { RosPackage, createRosPackage, selectPackage } from "../../RosPackages/RosPackage";
