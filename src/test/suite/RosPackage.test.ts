@@ -82,42 +82,56 @@ describe("RosPackage", () => {
     });
     
     describe("createRosPackage", () => {
-        // Create a stub for vscode.window.showInputBox()
-        const showInputBoxStub: SinonStub = sinon.stub(vscode.window, 'showInputBox');
+      let showInputBoxStub: SinonStub;
+      let showInformationMessageStub: SinonStub;
+      let showOpenDialogStub: SinonStub;
+      const clock: SinonFakeTimers = sinon.useFakeTimers();
+    
+      beforeEach(() => {
+        showInputBoxStub = sinon.stub(vscode.window, 'showInputBox');
+        showInformationMessageStub = sinon.stub(vscode.window, 'showInformationMessage');
+        showOpenDialogStub = sinon.stub(vscode.window, 'showOpenDialog');
+    
         showInputBoxStub.resolves('my_package');
-      
-        // Create a stub for vscode.window.showInformationMessage()
-        const showInformationMessageStub: SinonStub = sinon.stub(vscode.window, 'showInformationMessage');
         showInformationMessageStub.resolves('Yes');
-      
-        // Create a stub for vscode.window.showOpenDialog()
-        const showOpenDialogStub: SinonStub = sinon.stub(vscode.window, 'showOpenDialog');
         showOpenDialogStub.resolves([vscode.Uri.file('/home/user/ros_ws')]);
-      
-        // Create a fake timer for the setTimeout function used in the showInformationMessage callback
-        const clock: SinonFakeTimers = sinon.useFakeTimers();
-      
-        afterEach(() => {
-          sinon.restore();
-          clock.reset();
-        });
-      
-        it("should create a new ROS package", async () => {
-          const newPackage = await createRosPackage();
-      
-          expect(showInputBoxStub.calledOnce).to.be.true;
-          expect(showInformationMessageStub.calledOnce).to.be.true;
-          expect(showOpenDialogStub.calledOnce).to.be.true;
-          expect(newPackage).to.be.instanceOf(RosPackage);
-        });
       });
     
-    describe("selectPackage", () => {
-        it("should return a selected ROS package", async () => {
-            // Mock the user inputs and file system operations
-            const selectedPackage = await selectPackage();
-            expect(selectedPackage).to.be.instanceOf(RosPackage);
-        });
+      afterEach(() => {
+        sinon.restore();
+        clock.reset();
+      });
+    
+      it("should create a new ROS package", async () => {
+        const newPackage = await createRosPackage();
+    
+        expect(showInputBoxStub.calledOnce).to.be.true;
+        expect(showInformationMessageStub.calledOnce).to.be.true;
+        expect(showOpenDialogStub.calledOnce).to.be.true;
+        expect(newPackage).to.be.instanceOf(RosPackage);
+      });
     });
+    
+    
+      describe('selectPackage', () => {
+        let showOpenDialogStub: SinonStub;
+      
+        beforeEach(() => {
+          showOpenDialogStub = sinon.stub(vscode.window, 'showOpenDialog');
+        });
+      
+        afterEach(() => {
+          showOpenDialogStub.restore();
+        });
+      
+        it('should return a selected package', async () => {
+          const mockSelectedPackage = [vscode.Uri.file('/path/to/package')];
+          showOpenDialogStub.resolves(mockSelectedPackage);
+      
+          const selectedPackage = await selectPackage();
+      
+          expect(selectedPackage).to.be.instanceOf(RosPackage);
+        });
+      });
 
 });
