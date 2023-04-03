@@ -1,4 +1,5 @@
 import { runTests } from 'vscode-test';
+import * as path from 'path';
 
 async function main(): Promise<void> {
   try {
@@ -8,7 +9,8 @@ async function main(): Promise<void> {
 
     // The path to test runner
     // Passed to --extensionTestsPath
-    const extensionTestsPath = __dirname + '/out/test/suite/index';
+    const extensionTestsPath = path.resolve(__dirname, '..', '..', 'out', 'test', 'suite', 'index');
+
 
     // The launch configuration
     const launchArgs = ['--disable-extensions'];
