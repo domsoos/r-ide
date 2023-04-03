@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import * as path from 'path';
 import * as sinon from 'sinon';
 import { expect } from 'chai';
 import { TopicMonitorProvider } from '../../TopicMonitorProvider';
@@ -12,7 +13,7 @@ describe('TopicMonitorProvider', () => {
   beforeEach(() => {
     sandbox = sinon.createSandbox();
     panel = {} as vscode.WebviewPanel;
-    extensionUri = vscode.Uri.parse('extension://test');
+    extensionUri = vscode.Uri.joinPath(vscode.Uri.file(__dirname), '..', '..').with({ scheme: 'vscode-resource' });
   });
 
   afterEach(() => {

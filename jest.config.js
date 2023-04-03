@@ -10,7 +10,7 @@ module.exports = {
     },
   },
   moduleNameMapper: {
-    '^vscode$': '<rootDir>/src/test/vscode.mock.ts',
+    '^vscode$': '<rootDir>/src/test/suite/vscode.mock.ts',
   },
   transform: {
     '^.+\\.ts?$': ['ts-jest', { tsConfig: './tsconfig.json' }],
