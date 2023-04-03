@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import * as vscode from "vscode";
-import { RosPackage } from "../../RosPackages/RosPackage";
+import { RosPackage, createRosPackage, selectPackage } from "../../RosPackages/RosPackage";
 
 describe("RosPackage", () => {
     // create a sample directory with a sample package for testing purposes
@@ -54,7 +54,7 @@ describe("RosPackage", () => {
             // Mock the user inputs and file system operations
             // perhaps use a library like jest or sinon for mocking these functions
             const newPackage = await createRosPackage();
-            expect(selectedPackage).to.be.instanceOf(RosPackage);
+            expect(newPackage).to.be.instanceOf(RosPackage);
 
         });
     });
