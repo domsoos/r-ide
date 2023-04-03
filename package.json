@@ -190,9 +190,9 @@
     "watch": "tsc -watch -p ./",
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src --ext ts",
-    "test": "node ./out/test/runTest.js",
+    "test": "npm run pretest && node ./out/test/runTest.js",
     "rollup": "rollup -c -w"
-  },
+},
   "devDependencies": {
     "@bulatdashiev/svelte-slider": "^1.0.3",
     "@rollup/plugin-commonjs": "^24.0.1",
