@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import * as vscode from "vscode";
-import { RosPackage } from "../src/RosPackages";
+import { RosPackage } from "../../RosPackages/RosPackage";
 
 describe("RosPackage", () => {
     // You need to create a sample directory with a sample package for testing purposes
@@ -63,4 +63,6 @@ describe("RosPackage", () => {
             // Mock the user inputs and file system operations
             const selectedPackage = await selectPackage();
             expect(selectedPackage
-    
+            });
+        });
+    });
