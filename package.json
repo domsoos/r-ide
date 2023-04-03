@@ -14,19 +14,25 @@
   ],
   "main": "./out/extension.js",
   "contributes": {
-    "languages": [{
-      "id": "ros-srv",
-      "aliases": ["ROS srv"],
-      "extensions": [".srv"],
-      "configuration": "./language-configuration.json"
-  }],
-  "grammars": [
-    {
+    "languages": [
+      {
+        "id": "ros-srv",
+        "aliases": [
+          "ROS srv"
+        ],
+        "extensions": [
+          ".srv"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
         "language": "ros-srv",
         "scopeName": "source.ros-srv",
         "path": "./syntaxes/ros-srv.tmLanguage.json"
-    }
-],
+      }
+    ],
     "viewsContainers": {
       "activitybar": [
         {
@@ -194,6 +200,7 @@
     "@rollup/plugin-terser": "^0.4.0",
     "@rollup/plugin-typescript": "^11.0.0",
     "@tsconfig/svelte": "^3.0.0",
+    "@types/chai": "^4.3.4",
     "@types/glob": "^8.0.1",
     "@types/mocha": "^10.0.1",
     "@types/node": "^16.18.12",
@@ -202,10 +209,11 @@
     "@typescript-eslint/parser": "^5.52.0",
     "@vscode/test-electron": "^2.2.3",
     "buffer": "^6.0.3",
+    "chai": "^4.3.7",
     "concurrently": "^7.6.0",
     "eslint": "^8.34.0",
     "glob": "^8.0.3",
-    "mocha": "^10.1.0",
+    "mocha": "^10.2.0",
     "rollup": "^2.79.1",
     "rollup-plugin-svelte": "^7.1.2",
     "rollup-plugin-terser": "^7.0.2",
