@@ -1,10 +1,11 @@
 import { expect } from "chai";
+import sinon, { SinonStub, SinonFakeTimers } from 'sinon';
 import * as vscode from "vscode";
 import { RosPackage, createRosPackage, selectPackage } from "../../RosPackages/RosPackage";
 
 describe("RosPackage", () => {
     // create a sample directory with a sample package for testing purposes
-    const sampleDirectoryUri = vscode.Uri.file("path/to/sample/directory");
+    const sampleDirectoryUri = vscode.Uri.file("/Users/gavinst.clair/Library/Mobile\ Documents/com\~apple\~CloudDocs/ODU/Spring\ 2023/411");
 
     let rosPackage: RosPackage;
 
@@ -49,13 +50,34 @@ describe("RosPackage", () => {
     });
     
 
+    // Create a stub for vscode.window.showInputBox()
+    const showInputBoxStub: SinonStub = sinon.stub(vscode.window, 'showInputBox');
+    showInputBoxStub.resolves('my_package');
+    
+    // Create a stub for vscode.window.showInformationMessage()
+    const showInformationMessageStub: SinonStub = sinon.stub(vscode.window, 'showInformationMessage');
+    showInformationMessageStub.resolves('Yes');
+    
+    // Create a stub for vscode.window.showOpenDialog()
+    const showOpenDialogStub: SinonStub = sinon.stub(vscode.window, 'showOpenDialog');
+    showOpenDialogStub.resolves([vscode.Uri.file('/home/user/ros_ws')]);
+    
+    // Create a fake timer for the setTimeout function used in the showInformationMessage callback
+    const clock: SinonFakeTimers = sinon.useFakeTimers();
+    
     describe("createRosPackage", () => {
+        afterEach(() => {
+            sinon.restore();
+            clock.reset();
+        });
+    
         it("should create a new ROS package", async () => {
-            // Mock the user inputs and file system operations
-            // perhaps use a library like jest or sinon for mocking these functions
             const newPackage = await createRosPackage();
+    
+            expect(showInputBoxStub.calledOnce).to.be.true;
+            expect(showInformationMessageStub.calledOnce).to.be.true;
+            expect(showOpenDialogStub.calledOnce).to.be.true;
             expect(newPackage).to.be.instanceOf(RosPackage);
-
         });
     });
     
