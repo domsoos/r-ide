@@ -368,20 +368,18 @@
                 canvas.width = width;
                 canvas.height = height;
                 
-                /*
-                if(width > height){
-                    canvas.style.width = '500px';
+                
+                if(width/height >= 2.2){
+                    canvas.style.width = '530px';
                     canvas.style.height = 'fit-content';
                 }
                 else{
                     canvas.style.height = '250px';
                     canvas.style.width = 'fit-content';
                 }
-                */
                 
-                canvas.style.height = '250px';
-                canvas.style.width = 'fit-content';
-                
+                //canvas.style.height = '250px';
+                //canvas.style.width = 'fit-content';
 
                 const context = canvas.getContext('2d');
                 context.putImageData(image, 0, 0);

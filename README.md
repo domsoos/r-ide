@@ -1,7 +1,9 @@
 # R-IDE - A VSCode extension for ROS developers
 
+[User Manual](https://github.com/domsoos/r-ide/blob/af66824d9abf3c1eb8f686f3612430d8b713b809/UserManual.md) 
+
 R-IDE is a powerful Visual Studio Code extension that is designed for developers working with ROS. Users can use its tools and features to quickly set up a ROS environment and develop ROS applications using our features.
-  
+    
 Check out our website for [more information](https://jpete020.github.io/team-orange/#/).
 
 ## Features
