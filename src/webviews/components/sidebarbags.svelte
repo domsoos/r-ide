@@ -122,18 +122,60 @@
     <!-- Manage selected bag -->
     {#if selectedBag !== null}
         <!--<div style="margin:5px 0px;">Selected Bag: .../{selectedBag}</div>-->
-
+        <style>
+            .play-menu {
+                display: flex;
+                justify-content: space-between;
+                width: 100%;
+                padding: 0 10px;
+            }
+            .icon-button {
+              display: inline-flex;
+              align-items: center;
+              justify-content: center;
+              width: 60px;
+              height: 60px;
+              padding: 0;
+              border: none;
+              background: none;
+              cursor: pointer;
+              border-radius: 50%;
+              flex: 1;
+              margin: 0 10px;
+              text-align: center;
+            }
+          
+            .icon {
+              width: 100%;
+              height: 100%;
+            }
+          </style>
         <!-- Play bag -->
         {#if !isCloneMenuOpen}
+            <!-- Play menu-->
+            <div class="play-menu">
+                {#if !isPlaying}
+                    <button class="icon-button" on:click={() => {isROSConnected();}} disabled={!(connectionsLoaded && messagesLoaded)}>
+                        <svg class="icon" fill="#000000" viewBox="0 0 24 24" id="play" data-name="Flat Color" xmlns="http://www.w3.org/2000/svg"><circle id="primary" cx="12" cy="12" r="10" style="fill: rgb(0, 0, 0);"></circle><path id="secondary" d="M14.75,12.83,11.55,15A1,1,0,0,1,10,14.13V9.87A1,1,0,0,1,11.55,9l3.2,2.13A1,1,0,0,1,14.75,12.83Z" style="fill: rgb(44, 169, 188);"></path></svg>
+                    </button>
+                {:else}
+                    <button class="icon-button" on:click={() => {vscode.postMessage({type: 'pauseBag'}); isPlaying = false;}}>
+                        <svg class="icon" fill="#000000" viewBox="0 0 24 24" id="pause-circle" data-name="Flat Color" xmlns="http://www.w3.org/2000/svg"><circle id="primary" cx="12" cy="12" r="10" style="fill: rgb(0, 0, 0);"></circle><path id="secondary" d="M14,17a1,1,0,0,1-1-1V8a1,1,0,0,1,2,0v8A1,1,0,0,1,14,17Zm-4,0a1,1,0,0,1-1-1V8a1,1,0,0,1,2,0v8A1,1,0,0,1,10,17Z" style="fill: rgb(44, 169, 188);"></path></svg>               
+                    </button>
+                {/if}
+                <button class="icon-button">
+                    <svg class="icon" fill="#000000" viewBox="0 0 24 24" id="stop-circle" data-name="Flat Color" xmlns="http://www.w3.org/2000/svg"><circle id="primary" cx="12" cy="12" r="10" style="fill: rgb(0, 0, 0);"></circle><rect id="secondary" x="9" y="9" width="6" height="6" rx="1" transform="translate(24) rotate(90)" style="fill: rgb(44, 169, 188);"></rect></svg>
+                </button>
+                <button class="icon-button" on:click={() => {vscode.postMessage({type:'replayBag'}); isPlaying = false;}}>
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 13C5 16.866 8.13401 20 12 20C15.866 20 19 16.866 19 13C19 9.13401 15.866 6 12 6H7M7 6L10 3M7 6L10 9" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+            </div>
+
+            <!-- Cancel and Clone buttons -->
             <div class="buttons-flex">
                 <button class="bag-buttons" on:click={() => {isBagManagerOpen = false;}}>Cancel</button>
-                <!-- BETA<button class="bag-buttons" on:click={() => {isCloneMenuOpen = true;}}>Clone</button>-->
-                <button disabled={true} class="bag-buttons" tooltip="Coming soon">Clone</button>
-                {#if !isPlaying}
-                    <button class="bag-buttons" on:click={() => {isROSConnected();}} disabled={!(connectionsLoaded && messagesLoaded)}>Play</button>
-                {:else}
-                    <button class="bag-buttons" on:click={() => {vscode.postMessage({type: 'pauseBag'}); isPlaying = false;}}>Pause</button>               
-                {/if}
+                <button class="bag-buttons" on:click={() => {isCloneMenuOpen = true;}}>Clone</button>
+                <!-- <button class="bag-buttons" tooltip="Coming soon">Clone</button> -->
             </div>
 
         <!-- Clone bag menu -->

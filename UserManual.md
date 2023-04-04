@@ -28,7 +28,11 @@
     1. [Catkin Workspace](#catkin-workspace)
     2. [Create Package (with MS ROS extension)](#create-package)
     3. [Creation Wizard](#creation-wizard)
+        1. [ROS Node](#ros-node)
+        2. [ROS Msg](#ros-msg)
+        3. [ROS Srv](#ros-srv)
     4. [Topic Monitor](#topic-monitor)
+    5. [ROS Bags](#ros-bags)
     5. [Message Publisher](#message-publisher)
     6. [Add an Executable](#adding-c-executables)
     7. [Add a Library](#adding-c-libraries)
@@ -165,20 +169,52 @@ experience.*
 
 ### Create Package (with MS ROS extension)
 
-1. In Visual Studio Code, open the Command Palette (Ctrl+Shift+P or Cmd+Shift+P).
+1. In Visual Studio Code, open the Command Palette (`Ctrl+Shift+P` or `Cmd+Shift+P`).
 2. Type "ROS: Create Package" and select the command.
 3. Follow the prompts to create your new ROS package.
+
+### Creation Wizard
+
+1. In R-IDE, click the Wizards tab followed by the Create New tab.
+2. There are currently three option to create a code template for:
+
+#### ROS Node
+
+1. Choose the file type: C++ or Py.
+2. Type the name of the file.
+3. Specify the location of the package to put the node in.
+
+#### ROS Msg
+
+1. Choose the file type: Message File.
+2. Type the name of the file.
+3. Specify the location of the package to put the message file in.
+
+#### ROS Srv
+
+1. Type the service file name.
+2. Specify the location of the package to be created in.
 
 ### Topic Monitor
 
 1. In R-IDE, click the "Topic Monitor" tab.
-2. Select the desired topics to monitor from the list.
+2. If ROS Bridge is not running, but is installed then a window will pop up, select "Start ROSBridge". Refer to the [Linux](#ros-bridge-linux), [Windows](#ros-bridge-windows) and [Mac](#ros-bridge-mac) installation guides.
+3. Refresh the status to change to Connected.
+4. Select the desired topics to monitor from the list by clicking the box.
 3. Observe the real-time messages being published on the selected topics.
+
+### ROS Bags
+
+1. Complete Steps 1-3 in [Topic Monitor](#topic-monitor) to establish [ROS Bridge](#ros-bridge-linux) connection.
+2. In R-IDE, click the "ROS Bags" tab.
+3. Currently only the Manage Bags tab is available. 
+4. Select the ROS Bag to play and subscribe to topics to view the message coming through each selected topic.
 
 ### Message Publisher
 
-1. In R-IDE, click the "Topic Monitor" tab.
-2. The topic name is automatically selected based on the subscribed topics.
+1. In R-IDE, click the "ROS Topic Tools" followed by the "ROS Topic Monitor" tab.
+2. Click on the pencil icon next to the topic you to publish to.
+3. The type of the topic is displayed and the user can adjust the frequency
 3. Click "Publish" to send the message.
 
 ### Adding C++ executables

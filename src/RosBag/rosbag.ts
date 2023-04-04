@@ -223,6 +223,11 @@ export class Rosbag {
         this.currentIndex = 0;
     }
 
+    public replayBag(){
+        this.pauseBag();
+        this.currentIndex = 0;
+    }
+
     private static async waitForLeadup (leadup: number) {
         // console.log(leadup);
         return new Promise((resolve) => {
