@@ -56,7 +56,6 @@ export class Rosbag {
 
         // Read messages
         this.buffer = [
-            {messages: []},
             this.beginningOfBagCache,
             await this.getMessages(TimeUtil.add(this.startTime, bufferTime(1))),
         ];       
@@ -102,17 +101,16 @@ export class Rosbag {
     
         // console.log(this.messages.length);
         // console.log(this.currentIndex);
-        while (this.buffer![1].messages.length > 0 && !this.isPaused) {
+        while (TimeUtil.isLessThan(this.buffer![0].start!, this.endTime) && !this.isPaused) {
             const {message, topic, timestamp} = this.buffer![1].messages[this.currentIndex];
             
             if (this.currentIndex === this.buffer![1].messages.length - 1) {
                 console.log("buffer switch");
                 this.buffer![0] = this.buffer![1];
-                this.buffer![1] = this.buffer![2];
-                this.getMessages(TimeUtil.add(this.buffer![1].end!, bufferTime(1))).then(mb => {
+                this.getMessages(TimeUtil.add(this.buffer![0].end!, bufferTime(1))).then(mb => {
                     console.log(mb.messages.length);
                     console.log("loaded");
-                    this.buffer![2] = mb;
+                    this.buffer![1] = mb;
                 });
                 this.currentIndex = 0;
                 const nextTimeStamp = this.buffer![1].messages[0].timestamp;
@@ -151,6 +149,8 @@ export class Rosbag {
         }
 
         this.publishers.clear();
+
+        this.buffer = undefined;
     }
 
     public checkPublishers(forceRepublish: boolean = false) {
@@ -219,13 +219,11 @@ export class Rosbag {
     }
 
     public replayBag(){
-        this.pauseBag();
         this.currentIndex = 0;
-    }
-
-    public replayBag(){
-        this.pauseBag();
-        this.currentIndex = 0;
+        this.buffer![0] = this.beginningOfBagCache!;
+        this.getMessages(TimeUtil.add(this.startTime, bufferTime(1))).then(mb => {
+            this.buffer![1] = mb;
+        });
     }
 
     private static async waitForLeadup (leadup: number) {
@@ -301,5 +299,5 @@ export class Rosbag {
 }
 
 function bufferTime(n: number) {
-    return {sec: 5 * n, nsec: 0};
+    return {sec: 0 * n, nsec: 500_000_000 * n};
 }
