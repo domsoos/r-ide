@@ -234,7 +234,7 @@ export class Rosbag {
         });
     }
 
-    public clone(newBagPath: string, start: Time, end: Time, verbose: boolean, topics: any[]) {
+    public clone(newBagPath: string, start: Time, end: Time, verbose: boolean, topics: string[]) {
         let cmd = `rosbag filter ${this.bagPath} ${newBagPath}`;
         let filter = ` "${start.sec} <= t.secs <= ${end.sec} and topic in ("${topics.join('", "')}")`;
         if (verbose) {
