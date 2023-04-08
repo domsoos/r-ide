@@ -115,6 +115,10 @@ export class SidebarBagsProvider implements vscode.WebviewViewProvider {
           this.bag?.replayBag();
           break;
         }
+        case "closeBag": {
+          this.bag?.clearBag();
+          break;
+        }
       }
     });
   }

@@ -2,14 +2,22 @@ import * as vscode from 'vscode';
 import Bag, { TimeUtil, open } from 'rosbag';
 import * as ROSLIB from 'roslib';
 
+interface Time {
+    sec: number,
+    nsec: number
+}
+
 interface MessageBuffer {
-    start?: {sec: number, nsec: number},
-    end?: {sec: number, nsec: number},
+    start?: Time,
+    end?: Time,
     messages: any[]
 }
 
+
+
 export class Rosbag {
 
+    bagPath: string;
     bag: Bag | undefined;
     // messages: any[];
     publishers: Map<string, ROSLIB.Topic>;
@@ -34,7 +42,7 @@ export class Rosbag {
     private static unpublishNotify = new Set<string>();
 
     constructor(bagPath: string, view: vscode.Webview) {
-        // this.messages = [];
+        this.bagPath = bagPath;
         this.publishers = new Map();
         this.view = view;
         this.isPaused = true;
@@ -56,7 +64,6 @@ export class Rosbag {
 
         // Read messages
         this.buffer = [
-            {messages: []},
             this.beginningOfBagCache,
             await this.getMessages(TimeUtil.add(this.startTime, bufferTime(1))),
         ];       
@@ -64,7 +71,7 @@ export class Rosbag {
         this.view.postMessage({type: "createdMessages"});
     }
 
-    public async getMessages(startTime: {sec: number, nsec: number}) {
+    public async getMessages(startTime: Time) {
         let buffer: MessageBuffer = {
             start: startTime,
             end: TimeUtil.add(startTime, bufferTime(1)),
@@ -102,17 +109,16 @@ export class Rosbag {
     
         // console.log(this.messages.length);
         // console.log(this.currentIndex);
-        while (this.buffer![1].messages.length > 0 && !this.isPaused) {
+        while (TimeUtil.isLessThan(this.buffer![0].start!, this.endTime) && !this.isPaused) {
             const {message, topic, timestamp} = this.buffer![1].messages[this.currentIndex];
             
             if (this.currentIndex === this.buffer![1].messages.length - 1) {
                 console.log("buffer switch");
                 this.buffer![0] = this.buffer![1];
-                this.buffer![1] = this.buffer![2];
-                this.getMessages(TimeUtil.add(this.buffer![1].end!, bufferTime(1))).then(mb => {
+                this.getMessages(TimeUtil.add(this.buffer![0].end!, bufferTime(1))).then(mb => {
                     console.log(mb.messages.length);
                     console.log("loaded");
-                    this.buffer![2] = mb;
+                    this.buffer![1] = mb;
                 });
                 this.currentIndex = 0;
                 const nextTimeStamp = this.buffer![1].messages[0].timestamp;
@@ -151,6 +157,8 @@ export class Rosbag {
         }
 
         this.publishers.clear();
+
+        this.buffer = undefined;
     }
 
     public checkPublishers(forceRepublish: boolean = false) {
@@ -219,12 +227,22 @@ export class Rosbag {
     }
 
     public replayBag(){
-        this.pauseBag();
         this.currentIndex = 0;
+        this.buffer![0] = this.beginningOfBagCache!;
+        this.getMessages(TimeUtil.add(this.startTime, bufferTime(1))).then(mb => {
+            this.buffer![1] = mb;
+        });
     }
 
-    public replayBag(){
-        this.currentIndex = 0;
+    public clone(newBagPath: string, start: Time, end: Time, verbose: boolean, topics: string[]) {
+        let cmd = `rosbag filter ${this.bagPath} ${newBagPath}`;
+        let filter = ` "${start.sec} <= t.secs <= ${end.sec} and topic in ("${topics.join('", "')}")`;
+        if (verbose) {
+            cmd += " --print=\"'%s @ %d.%d: %s' % (topic, t.secs, t.nsecs, m.data)\"";
+        }
+        const terminal = vscode.window.createTerminal();
+        terminal.show();
+        terminal.sendText(cmd + filter + `"`);
     }
 
     public stopBag(){
@@ -304,6 +322,6 @@ export class Rosbag {
     }
 }
 
-function bufferTime(n: number) {
-    return {sec: 5 * n, nsec: 0};
+function bufferTime(n: number): Time {
+    return {sec: 0 * n, nsec: 500_000_000 * n};
 }

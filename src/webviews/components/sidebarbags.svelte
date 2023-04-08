@@ -188,7 +188,7 @@
 
             <!-- Cancel and Clone buttons -->
             <div class="buttons-flex">
-                <button class="bag-buttons" on:click={() => {isBagManagerOpen = false;}}>Cancel</button>
+                <button class="bag-buttons" on:click={() => {isBagManagerOpen = false; selectedBag = null; vscode.postMessage({type: "closeBag"});}}>Cancel</button>
                 <button class="bag-buttons" on:click={() => {isCloneMenuOpen = true;}}>Clone</button>
                 <!-- <button class="bag-buttons" tooltip="Coming soon">Clone</button> -->
             </div>
