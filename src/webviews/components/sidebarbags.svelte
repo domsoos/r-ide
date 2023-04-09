@@ -33,6 +33,7 @@
                 connectionsLoaded = false;
                 messagesLoaded = false;
 
+                range[1] = message.value.length;
                 selectedBagPath = message.value.path;                
                 selectedBag = selectedBagPath.substring(selectedBagPath.lastIndexOf('/'));
                 cloneBagPath = selectedBagPath.substring(0, selectedBagPath.lastIndexOf('/'));
@@ -93,6 +94,39 @@
     }
 
 </script>
+<style>
+    .play-menu {
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+        padding: 0 10px;
+    }
+    .icon-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 60px;
+      height: 60px;
+      padding: 0;
+      border: none;
+      background: none;
+      cursor: pointer;
+      border-radius: 50%;
+      flex: 1;
+      margin: 0 10px;
+      text-align: center;
+    }
+  
+    .icon {
+      width: 100%;
+      height: 100%;
+    }
+    .replay {
+        width:80%;
+        height:80%;
+    }
+  </style>
+
 
 <h3 style="text-align:center;margin: 10px 0px;">ROS Bag Manager</h3>
 <p style="text-align:center;margin: 10px 0px;color:#ff5a5a;">*Beware: ROS bag manager is currently under development and may not work as intended*</p>
@@ -122,38 +156,6 @@
     <!-- Manage selected bag -->
     {#if selectedBag !== null}
         <!--<div style="margin:5px 0px;">Selected Bag: .../{selectedBag}</div>-->
-        <style>
-            .play-menu {
-                display: flex;
-                justify-content: space-between;
-                width: 100%;
-                padding: 0 10px;
-            }
-            .icon-button {
-              display: inline-flex;
-              align-items: center;
-              justify-content: center;
-              width: 60px;
-              height: 60px;
-              padding: 0;
-              border: none;
-              background: none;
-              cursor: pointer;
-              border-radius: 50%;
-              flex: 1;
-              margin: 0 10px;
-              text-align: center;
-            }
-          
-            .icon {
-              width: 100%;
-              height: 100%;
-            }
-            .replay {
-                width:80%;
-                height:80%;
-            }
-          </style>
         <!-- Play bag -->
         {#if !isCloneMenuOpen}
             <!-- Play menu-->
@@ -210,7 +212,7 @@
                 <input type="number" bind:value={range[0]} style="width: 50px">
                 <input type="number" bind:value={range[1]} style="width: 50px">
             </div> 
-            <Slider max="100" step="1" bind:value={range} range order style="margin-right:20px"/>
+            <Slider max={range[1]} step="1" bind:value={range} range order style="margin-right:20px"/>
 
             <button class="accordion-button" on:click={toggle} aria-expanded={isAccordionOpen}><svg style="tran"  width="20" height="20" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 30 10" stroke="currentColor"><path d="M9 5l7 7-7 7"></path></svg><b>Filter Topics</b></button>
             {#if isAccordionOpen}
@@ -223,7 +225,7 @@
 
             <br>
             <div class="buttons-flex">
-                <button class="bag-buttons" on:click={() => {isAccordionOpen = false; isBagManagerOpen = true; isCloneMenuOpen = false}}>Cancel</button>
+                <button class="bag-buttons" on:click={() => {isAccordionOpen = false; isBagManagerOpen = true; isCloneMenuOpen = false; }}>Cancel</button>
                 <button class="bag-buttons" on:click={() => {isCloneMenuOpen = true;}}>Clone</button>
             </div>
         {/if}

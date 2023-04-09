@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import Bag, { TimeUtil, open } from 'rosbag';
 import * as ROSLIB from 'roslib';
+import { exec } from 'child_process';
 
 interface Time {
     sec: number,
@@ -148,7 +149,26 @@ export class Rosbag {
             this.isPaused;
         }
     }
-    
+
+    public async getBagDuration(bagFilePath: string): Promise<number> {
+        return new Promise((resolve, reject) => {
+          exec(`rosbag info ${bagFilePath}`, (error, stdout, stderr) => {
+            if (error) {
+              reject(new Error(`Error while processing the ROS Bag: ${stderr.trim()}`));
+            } else {
+              const durationRegex = /duration:\s+(\d+\.\d+)/;
+              const match = stdout.match(durationRegex);
+              if (match && match[1]) {
+                const duration = parseFloat(match[1]);
+                resolve(duration);
+              } else {
+                reject(new Error("Failed to find duration in rosbag info output."));
+              }
+            }
+          });
+        });
+    }
+      
 
     public async clearBag() {
         // this.messages = [];
@@ -215,15 +235,11 @@ export class Rosbag {
 
     public pauseBag() {
         this.isPaused = true;
-        // Calculate remaining leadup time when paused
-        // if (this.currentIndex < this.messages.length - 1) {
-        //     const currentTimestamp = this.messages[this.currentIndex].timestamp;
-        //     const now = Date.now();
-        //     const playedTime = now - currentTimestamp.sec * 1000 - currentTimestamp.nsec / 1e6;
-        //     const nextTimestamp = this.messages[this.currentIndex + 1].timestamp;
-        //     const totalLeadup = ((nextTimestamp.sec - currentTimestamp.sec) * 1000) + ((nextTimestamp.nsec >> 20) - (currentTimestamp.nsec >> 20));
-        //     this.leadupRemaining = totalLeadup - playedTime;
-        // }
+    }
+
+    public stopBag(){
+        this.currentIndex = 0;
+        this.pauseBag();
     }
 
     public replayBag(){
@@ -243,11 +259,6 @@ export class Rosbag {
         const terminal = vscode.window.createTerminal();
         terminal.show();
         terminal.sendText(cmd + filter + `"`);
-    }
-
-    public stopBag(){
-        this.currentIndex = 0;
-        this.pauseBag();
     }
 
     private static async waitForLeadup (leadup: number) {
