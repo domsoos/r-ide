@@ -1,4 +1,5 @@
-const ROSLIB = require('roslib');
+import { Bag, open } from 'rosbag';
+import * as ROSLIB from 'roslib';
 const sinon = require('sinon');
 const ROS = require('../ROSManager/rosmanager');
 
