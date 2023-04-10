@@ -2,13 +2,15 @@
     const vscode = acquireVsCodeApi();
     import Slider from '@bulatdashiev/svelte-slider';
     import { slide } from "svelte/transition";
+    import TreeView from './TreeView.svelte';
 
     /* Accordion Code */
     let isAccordionOpen = false
 	const toggle = () => isAccordionOpen = !isAccordionOpen
     /* Accordion Code END*/
 
-    let topics = new Map();
+    let topics = [];
+    let selectedTopic = [];
     let messages = [];
     let isPlaying = false;
 
@@ -39,6 +41,7 @@
                 selectedBagPath = message.value.path;                
                 selectedBag = selectedBagPath.substring(selectedBagPath.lastIndexOf('/'));
                 cloneBagPath = selectedBagPath.substring(0, selectedBagPath.lastIndexOf('/'));
+                range[1] = bagDuration;
 				break;
             }
             case 'setCloneBagPath':{
@@ -227,7 +230,7 @@
             {#if isAccordionOpen}
                 <ul style="list-style: none" transition:slide={{ duration: 300 }}>
                     {#each topics as item}
-                        <li><input type=checkbox>{item}</li>
+                        <li><label><input type=checkbox bind:group={selectedTopic} value={item}>{item}</label></li>
                     {/each}
                 </ul>
             {/if}
@@ -237,13 +240,13 @@
                 <!-- Cancel -->
                 <button class="bag-buttons" on:click={() => {isAccordionOpen = false; isBagManagerOpen = true; isCloneMenuOpen = false; }}>Cancel</button>
                 <!-- Clone confirm -->
-                <button class="bag-buttons" on:click={() => {isCloneMenuOpen = true; vscode.postMessage({type: "cloneConfirm", values: {
+                <button class="bag-buttons" on:click={() => {isCloneMenuOpen = true; 
+                vscode.postMessage({type: "cloneConfirm", values: {
                     newBagPath: cloneBagPath + "/" +(cloneName.endsWith(".bag") ? cloneName : cloneName + ".bag"),
-                    // Temp hardcode for testing
-                    startTime: {sec: range[0], nsec:0},
-                    endTime: {sec: range[1], nsec: 0},
+                    startTime: {sec: Math.trunc(range[0]), nsec: range[0] - Math.trunc(range[0])},
+                    endTime: {sec: Math.trunc(range[1]), nsec: range[1] - Math.trunc(range[1])},
                     verbose: false,
-                    topics: topics
+                    topics: selectedTopic
                 }})}}>Clone</button>
             </div>
         {/if}
