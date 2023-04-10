@@ -125,8 +125,13 @@ export class SidebarBagsProvider implements vscode.WebviewViewProvider {
           let result: any = this.bag!.clone(newBagPath, startTime, endTime, verbose, topics);
 
           if (copy) {
+            console.log(result);
             // Copy the contents to the clipboard
-            await vscode.env.clipboard.writeText(result);
+            await vscode.env.clipboard.writeText(result).then(() => {
+              vscode.window.showInformationMessage(`Copied ${result} to the clipboard`);
+            }, () => {
+              vscode.window.showErrorMessage(`Failed to copy ${result} to the clipboard`);
+            });
           } else {
             // Write contents to the terminal
             const terminal = vscode.window.createTerminal();
