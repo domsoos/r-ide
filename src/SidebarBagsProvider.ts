@@ -53,13 +53,13 @@ export class SidebarBagsProvider implements vscode.WebviewViewProvider {
             if(result && result[0].path){
               await this.bag?.clearBag();
               this.bag = new Rosbag(result[0].fsPath, webviewView.webview);
-              this.bag?.getBagDuration(result[0].fsPath).then((duration) => console.log("Duration:", duration));
-              let length = await this.bag?.getBagDuration(result[0].fsPath);
+              await this.bag.openBag();
               webviewView.webview.postMessage({
                 type: 'setSelectedBag',
                 value: {
                   path: result[0].fsPath,
-                  length: length,
+                  start: this.bag.bag!.startTime,
+                  end: this.bag.bag!.endTime
                 },
               });
             }

@@ -1,7 +1,6 @@
 import * as vscode from 'vscode';
 import Bag, { TimeUtil, open } from 'rosbag';
 import * as ROSLIB from 'roslib';
-import { exec } from 'child_process';
 
 interface Time {
     sec: number,
@@ -33,9 +32,6 @@ export class Rosbag {
     buffer: MessageBuffer[] | undefined;
     beginningOfBagCache: MessageBuffer | undefined;
 
-    startTime: any;
-    endTime: any;
-
     static rosapi: ROSLIB.Ros = new ROSLIB.Ros({
         url: "ws://localhost:9090",
     });
@@ -48,25 +44,22 @@ export class Rosbag {
         this.view = view;
         this.isPaused = true;
         this.pointer = 0;
-        this.openBag(bagPath);
     }
 
-    public async openBag(bagPath: string) {
+    public async openBag() {
         await Rosbag.connect();
 
-        this.bag = await open(bagPath);
-        this.startTime = this.bag.startTime;
-        this.endTime = this.bag.endTime;
+        this.bag = await open(this.bagPath);
 
         this.checkPublishers(true);
 
 
-        this.beginningOfBagCache = await this.getMessages(this.startTime);
+        this.beginningOfBagCache = await this.getMessages(this.bag.startTime!);
 
         // Read messages
         this.buffer = [
             this.beginningOfBagCache,
-            await this.getMessages(TimeUtil.add(this.startTime, bufferTime(1))),
+            await this.getMessages(TimeUtil.add(this.bag.startTime!, bufferTime(1))),
         ];       
 
         this.view.postMessage({type: "createdMessages"});
@@ -110,7 +103,7 @@ export class Rosbag {
     
         // console.log(this.messages.length);
         // console.log(this.currentIndex);
-        while (TimeUtil.isLessThan(this.buffer![0].start!, this.endTime) && !this.isPaused) {
+        while (TimeUtil.isLessThan(this.buffer![0].start!, this.bag!.endTime!) && !this.isPaused) {
             const {message, topic, timestamp} = this.buffer![1].messages[this.currentIndex];
             
             if (this.currentIndex === this.buffer![1].messages.length - 1) {
@@ -150,23 +143,16 @@ export class Rosbag {
         }
     }
 
-    public async getBagDuration(bagFilePath: string): Promise<number> {
-        return new Promise((resolve, reject) => {
-          exec(`rosbag info ${bagFilePath}`, (error, stdout, stderr) => {
-            if (error) {
-              reject(new Error(`Error while processing the ROS Bag: ${stderr.trim()}`));
-            } else {
-              const durationRegex = /duration:\s+(\d+\.\d+)/;
-              const match = stdout.match(durationRegex);
-              if (match && match[1]) {
-                const duration = parseFloat(match[1]);
-                resolve(duration);
-              } else {
-                reject(new Error("Failed to find duration in rosbag info output."));
-              }
-            }
-          });
-        });
+    public getBagDuration(): number {
+        console.log(this.bag);
+        let duration = {sec: this.bag!.endTime!.sec - this.bag!.startTime!.sec, nsec: this.bag!.endTime!.nsec - this.bag!.startTime!.nsec};
+
+        if (duration.nsec < 0) {
+            duration.sec -= 1;
+            duration.nsec += 1e9;
+        }
+
+        return duration.sec + 1;
     }
       
 
@@ -245,14 +231,14 @@ export class Rosbag {
     public replayBag(){
         this.currentIndex = 0;
         this.buffer![0] = this.beginningOfBagCache!;
-        this.getMessages(TimeUtil.add(this.startTime, bufferTime(1))).then(mb => {
+        this.getMessages(TimeUtil.add(this.bag!.startTime!, bufferTime(1))).then(mb => {
             this.buffer![1] = mb;
         });
     }
 
     public clone(newBagPath: string, start: Time, end: Time, verbose: boolean, topics: string[]) {
         let cmd = `rosbag filter ${this.bagPath} ${newBagPath}`;
-        let filter = ` "${this.startTime.sec + start.sec} <= t.secs <= ${this.startTime.sec + end.sec} and topic in ('${topics.join("', '")}')"`;
+        let filter = ` "${this.bag!.startTime!.sec + start.sec} <= t.secs <= ${this.bag!.startTime!.sec + end.sec} and topic in ('${topics.join("', '")}')"`;
         if (verbose) {
             cmd += " --print=\"'%s @ %d.%d: %s' % (topic, t.secs, t.nsecs, m)\"";
         }       

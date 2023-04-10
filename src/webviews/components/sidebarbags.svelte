@@ -24,8 +24,9 @@
     let messagesLoaded = false;
     let connectionsLoaded = false;
     let cloneName = null;
-    let bagDuration = null;
     let verbose = false;
+    let start = null;
+    let end = null;
     
     let range = [0,1]; 
 
@@ -34,15 +35,17 @@
 		const message = event.data; // The JSON data our extension sent
 		switch (message.type) {
 			case 'setSelectedBag':{
-                // TODO: Possible race condition on extremely small bags?
                 connectionsLoaded = false;
                 messagesLoaded = false;
 
-                bagDuration = message.value.length;
+                start = message.value.start;
+                end = message.value.end;
                 selectedBagPath = message.value.path;                
                 selectedBag = selectedBagPath.substring(selectedBagPath.lastIndexOf('/'));
                 cloneBagPath = selectedBagPath.substring(0, selectedBagPath.lastIndexOf('/'));
-                range[1] = bagDuration;
+                console.log(bagDuration);
+                range[1] = bagDuration.sec + 1;
+                console.log(range);
 				break;
             }
             case 'setCloneBagPath':{
