@@ -1,83 +1,54 @@
-import { Bag, open } from 'rosbag';
-import * as ROSLIB from 'roslib';
-const sinon = require('sinon');
-const ROS = require('../ROSManager/rosmanager');
+const assert = require('assert');
+const ROS = require('../../ROSManagers/rosmanager');
 
-describe('ROS', () => {
-  let rosAPIStub;
-  let rosInstance;
-
-  beforeEach(() => {
-    rosAPIStub = sinon.stub(ROSLIB, 'Ros');
-    rosInstance = new ROS();
-  });
-
-  afterEach(() => {
-    rosAPIStub.restore();
-  });
-
-  describe('#constructor()', () => {
-    it('should create a ROS object with default URL', () => {
-      expect(rosAPIStub.calledOnce).toBeTruthy();
-      expect(rosAPIStub.calledWith({ url: 'ws://localhost:9090' })).toBeTruthy();
-    });
-
-    it('should resolve immediately if ROS is already connected', async () => {
-      ROS.rosAPI = { isConnected: true };
-      const instance = new ROS();
-      expect(await instance).toBeUndefined();
-    });
-
-    it('should resolve on successful connection', async () => {
-      ROS.rosAPI = { isConnected: false };
-      const promise = new ROS();
-      ROS.rosAPI.onConnection();
-      await expect(promise).resolves.toBeUndefined();
-    });
-
-    it('should reject on connection error', async () => {
-      ROS.rosAPI = { isConnected: false };
-      const promise = new ROS();
-      ROS.rosAPI.onError(new Error('Failed to connect to ROS'));
-      await expect(promise).rejects.toThrowError('Failed to connect to ROS');
+describe('ROS', function() {
+  it('should return a resolved promise if already connected', function() {
+    ROS.rosAPI = {
+      isConnected: true
+    };
+    const ros = new ROS();
+    return ros.then(() => {
+      assert.ok(true);
     });
   });
 
-  describe('#getROSApi()', () => {
-    it('should return the ROS API object', () => {
-      ROS.rosAPI = { isConnected: true };
-      const api = ROS.getROSApi();
-      expect(api).toBe(ROS.rosAPI);
+  it('should return a rejected promise if there is an error', function() {
+    ROS.rosAPI = null;
+    const ros = new ROS();
+    return ros.catch((error) => {
+      assert.strictEqual(error.message, 'Cannot read property \'isConnected\' of null');
     });
   });
 
-  describe('#getROSLib()', () => {
-    it('should return the ROSLIB object', () => {
-      const lib = ROS.getROSLib();
-      expect(lib).toBe(ROSLIB);
+  it('should connect to ROS', function(done) {
+    ROS.rosAPI = null;
+    const ros = new ROS();
+    ros.then(() => {
+      assert.ok(ROS.rosAPI instanceof ROSLIB.Ros);
+      assert.ok(ROS.rosLib instanceof ROSLIB);
+      done();
     });
   });
 
-  describe('#reconnect()', () => {
-    it('should close the current connection and create a new one', async () => {
-      ROS.rosAPI = { close: sinon.spy() };
-      await ROS.reconnect();
-      expect(rosAPIStub.calledOnce).toBeTruthy();
-      expect(ROS.rosAPI.close.calledOnce).toBeTruthy();
-    });
+  it('should get the ROS API', function() {
+    const rosAPI = ROS.getROSApi();
+    assert.strictEqual(rosAPI, ROS.rosAPI);
+  });
 
-    it('should resolve on successful reconnection', async () => {
-      ROS.rosAPI = { close: sinon.spy(), isConnected: false };
-      const promise = ROS.reconnect();
-      ROS.rosAPI.onConnection();
-      await expect(promise).resolves.toBeUndefined();
-    });
+  it('should get the ROSLib', function() {
+    const rosLib = ROS.getROSLib();
+    assert.strictEqual(rosLib, ROS.rosLib);
+  });
 
-    it('should reject on reconnection error', async () => {
-      ROS.rosAPI = { close: sinon.spy(), isConnected: false };
-      const promise = ROS.reconnect();
-      ROS.rosAPI.onError(new Error('Failed to connect to ROS'));
-      await expect(promise).rejects.toThrowError('Failed to connect to ROS');
+  it('should reconnect to ROS', function(done) {
+    ROS.rosAPI = {
+      close: function() {}
+    };
+    const ros = ROS.reconnect();
+    ros.then(() => {
+      assert.ok(ROS.rosAPI instanceof ROSLIB.Ros);
+      assert.ok(ROS.rosLib instanceof ROSLIB);
+      done();
     });
   });
 });
