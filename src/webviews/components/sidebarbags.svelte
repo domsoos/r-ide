@@ -22,6 +22,7 @@
     let messagesLoaded = false;
     let connectionsLoaded = false;
     let cloneName = null;
+    let bagDuration = null;
     
     let range = [0,1]; 
 
@@ -34,7 +35,7 @@
                 connectionsLoaded = false;
                 messagesLoaded = false;
 
-                range[1] = message.value.length;
+                bagDuration = message.value.length;
                 selectedBagPath = message.value.path;                
                 selectedBag = selectedBagPath.substring(selectedBagPath.lastIndexOf('/'));
                 cloneBagPath = selectedBagPath.substring(0, selectedBagPath.lastIndexOf('/'));
@@ -219,7 +220,7 @@
                 <input type="number" bind:value={range[0]} style="width: 50px">
                 <input type="number" bind:value={range[1]} style="width: 50px">
             </div> 
-            <Slider max={range[1]} step="0.1" bind:value={range} range order style="margin-right:20px"/>
+            <Slider max={bagDuration} step={1} bind:value={range} range order style="margin-right:20px"/>
 
             <!-- Topics -->
             <button class="accordion-button" on:click={toggle} aria-expanded={isAccordionOpen}><svg style="tran"  width="20" height="20" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 30 10" stroke="currentColor"><path d="M9 5l7 7-7 7"></path></svg><b>Filter Topics</b></button>
@@ -239,8 +240,8 @@
                 <button class="bag-buttons" on:click={() => {isCloneMenuOpen = true; vscode.postMessage({type: "cloneConfirm", values: {
                     newBagPath: cloneBagPath + "/" +(cloneName.endsWith(".bag") ? cloneName : cloneName + ".bag"),
                     // Temp hardcode for testing
-                    startTime: {sec: 0, nsec:0},
-                    endTime: {sec: 37, nsec: 0},
+                    startTime: {sec: range[0], nsec:0},
+                    endTime: {sec: range[1], nsec: 0},
                     verbose: false,
                     topics: topics
                 }})}}>Clone</button>
