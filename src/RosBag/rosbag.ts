@@ -250,18 +250,14 @@ export class Rosbag {
         });
     }
 
-    public clone(newBagPath: string, start: Time, end: Time, verbose: boolean, topics: string[], returnString: boolean = false) {
+    public clone(newBagPath: string, start: Time, end: Time, verbose: boolean, topics: string[]) {
         let cmd = `rosbag filter ${this.bagPath} ${newBagPath}`;
         let filter = ` "${this.startTime.sec + start.sec} <= t.secs <= ${this.startTime.sec + end.sec} and topic in ('${topics.join("', '")}')"`;
         if (verbose) {
-            cmd += " --print=\"'%s @ %d.%d: %s' % (topic, t.secs, t.nsecs, m.data)\"";
-        }
-        if (returnString) {
-            return cmd + filter;
-        }
-        const terminal = vscode.window.createTerminal();
-        terminal.show();
-        terminal.sendText(cmd + filter);
+            cmd += " --print=\"'%s @ %d.%d: %s' % (topic, t.secs, t.nsecs, m)\"";
+        }       
+
+        return cmd + filter;
     }
 
     private static async waitForLeadup (leadup: number) {

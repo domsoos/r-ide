@@ -122,8 +122,19 @@ export class SidebarBagsProvider implements vscode.WebviewViewProvider {
           break;
         }
         case "cloneConfirm": {
-          const {newBagPath, startTime, endTime, verbose, topics} = data.values;
-          this.bag!.clone(newBagPath, startTime, endTime, verbose, topics);
+          const {newBagPath, startTime, endTime, verbose, topics, copy} = data.values;
+          let result: any = this.bag!.clone(newBagPath, startTime, endTime, verbose, topics);
+
+          if (copy) {
+            // Copy the contents to the clipboard
+            await vscode.env.clipboard.writeText(result);
+          } else {
+            // Write contents to the terminal
+            const terminal = vscode.window.createTerminal();
+            terminal.show();
+            terminal.sendText(result);
+          }
+
           break;
         }
       }

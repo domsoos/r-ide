@@ -25,6 +25,7 @@
     let connectionsLoaded = false;
     let cloneName = null;
     let bagDuration = null;
+    let verbose = false;
     
     let range = [0,1]; 
 
@@ -227,7 +228,9 @@
 
             <!-- Topics -->
             <button class="accordion-button" on:click={toggle} aria-expanded={isAccordionOpen}><svg style="tran"  width="20" height="20" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 30 10" stroke="currentColor"><path d="M9 5l7 7-7 7"></path></svg><b>Filter Topics</b></button>
+            
             {#if isAccordionOpen}
+                <ul><button class="bag-buttons" on:click={() => {topics.length === selectedTopic.length ? selectedTopic = [] : selectedTopic = topics}}>Select all</button></ul>
                 <ul style="list-style: none" transition:slide={{ duration: 300 }}>
                     {#each topics as item}
                         <li><label><input type=checkbox bind:group={selectedTopic} value={item}>{item}</label></li>
@@ -235,18 +238,33 @@
                 </ul>
             {/if}
 
+            <br><label><input type=checkbox bind:checked={verbose}>Verbose output</label>
+
             <br>
             <div class="buttons-flex">
                 <!-- Cancel -->
                 <button class="bag-buttons" on:click={() => {isAccordionOpen = false; isBagManagerOpen = true; isCloneMenuOpen = false; }}>Cancel</button>
+
+                <!-- Copy command -->
+                <button class="bag-buttons" on:click={() => {isCloneMenuOpen = true; 
+                    vscode.postMessage({type: "cloneConfirm", values: {
+                        newBagPath: cloneBagPath + "/" +(cloneName.endsWith(".bag") ? cloneName : cloneName + ".bag"),
+                        startTime: {sec: Math.trunc(range[0]), nsec: range[0] - Math.trunc(range[0])},
+                        endTime: {sec: Math.trunc(range[1]), nsec: range[1] - Math.trunc(range[1])},
+                        verbose: verbose,
+                        topics: selectedTopic,
+                        copy: true
+                    }})}}>Copy Command</button>
+
                 <!-- Clone confirm -->
                 <button class="bag-buttons" on:click={() => {isCloneMenuOpen = true; 
                 vscode.postMessage({type: "cloneConfirm", values: {
                     newBagPath: cloneBagPath + "/" +(cloneName.endsWith(".bag") ? cloneName : cloneName + ".bag"),
                     startTime: {sec: Math.trunc(range[0]), nsec: range[0] - Math.trunc(range[0])},
                     endTime: {sec: Math.trunc(range[1]), nsec: range[1] - Math.trunc(range[1])},
-                    verbose: false,
-                    topics: selectedTopic
+                    verbose: verbose,
+                    topics: selectedTopic,
+                    copy: false
                 }})}}>Clone</button>
             </div>
         {/if}
