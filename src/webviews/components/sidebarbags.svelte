@@ -27,6 +27,7 @@
     let verbose = false;
     let start = null;
     let end = null;
+    let bagDuration;
     
     let range = [0,1]; 
 
@@ -38,13 +39,14 @@
                 connectionsLoaded = false;
                 messagesLoaded = false;
 
-                start = message.value.start;
-                end = message.value.end;
+                console.log(message.value);
+
+                bagDuration = message.value.duration;
                 selectedBagPath = message.value.path;                
                 selectedBag = selectedBagPath.substring(selectedBagPath.lastIndexOf('/'));
                 cloneBagPath = selectedBagPath.substring(0, selectedBagPath.lastIndexOf('/'));
                 console.log(bagDuration);
-                range[1] = bagDuration.sec + 1;
+                range[1] = bagDuration;
                 console.log(range);
 				break;
             }

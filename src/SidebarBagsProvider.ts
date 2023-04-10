@@ -58,8 +58,7 @@ export class SidebarBagsProvider implements vscode.WebviewViewProvider {
                 type: 'setSelectedBag',
                 value: {
                   path: result[0].fsPath,
-                  start: this.bag.bag!.startTime,
-                  end: this.bag.bag!.endTime
+                  duration: this.bag.getBagDuration()
                 },
               });
             }
