@@ -36,27 +36,8 @@ export class SidebarVisualsProvider implements vscode.WebviewViewProvider {
           vscode.window.showErrorMessage(data.value);
           break;
         }
-        case "webviewRviz": {
-          {
-            vscode.window.createWebviewPanel(
-            'cat',
-            'cat',
-            vscode.ViewColumn.One,
-            {});
-          }
-          break;
-        }
         case "webviewNodeGraph": {
           vscode.commands.executeCommand('r-ide.open-node-graph');
-
-          /*
-          {
-            vscode.window.createWebviewPanel(
-            'dog',
-            'dog',
-            vscode.ViewColumn.One,
-            {});
-          }*/
           break;
         }  
       }

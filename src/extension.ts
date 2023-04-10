@@ -56,7 +56,6 @@ export function activate(context: vscode.ExtensionContext) {
 		});
 	});
 
-
 	context.subscriptions.push(
 		// Webviews
 		vscode.window.registerWebviewViewProvider(
@@ -173,9 +172,32 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 // This method is called when your extension is deactivated
-export function deactivate() {
+export async function deactivate() {
 	dbcontroller.closeConnection();
+	
 	stopROSBridge();
+	stopROSMaster();
+}
+
+function stopROSMaster(){
+	const child = cp.exec(`ps aux | grep rosmaster | grep -v grep | awk '{ print $2 }'`);
+
+    child?.stdout?.on('data', (data) => {
+		const pid = parseInt(data.toString().trim());
+		console.log(`Found ROS Master process with PID ${pid}`);
+  
+		// Send the TERM signal to stop the process
+		process.kill(pid, 'SIGTERM');
+		console.log('ROS Master stopped');
+	});
+
+	child.on('exit', (code, signal) => {
+		if (code !== 0) {
+		  console.error(`ps exited with code ${code}, signal ${signal}`);
+		}else{
+			console.log("Ros Master finder exited gracefully");
+		}
+	});
 }
 
 function stopROSBridge(){

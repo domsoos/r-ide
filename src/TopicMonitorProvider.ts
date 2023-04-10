@@ -122,11 +122,13 @@ export class TopicMonitorProvider {
           vscode.commands.executeCommand('r-ide.no-ros-connection');
           break;
         }
+        /*
         case "getMessageTypes":{
           //this.generateMessageFormat();
           let messageField = await this.getMessageField('actionlib_msgs/GoalID');
           break;
         }
+        */
         case "getMessageTypeFormat": {
           if(data?.value?.type && data?.value?.fulltopic){
             let messageField = await this.getMessageField(data.value.type);
