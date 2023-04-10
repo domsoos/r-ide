@@ -25,8 +25,6 @@
     let connectionsLoaded = false;
     let cloneName = null;
     let verbose = false;
-    let start = null;
-    let end = null;
     let bagDuration;
     
     let range = [0,1]; 
