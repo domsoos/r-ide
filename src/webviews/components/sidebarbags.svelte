@@ -8,7 +8,7 @@
 	const toggle = () => isAccordionOpen = !isAccordionOpen
     /* Accordion Code END*/
 
-    let topics = [];
+    let topics = new Map();
     let messages = [];
     let isPlaying = false;
 
@@ -21,6 +21,7 @@
     let isCloneMenuOpen = false;
     let messagesLoaded = false;
     let connectionsLoaded = false;
+    let cloneName = null;
     
     let range = [0,1]; 
 
@@ -200,20 +201,27 @@
             <br>
             <br>
             <label for="bag_name"><b>New bag name:</b></label>
-            <input id="bag_name" type="text" class="margin-top-5" style="border:solid 1px black" placeholder="Enter new bag name...">
+
+            <!-- Bag namne -->
+            <input id="bag_name" type="text" class="margin-top-5" style="border:solid 1px black" bind:value={cloneName} placeholder="Enter new bag name...">
             <br>
+
+            <!-- Bag location -->
             <label for="bag_location"><b>New bag location:</b></label>
             <input id="bag_location" type="text" class="margin-top-5 location-input" value="{cloneBagPath? cloneBagPath : "TODO::NEED TO FIX THIS"}" style="border:solid 1px black; width:88%">
             <button class="location-btn" on:click={() => {vscode.postMessage({type: 'getCloneBagPath', value:cloneBagPath ? cloneBagPath : selectedBagPath})}}>...</button>
             <br>
             <br>
+
+            <!-- Clone trim -->
             <b>Trim clone:</b>
             <div class="buttons-flex">
                 <input type="number" bind:value={range[0]} style="width: 50px">
                 <input type="number" bind:value={range[1]} style="width: 50px">
             </div> 
-            <Slider max={range[1]} step="1" bind:value={range} range order style="margin-right:20px"/>
+            <Slider max={range[1]} step="0.1" bind:value={range} range order style="margin-right:20px"/>
 
+            <!-- Topics -->
             <button class="accordion-button" on:click={toggle} aria-expanded={isAccordionOpen}><svg style="tran"  width="20" height="20" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 30 10" stroke="currentColor"><path d="M9 5l7 7-7 7"></path></svg><b>Filter Topics</b></button>
             {#if isAccordionOpen}
                 <ul style="list-style: none" transition:slide={{ duration: 300 }}>
@@ -225,8 +233,17 @@
 
             <br>
             <div class="buttons-flex">
+                <!-- Cancel -->
                 <button class="bag-buttons" on:click={() => {isAccordionOpen = false; isBagManagerOpen = true; isCloneMenuOpen = false; }}>Cancel</button>
-                <button class="bag-buttons" on:click={() => {isCloneMenuOpen = true;}}>Clone</button>
+                <!-- Clone confirm -->
+                <button class="bag-buttons" on:click={() => {isCloneMenuOpen = true; vscode.postMessage({type: "cloneConfirm", values: {
+                    newBagPath: cloneBagPath + "/" +(cloneName.endsWith(".bag") ? cloneName : cloneName + ".bag"),
+                    // Temp hardcode for testing
+                    startTime: {sec: 0, nsec:0},
+                    endTime: {sec: 37, nsec: 0},
+                    verbose: false,
+                    topics: topics
+                }})}}>Clone</button>
             </div>
         {/if}
     {/if}

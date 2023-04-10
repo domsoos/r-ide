@@ -121,6 +121,11 @@ export class SidebarBagsProvider implements vscode.WebviewViewProvider {
           this.bag?.clearBag();
           break;
         }
+        case "cloneConfirm": {
+          const {newBagPath, startTime, endTime, verbose, topics} = data.values;
+          this.bag!.clone(newBagPath, startTime, endTime, verbose, topics);
+          break;
+        }
       }
     });
   }
