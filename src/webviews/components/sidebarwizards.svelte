@@ -53,15 +53,42 @@
 
 	let selectedLanguage = languages[0];
 	let selectedWizardType = '';
+	let isNameValid = true;
+	let invalidNameMessage = '';
+	let isPackageSelected = true;
+
+	function validateFileName(){
+		const extRegex = /^.*\.[^.]+$/;
+		if(nodeName.trim() === ''){
+			invalidNameMessage = 'Please specify a name';
+			return false;
+		}
+		else if(extRegex.test(nodeName)){
+			invalidNameMessage = 'Name must not include a file extension';
+			return false;
+		}
+		else{
+			invalidNameMessage = '';
+			return true;
+		}
+	}
 
 	function nextButtonClicked(){
+		isNameValid = true;
+		isPackageSelected = true;
 		// TODO: Currently overwrites without warning, should ask for confirmation for overwrites
-		if (nodeName === '') {
-		// No given name
-		vscode.postMessage({
-			type: 'onError',
-			value: 'Please specify a name'
-		});
+		console.log(packageName + " Here")
+		if (!validateFileName() || !packageName) {
+			if(!validateFileName() && !packageName){
+				isNameValid = false;
+				isPackageSelected = false;
+			}
+			else if(!validateFileName()){
+				isNameValid = false;
+			}
+			else{
+				isPackageSelected = false;
+			}
 		} else {
 			// Success!
 			wizardTitle = 'Creation Wizard';
@@ -122,11 +149,26 @@
 	}
 
 	function wizardSelected(wizardType){
+		resetWizardFields();
 		selectedWizardType = wizardType;
 		isWizardOpen = true; 
 		isMenuOpen = false; 
 		wizardTitle = 'ROS ' + wizardType + ' Wizard';
 	}
+
+	function resetWizardFields(){
+		selectedLanguage = languages[0];
+		selectedWizardType = '';
+		isNameValid = true;
+		invalidNameMessage = '';
+		isPackageSelected = true;
+		nodeName = '';
+		wizardTitle = 'Creation Wizard';
+		isPublisher = false;
+		isSubscriber = false;
+		packageName = null;
+	}
+
 </script>
 
 
@@ -166,12 +208,18 @@
 			<!-- Node Name -->	
 			<label for="wizard-node-name">{selectedWizardType} name:</label>
 			<input type="text" bind:value={nodeName} class="margin-top-5" style="border:solid 1px black">
+			{#if !isNameValid}
+				<p style="color: #ff4444; font-size: 12px;">{invalidNameMessage}</p>
+			{/if}
 			<br>
 
 			<!-- File Location -->
 			<label for="wizard-node-location">{selectedWizardType} location:</label>
-			<input type="text" class="margin-top-5 location-input" value="{packageName ? packageName : "Select a package..."}" style="border:solid 1px black; width:88%">
+			<input type="text" readonly class="margin-top-5 location-input" value="{packageName ? packageName : "Select a package..."}" style="border:solid 1px black; width:88%">
 			<button class="location-btn" on:click={() => {vscode.postMessage({type: 'openFileExplorer', value:workspaceDirectory})}}>...</button>
+			{#if !isPackageSelected}
+				<p style="color: #ff4444; font-size: 12px;">Please select a package</p>
+			{/if}
 			<br>
 
 			{#if selectedWizardType === 'Node'}
