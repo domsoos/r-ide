@@ -55,12 +55,10 @@ export class SidebarWizardsProvider implements vscode.WebviewViewProvider {
           RosPackageQuickPick(true).then((result) => {
             console.log(result);
             if(result !== undefined){
+              const folderPath = result.value?.rootDirectory.fsPath;
               webviewView.webview.postMessage({
                 type: 'setWorkspace',
-                value: {
-                  name: result.value?.projectName,
-                  path: result.value?.rootDirectory.fsPath
-                }
+                value: folderPath,
               });
             }
           });
