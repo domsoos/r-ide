@@ -2,7 +2,6 @@
     const vscode = acquireVsCodeApi();
     import Slider from '@bulatdashiev/svelte-slider';
     import { slide } from "svelte/transition";
-    import { rosAPI } from '../../ROSManagers/rosmanager';
 
     /* Accordion Code */
     let isAccordionOpen = false
@@ -27,22 +26,20 @@
     let verbose = false;
     let bagDuration;
 
-    // let rosAPI = 
-
-    // let recordBag = {
-    //     topics: [],
-    //     recordAll: false,
-    //     regex: null,
-    //     regexExclude: null,
-    //     quiet: true,
-    //     duration: null,
-    //     prefix: null,
-    //     name: null,
-    //     split: null,
-    //     maxSplits: null,
-    //     bufferSize: null,
-    //     node: null
-    // }
+    let recordBag = {
+        topics: [],
+        recordAll: false,
+        regex: null,
+        regexExclude: null,
+        quiet: true,
+        duration: null,
+        prefix: null,
+        name: null,
+        split: null,
+        maxSplits: null,
+        bufferSize: null,
+        node: null
+    }
     
     let range = [0,1]; 
 
@@ -106,6 +103,10 @@
                 }
                 break;
             }
+            case "publishedTopics": {
+                topics = message.value;
+                break;
+            }
 		}
 	});
 
@@ -117,20 +118,6 @@
         vscode.postMessage({
             type: 'isROSConnected', 
         })
-    }
-
-    function getPublishedTopics() {
-        topics = [];
-        if (rosAPI?.isConnected) {
-            rosAPI.getTopics((res) => {
-                if (res) {
-                    topics.push(res);
-                } else {
-                    console.log("no topics");
-                }
-                
-            })
-        }
     }
 
 </script>
@@ -174,7 +161,7 @@
 <!-- Recording a new bag UNIMPLEMENTED -->
 {#if !isBagManagerOpen}
     <button disabled='{isRecording}' on:click={() => {isROSConnected()}}>Manage Bags</button>
-    <button on:click={() => {isROSConnected(); getPublishedTopics(); recordMenuOpen = true;}}>Record a bag</button>
+    <button on:click={() => {isROSConnected(); vscode.postMessage({type: "getPublishedTopics"});  recordMenuOpen = true;}}>Record a bag</button>
    
 
 <!-- Managing existing bags -->

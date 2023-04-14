@@ -15,6 +15,7 @@ export class SidebarBagsProvider implements vscode.WebviewViewProvider {
 
   public resolveWebviewView(webviewView: vscode.WebviewView) {
     this._view = webviewView;
+    Rosbag.setView(this._view?.webview!);
 
     webviewView.webview.options = {
       // Allow scripts in the webview
@@ -52,7 +53,7 @@ export class SidebarBagsProvider implements vscode.WebviewViewProvider {
           }).then(async (result) =>{
             if(result && result[0].path){
               await this.bag?.clearBag();
-              this.bag = new Rosbag(result[0].fsPath, webviewView.webview);
+              this.bag = new Rosbag(result[0].fsPath);
               await this.bag.openBag();
               webviewView.webview.postMessage({
                 type: 'setSelectedBag',
@@ -139,6 +140,10 @@ export class SidebarBagsProvider implements vscode.WebviewViewProvider {
             terminal.sendText(result);
           }
 
+          break;
+        }
+        case "getPublishedTopics": {
+          Rosbag.getPublishedTopics();
           break;
         }
       }

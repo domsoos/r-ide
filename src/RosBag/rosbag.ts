@@ -25,7 +25,7 @@ export class Rosbag {
 
     isPaused: boolean;
 
-    view: vscode.Webview;
+    static view: vscode.Webview;
 
     rosoutListener: ROSLIB.Topic | undefined;
 
@@ -38,12 +38,15 @@ export class Rosbag {
 
     private static unpublishNotify = new Set<string>();
 
-    constructor(bagPath: string, view: vscode.Webview) {
+    constructor(bagPath: string) {
         this.bagPath = bagPath;
         this.publishers = new Map();
-        this.view = view;
         this.isPaused = true;
         this.pointer = 0;
+    }
+
+    public static setView(view: vscode.Webview) {
+        Rosbag.view = view;
     }
 
     public async openBag() {
@@ -62,7 +65,7 @@ export class Rosbag {
             await this.getMessages(TimeUtil.add(this.bag.startTime!, bufferTime(1))),
         ];       
 
-        this.view.postMessage({type: "createdMessages"});
+        Rosbag.view.postMessage({type: "createdMessages"});
     }
 
     public async getMessages(startTime: Time) {
@@ -134,10 +137,10 @@ export class Rosbag {
         }
     
         if (this.isPaused) {
-            this.view.postMessage({type: 'pausedPlaying'});
+            Rosbag.view.postMessage({type: 'pausedPlaying'});
         } else {
             console.log('finished playing');
-            this.view.postMessage({type: 'finishedPlaying'});
+            Rosbag.view.postMessage({type: 'finishedPlaying'});
             this.currentIndex = 0;
             this.isPaused;
         }
@@ -208,7 +211,7 @@ export class Rosbag {
 
             // console.log([...this.publishers.values()]);
             console.log('read all connections');
-            this.view.postMessage({type: 'createdConnections', value: [...this.publishers.keys()]});
+            Rosbag.view.postMessage({type: 'createdConnections', value: [...this.publishers.keys()]});
 
             setTimeout(() => {
                 if (Rosbag.unpublishNotify.size > 0) {
@@ -315,6 +318,16 @@ export class Rosbag {
               resolve(Rosbag.rosapi.isConnected);
             }
           });
+    }
+
+    static getPublishedTopics() {
+        Rosbag.rosapi.getTopics((res) => {
+            let {topics} = res;
+            console.log(topics);
+            console.log(Rosbag.view);
+            Rosbag.view.postMessage({type: "publishedTopics", value: topics});
+            console.log("Success!");
+        });
     }
 }
 
