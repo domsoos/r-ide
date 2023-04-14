@@ -2,7 +2,7 @@
     const vscode = acquireVsCodeApi();
     import Slider from '@bulatdashiev/svelte-slider';
     import { slide } from "svelte/transition";
-    import TreeView from './TreeView.svelte';
+    import { rosAPI } from '../../ROSManagers/rosmanager';
 
     /* Accordion Code */
     let isAccordionOpen = false
@@ -14,7 +14,7 @@
     let messages = [];
     let isPlaying = false;
 
-
+    let recordMenuOpen = false;
     let isBagManagerOpen = false;
     let isRecording = false;
     let selectedBag = null;
@@ -26,6 +26,23 @@
     let cloneName = null;
     let verbose = false;
     let bagDuration;
+
+    // let rosAPI = 
+
+    // let recordBag = {
+    //     topics: [],
+    //     recordAll: false,
+    //     regex: null,
+    //     regexExclude: null,
+    //     quiet: true,
+    //     duration: null,
+    //     prefix: null,
+    //     name: null,
+    //     split: null,
+    //     maxSplits: null,
+    //     bufferSize: null,
+    //     node: null
+    // }
     
     let range = [0,1]; 
 
@@ -102,6 +119,20 @@
         })
     }
 
+    function getPublishedTopics() {
+        topics = [];
+        if (rosAPI?.isConnected) {
+            rosAPI.getTopics((res) => {
+                if (res) {
+                    topics.push(res);
+                } else {
+                    console.log("no topics");
+                }
+                
+            })
+        }
+    }
+
 </script>
 <style>
     .play-menu {
@@ -143,17 +174,11 @@
 <!-- Recording a new bag UNIMPLEMENTED -->
 {#if !isBagManagerOpen}
     <button disabled='{isRecording}' on:click={() => {isROSConnected()}}>Manage Bags</button>
-    <button disabled={true}>Start Recording (Coming soon)</button>
-    <!-- Beta
-    {#if !isRecording}
-        <button on:click={() => {isRecording = true;}}>Start Recording</button>
-    {:else}
-        <button on:click={() => {isRecording = false;}}>Stop Recording</button>
-    {/if}
-    -->
+    <button on:click={() => {isROSConnected(); getPublishedTopics(); recordMenuOpen = true;}}>Record a bag</button>
+   
 
 <!-- Managing existing bags -->
-{:else}
+{:else if isBagManagerOpen && !recordMenuOpen}
     <!-- Get new bag -->
     <button on:click={() => {vscode.postMessage({type: 'getSelectedBag'})}}>{selectedBag == null? 'Select Bag..': 'Selected Bag: ...' + selectedBag}</button>
 
@@ -272,6 +297,23 @@
             </div>
         {/if}
     {/if}
+{:else}
+
+    <!-- Record Topics -->
+    <button class="accordion-button" on:click={toggle} aria-expanded={isAccordionOpen}><svg style="tran"  width="20" height="20" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 30 10" stroke="currentColor"><path d="M9 5l7 7-7 7"></path></svg><b>Active Topics</b></button>
+                
+    {#if isAccordionOpen}
+        <ul><button class="bag-buttons" on:click={() => {topics.length === selectedTopic.length ? selectedTopic = [] : selectedTopic = topics}}>Select all</button></ul>
+        <ul style="list-style: none" transition:slide={{ duration: 300 }}>
+            {#each topics as item}
+                <li><label><input type=checkbox bind:group={selectedTopic} value={item}>{item}</label></li>
+            {/each}
+        </ul>
+    {/if}
+
+    <br>
+    <button class="bag-buttons" on:click={() => {recordMenuOpen = false; isBagManagerOpen = false;}}>Cancel</button>
+    
 {/if}
 
 
