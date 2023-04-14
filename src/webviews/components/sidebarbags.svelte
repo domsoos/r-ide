@@ -107,6 +107,10 @@
                 topics = message.value;
                 break;
             }
+            case "stoppedRecording": {
+                isRecording = false;
+                break;
+            }
 		}
 	});
 
@@ -286,20 +290,60 @@
     {/if}
 {:else}
 
+    <!--
+        recordBag { 
+            topics: [],
+            recordAll: false,
+            regex: null,
+            regexExclude: null,
+            quiet: true,
+            duration: null,
+            prefix: null,
+            name: null,
+            split: null,
+            maxSplits: null,
+            bufferSize: null,
+            node: null
+        }
+    } -->
+
+    <!-- Name bag -->
+    <label for="bag-name">Name the bag</label>
+    <input bind:value={recordBag.name} disabeld={isRecording}>
+    <br>
+
     <!-- Record Topics -->
+    <label for="record-all">Record all topics</label>
+    <input type=checkbox bind:checked={recordBag.recordAll} name="record-all" disabled={isRecording}>
+
     <button class="accordion-button" on:click={toggle} aria-expanded={isAccordionOpen}><svg style="tran"  width="20" height="20" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 30 10" stroke="currentColor"><path d="M9 5l7 7-7 7"></path></svg><b>Active Topics</b></button>
-                
     {#if isAccordionOpen}
-        <ul><button class="bag-buttons" on:click={() => {topics.length === selectedTopic.length ? selectedTopic = [] : selectedTopic = topics}}>Select all</button></ul>
+        <ul><button class="bag-buttons" on:click={() => {topics.length === selectedTopic.length ? selectedTopic = [] : selectedTopic = topics}} disabled={isRecording}>Select all</button></ul>
         <ul style="list-style: none" transition:slide={{ duration: 300 }}>
             {#each topics as item}
-                <li><label><input type=checkbox bind:group={selectedTopic} value={item}>{item}</label></li>
+                <li><label><input type=checkbox bind:group={selectedTopic} value={item} disabled={isRecording}>{item}</label></li>
             {/each}
         </ul>
     {/if}
 
+    <label for="quiet">Quiet Output</label>
+    <input type=checkbox bind:checked={recordBag.quiet} name="quiet" disabled={isRecording}>
+
     <br>
-    <button class="bag-buttons" on:click={() => {recordMenuOpen = false; isBagManagerOpen = false;}}>Cancel</button>
+    <button class="bag-buttons" on:click={() => {recordMenuOpen = false; isBagManagerOpen = false;}} disabled={isRecording}>Cancel</button>
+
+    <!-- Start recording -->
+    <!-- TODO: Error checking and disable button on error? -->
+    <button class="bag-buttons" on:click={() => {
+        if (!isRecording) {
+            vscode.postMessage({type: "recordBag", values:recordBag})
+        } else {
+            vscode.postMessage({type: "stopRecording"});
+        }
+
+        isRecording = !isRecording;
+        
+        }}>{isRecording ? "Stop Recording" : "Record"}</button>
     
 {/if}
 

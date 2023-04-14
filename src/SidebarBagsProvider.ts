@@ -1,16 +1,19 @@
 import * as vscode from "vscode";
 import { getNonce } from "./getNonce";
 import { Rosbag } from "./RosBag/rosbag";
+import { toNamespacedPath } from "path";
 
 export class SidebarBagsProvider implements vscode.WebviewViewProvider {
   _view?: vscode.WebviewView;
   _doc?: vscode.TextDocument;
 
   bag: Rosbag | undefined;
+  term: vscode.Terminal | undefined;
 
   constructor(private readonly _extensionUri: vscode.Uri) {
     this.bag = undefined;
     Rosbag.connect();
+    this.term = vscode.window.createTerminal();
   }
 
   public resolveWebviewView(webviewView: vscode.WebviewView) {
@@ -146,6 +149,36 @@ export class SidebarBagsProvider implements vscode.WebviewViewProvider {
           Rosbag.getPublishedTopics();
           break;
         }
+        case "recordBag": {
+          const {name, topics, recordAll, quiet} = data.values;
+
+          let cmd = `rosbag record`;
+
+          if (name !== null) {
+            cmd += ` --output-prefix ${name.replace(".bag", "")}`;
+          }
+
+          if (quiet) {
+            cmd += " --quiet";
+          }
+          this.term = vscode.window.createTerminal("Recording a rosbag");
+          this.term.show();
+          this.term.sendText(cmd + ` ${recordAll ? "--all" : topics.join(" ")}`);
+          break;
+        }
+        case "stopRecording": {
+          this.term!.show();
+          this.term!.sendText(String.fromCharCode(3));
+          this.term!.dispose();
+          break;
+        }
+      }
+    });
+
+    vscode.window.onDidCloseTerminal(t => {
+      console.log(t);
+      if (t.name === "Recording a rosbag") {
+        this._view?.webview.postMessage({type: "stoppedRecording"});
       }
     });
   }
