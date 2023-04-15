@@ -1,20 +1,24 @@
 import * as vscode from "vscode";
 import { getNonce } from "./getNonce";
 import { Rosbag } from "./RosBag/rosbag";
+import { toNamespacedPath } from "path";
 
 export class SidebarBagsProvider implements vscode.WebviewViewProvider {
   _view?: vscode.WebviewView;
   _doc?: vscode.TextDocument;
 
   bag: Rosbag | undefined;
+  term: vscode.Terminal | undefined;
 
   constructor(private readonly _extensionUri: vscode.Uri) {
     this.bag = undefined;
     Rosbag.connect();
+    this.term = vscode.window.createTerminal();
   }
 
   public resolveWebviewView(webviewView: vscode.WebviewView) {
     this._view = webviewView;
+    Rosbag.setView(this._view?.webview!);
 
     webviewView.webview.options = {
       // Allow scripts in the webview
@@ -52,12 +56,13 @@ export class SidebarBagsProvider implements vscode.WebviewViewProvider {
           }).then(async (result) =>{
             if(result && result[0].path){
               await this.bag?.clearBag();
-              this.bag = new Rosbag(result[0].fsPath, webviewView.webview);
-
+              this.bag = new Rosbag(result[0].fsPath);
+              await this.bag.openBag();
               webviewView.webview.postMessage({
                 type: 'setSelectedBag',
                 value: {
                   path: result[0].fsPath,
+                  duration: this.bag.getBagDuration()
                 },
               });
             }
@@ -115,6 +120,65 @@ export class SidebarBagsProvider implements vscode.WebviewViewProvider {
           this.bag?.replayBag();
           break;
         }
+        case "closeBag": {
+          this.bag?.clearBag();
+          break;
+        }
+        case "cloneConfirm": {
+          const {newBagPath, startTime, endTime, verbose, topics, copy} = data.values;
+          let result: any = this.bag!.clone(newBagPath, startTime, endTime, verbose, topics);
+
+          if (copy) {
+            console.log(result);
+            // Copy the contents to the clipboard
+            await vscode.env.clipboard.writeText(result).then(() => {
+              vscode.window.showInformationMessage(`Copied ${result} to the clipboard`);
+            }, () => {
+              vscode.window.showErrorMessage(`Failed to copy ${result} to the clipboard`);
+            });
+          } else {
+            // Write contents to the terminal
+            const terminal = vscode.window.createTerminal();
+            terminal.show();
+            terminal.sendText(result);
+          }
+
+          break;
+        }
+        case "getPublishedTopics": {
+          Rosbag.getPublishedTopics();
+          break;
+        }
+        case "recordBag": {
+          const {name, topics, recordAll, quiet} = data.values;
+
+          let cmd = `rosbag record`;
+
+          if (name !== null) {
+            cmd += ` --output-prefix ${name.replace(".bag", "")}`;
+          }
+
+          if (quiet) {
+            cmd += " --quiet";
+          }
+          this.term = vscode.window.createTerminal("Recording a rosbag");
+          this.term.show();
+          this.term.sendText(cmd + ` ${recordAll ? "--all" : topics.join(" ")}`);
+          break;
+        }
+        case "stopRecording": {
+          this.term!.show();
+          this.term!.sendText(String.fromCharCode(3));
+          this.term!.dispose();
+          break;
+        }
+      }
+    });
+
+    vscode.window.onDidCloseTerminal(t => {
+      console.log(t);
+      if (t.name === "Recording a rosbag") {
+        this._view?.webview.postMessage({type: "stoppedRecording"});
       }
     });
   }

@@ -1,19 +1,36 @@
 import * as vscode from 'vscode';
-import Bag, { open } from 'rosbag';
+import Bag, { TimeUtil, open } from 'rosbag';
 import * as ROSLIB from 'roslib';
+
+interface Time {
+    sec: number,
+    nsec: number
+}
+
+interface MessageBuffer {
+    start?: Time,
+    end?: Time,
+    messages: any[]
+}
+
+
 
 export class Rosbag {
 
+    bagPath: string;
     bag: Bag | undefined;
-    messages: any[];
+    // messages: any[];
     publishers: Map<string, ROSLIB.Topic>;
     pointer: number;
 
     isPaused: boolean;
 
-    view: vscode.Webview;
+    static view: vscode.Webview;
 
     rosoutListener: ROSLIB.Topic | undefined;
+
+    buffer: MessageBuffer[] | undefined;
+    beginningOfBagCache: MessageBuffer | undefined;
 
     static rosapi: ROSLIB.Ros = new ROSLIB.Ros({
         url: "ws://localhost:9090",
@@ -21,24 +38,48 @@ export class Rosbag {
 
     private static unpublishNotify = new Set<string>();
 
-    constructor(bagPath: string, view: vscode.Webview) {
-        this.messages = [];
+    constructor(bagPath: string) {
+        this.bagPath = bagPath;
         this.publishers = new Map();
-        this.view = view;
         this.isPaused = true;
         this.pointer = 0;
-        this.openBag(bagPath);
     }
 
-    public async openBag(bagPath: string) {
+    public static setView(view: vscode.Webview) {
+        Rosbag.view = view;
+    }
+
+    public async openBag() {
         await Rosbag.connect();
 
-        this.bag = await open(bagPath);
+        this.bag = await open(this.bagPath);
 
         this.checkPublishers(true);
 
-        // Read all messages
-        this.bag.readMessages({topics: [...this.publishers.keys()]}, (result: any) => {
+
+        this.beginningOfBagCache = await this.getMessages(this.bag.startTime!);
+
+        // Read messages
+        this.buffer = [
+            this.beginningOfBagCache,
+            await this.getMessages(TimeUtil.add(this.bag.startTime!, bufferTime(1))),
+        ];       
+
+        Rosbag.view.postMessage({type: "createdMessages"});
+    }
+
+    public async getMessages(startTime: Time) {
+        let buffer: MessageBuffer = {
+            start: startTime,
+            end: TimeUtil.add(startTime, bufferTime(1)),
+            messages: []
+        };
+
+        await this.bag!.readMessages({
+            topics: [...this.publishers.keys()],
+            startTime: startTime,
+            endTime: TimeUtil.add(startTime, bufferTime(1))
+        }, (result: any) => {
 
             // Convert Images from UInt8Array into base64 string
             if ("data" in result.message && result.message.data instanceof Uint8Array) {
@@ -48,15 +89,10 @@ export class Rosbag {
                     console.log(result);
                 }
             }
-            this.messages.push(result);
-
-            if (this.messages.length % 5000 === 0) {
-                console.log(`Loaded ${this.messages.length} messages`);
-            }
-        }).then(() => {
-            console.log('read all messages');
-            this.view.postMessage({type: 'createdMessages'});
+            buffer.messages.push(result);
         });
+
+        return buffer;
     }
 
     private currentIndex: number = 0;
@@ -68,13 +104,24 @@ export class Rosbag {
 
         this.checkPublishers();
     
-        //console.log(this.messages.length);
-        console.log(this.currentIndex);
-        while (this.currentIndex < this.messages.length - 1 && !this.isPaused) {
-            const {message, topic, timestamp} = this.messages[this.currentIndex];
+        // console.log(this.messages.length);
+        // console.log(this.currentIndex);
+        while (TimeUtil.isLessThan(this.buffer![0].start!, this.bag!.endTime!) && !this.isPaused) {
+            const {message, topic, timestamp} = this.buffer![1].messages[this.currentIndex];
             
-            if (this.leadupRemaining === 0) {
-                const nextTimeStamp = this.messages[this.currentIndex + 1].timestamp;
+            if (this.currentIndex === this.buffer![1].messages.length - 1) {
+                console.log("buffer switch");
+                this.buffer![0] = this.buffer![1];
+                this.getMessages(TimeUtil.add(this.buffer![0].end!, bufferTime(1))).then(mb => {
+                    console.log(mb.messages.length);
+                    console.log("loaded");
+                    this.buffer![1] = mb;
+                });
+                this.currentIndex = 0;
+                const nextTimeStamp = this.buffer![1].messages[0].timestamp;
+                leadup = ((nextTimeStamp.sec - timestamp.sec) * 1000) + ((nextTimeStamp.nsec >> 20) - (timestamp.nsec >> 20));
+            } else if (this.leadupRemaining === 0) {
+                const nextTimeStamp = this.buffer![1].messages[this.currentIndex + 1].timestamp;
                 leadup = ((nextTimeStamp.sec - timestamp.sec) * 1000) + ((nextTimeStamp.nsec >> 20) - (timestamp.nsec >> 20));
             } else {
                 leadup = this.leadupRemaining;
@@ -90,22 +137,37 @@ export class Rosbag {
         }
     
         if (this.isPaused) {
-            this.view.postMessage({type: 'pausedPlaying'});
+            Rosbag.view.postMessage({type: 'pausedPlaying'});
         } else {
             console.log('finished playing');
-            this.view.postMessage({type: 'finishedPlaying'});
+            Rosbag.view.postMessage({type: 'finishedPlaying'});
             this.currentIndex = 0;
+            this.isPaused;
         }
     }
-    
+
+    public getBagDuration(): number {
+        console.log(this.bag);
+        let duration = {sec: this.bag!.endTime!.sec - this.bag!.startTime!.sec, nsec: this.bag!.endTime!.nsec - this.bag!.startTime!.nsec};
+
+        if (duration.nsec < 0) {
+            duration.sec -= 1;
+            duration.nsec += 1e9;
+        }
+
+        return duration.sec + 1;
+    }
+      
 
     public async clearBag() {
-        this.messages = [];
+        // this.messages = [];
         for (let p of [...this.publishers.values()]) {
             p.unadvertise();
         }
 
         this.publishers.clear();
+
+        this.buffer = undefined;
     }
 
     public checkPublishers(forceRepublish: boolean = false) {
@@ -149,7 +211,7 @@ export class Rosbag {
 
             // console.log([...this.publishers.values()]);
             console.log('read all connections');
-            this.view.postMessage({type: 'createdConnections', value: [...this.publishers.keys()]});
+            Rosbag.view.postMessage({type: 'createdConnections', value: [...this.publishers.keys()]});
 
             setTimeout(() => {
                 if (Rosbag.unpublishNotify.size > 0) {
@@ -162,24 +224,29 @@ export class Rosbag {
 
     public pauseBag() {
         this.isPaused = true;
-        // Calculate remaining leadup time when paused
-        if (this.currentIndex < this.messages.length - 1) {
-            const currentTimestamp = this.messages[this.currentIndex].timestamp;
-            const now = Date.now();
-            const playedTime = now - currentTimestamp.sec * 1000 - currentTimestamp.nsec / 1e6;
-            const nextTimestamp = this.messages[this.currentIndex + 1].timestamp;
-            const totalLeadup = ((nextTimestamp.sec - currentTimestamp.sec) * 1000) + ((nextTimestamp.nsec >> 20) - (currentTimestamp.nsec >> 20));
-            this.leadupRemaining = totalLeadup - playedTime;
-        }
-    }
-
-    public replayBag(){
-        this.currentIndex = 0;
     }
 
     public stopBag(){
         this.currentIndex = 0;
         this.pauseBag();
+    }
+
+    public replayBag(){
+        this.currentIndex = 0;
+        this.buffer![0] = this.beginningOfBagCache!;
+        this.getMessages(TimeUtil.add(this.bag!.startTime!, bufferTime(1))).then(mb => {
+            this.buffer![1] = mb;
+        });
+    }
+
+    public clone(newBagPath: string, start: Time, end: Time, verbose: boolean, topics: string[]) {
+        let cmd = `rosbag filter ${this.bagPath} ${newBagPath}`;
+        let filter = ` "${this.bag!.startTime!.sec + start.sec} <= t.secs <= ${this.bag!.startTime!.sec + end.sec} and topic in ('${topics.join("', '")}')"`;
+        if (verbose) {
+            cmd += " --print=\"'%s @ %d.%d: %s' % (topic, t.secs, t.nsecs, m)\"";
+        }       
+
+        return cmd + filter;
     }
 
     private static async waitForLeadup (leadup: number) {
@@ -252,4 +319,18 @@ export class Rosbag {
             }
           });
     }
+
+    static getPublishedTopics() {
+        Rosbag.rosapi.getTopics((res) => {
+            let {topics} = res;
+            console.log(topics);
+            console.log(Rosbag.view);
+            Rosbag.view.postMessage({type: "publishedTopics", value: topics});
+            console.log("Success!");
+        });
+    }
+}
+
+function bufferTime(n: number): Time {
+    return {sec: 0 * n, nsec: 500_000_000 * n};
 }

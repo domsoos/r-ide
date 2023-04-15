@@ -9,10 +9,11 @@
     /* Accordion Code END*/
 
     let topics = [];
+    let selectedTopic = [];
     let messages = [];
     let isPlaying = false;
 
-
+    let recordMenuOpen = false;
     let isBagManagerOpen = false;
     let isRecording = false;
     let selectedBag = null;
@@ -21,6 +22,24 @@
     let isCloneMenuOpen = false;
     let messagesLoaded = false;
     let connectionsLoaded = false;
+    let cloneName = null;
+    let verbose = false;
+    let bagDuration;
+
+    let recordBag = {
+        topics: [],
+        recordAll: false,
+        regex: null,
+        regexExclude: null,
+        quiet: true,
+        duration: null,
+        prefix: null,
+        name: null,
+        split: null,
+        maxSplits: null,
+        bufferSize: null,
+        node: null
+    }
     
     let range = [0,1]; 
 
@@ -29,13 +48,18 @@
 		const message = event.data; // The JSON data our extension sent
 		switch (message.type) {
 			case 'setSelectedBag':{
-                // TODO: Possible race condition on extremely small bags?
                 connectionsLoaded = false;
                 messagesLoaded = false;
 
+                console.log(message.value);
+
+                bagDuration = message.value.duration;
                 selectedBagPath = message.value.path;                
                 selectedBag = selectedBagPath.substring(selectedBagPath.lastIndexOf('/'));
                 cloneBagPath = selectedBagPath.substring(0, selectedBagPath.lastIndexOf('/'));
+                console.log(bagDuration);
+                range[1] = bagDuration;
+                console.log(range);
 				break;
             }
             case 'setCloneBagPath':{
@@ -79,6 +103,14 @@
                 }
                 break;
             }
+            case "publishedTopics": {
+                topics = message.value;
+                break;
+            }
+            case "stoppedRecording": {
+                isRecording = false;
+                break;
+            }
 		}
 	});
 
@@ -93,6 +125,39 @@
     }
 
 </script>
+<style>
+    .play-menu {
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+        padding: 0 10px;
+    }
+    .icon-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 60px;
+      height: 60px;
+      padding: 0;
+      border: none;
+      background: none;
+      cursor: pointer;
+      border-radius: 50%;
+      flex: 1;
+      margin: 0 10px;
+      text-align: center;
+    }
+  
+    .icon {
+      width: 100%;
+      height: 100%;
+    }
+    .replay {
+        width:80%;
+        height:80%;
+    }
+  </style>
+
 
 <h3 style="text-align:center;margin: 10px 0px;">ROS Bag Manager</h3>
 <p style="text-align:center;margin: 10px 0px;color:#ff5a5a;">*Beware: ROS bag manager is currently under development and may not work as intended*</p>
@@ -100,17 +165,11 @@
 <!-- Recording a new bag UNIMPLEMENTED -->
 {#if !isBagManagerOpen}
     <button disabled='{isRecording}' on:click={() => {isROSConnected()}}>Manage Bags</button>
-    <button disabled={true}>Start Recording (Coming soon)</button>
-    <!-- Beta
-    {#if !isRecording}
-        <button on:click={() => {isRecording = true;}}>Start Recording</button>
-    {:else}
-        <button on:click={() => {isRecording = false;}}>Stop Recording</button>
-    {/if}
-    -->
+    <button on:click={() => {isROSConnected(); vscode.postMessage({type: "getPublishedTopics"});  recordMenuOpen = true;}}>Record a bag</button>
+   
 
 <!-- Managing existing bags -->
-{:else}
+{:else if isBagManagerOpen && !recordMenuOpen}
     <!-- Get new bag -->
     <button on:click={() => {vscode.postMessage({type: 'getSelectedBag'})}}>{selectedBag == null? 'Select Bag..': 'Selected Bag: ...' + selectedBag}</button>
 
@@ -122,38 +181,6 @@
     <!-- Manage selected bag -->
     {#if selectedBag !== null}
         <!--<div style="margin:5px 0px;">Selected Bag: .../{selectedBag}</div>-->
-        <style>
-            .play-menu {
-                display: flex;
-                justify-content: space-between;
-                width: 100%;
-                padding: 0 10px;
-            }
-            .icon-button {
-              display: inline-flex;
-              align-items: center;
-              justify-content: center;
-              width: 60px;
-              height: 60px;
-              padding: 0;
-              border: none;
-              background: none;
-              cursor: pointer;
-              border-radius: 50%;
-              flex: 1;
-              margin: 0 10px;
-              text-align: center;
-            }
-          
-            .icon {
-              width: 100%;
-              height: 100%;
-            }
-            .replay {
-                width:80%;
-                height:80%;
-            }
-          </style>
         <!-- Play bag -->
         {#if !isCloneMenuOpen}
             <!-- Play menu-->
@@ -188,7 +215,7 @@
 
             <!-- Cancel and Clone buttons -->
             <div class="buttons-flex">
-                <button class="bag-buttons" on:click={() => {isBagManagerOpen = false;}}>Cancel</button>
+                <button class="bag-buttons" on:click={() => {isBagManagerOpen = false; selectedBag = null; vscode.postMessage({type: "closeBag"});}}>Cancel</button>
                 <button class="bag-buttons" on:click={() => {isCloneMenuOpen = true;}}>Clone</button>
                 <!-- <button class="bag-buttons" tooltip="Coming soon">Clone</button> -->
             </div>
@@ -198,36 +225,126 @@
             <br>
             <br>
             <label for="bag_name"><b>New bag name:</b></label>
-            <input id="bag_name" type="text" class="margin-top-5" style="border:solid 1px black" placeholder="Enter new bag name...">
+
+            <!-- Bag namne -->
+            <input id="bag_name" type="text" class="margin-top-5" style="border:solid 1px black" bind:value={cloneName} placeholder="Enter new bag name...">
             <br>
+
+            <!-- Bag location -->
             <label for="bag_location"><b>New bag location:</b></label>
             <input id="bag_location" type="text" class="margin-top-5 location-input" value="{cloneBagPath? cloneBagPath : "TODO::NEED TO FIX THIS"}" style="border:solid 1px black; width:88%">
             <button class="location-btn" on:click={() => {vscode.postMessage({type: 'getCloneBagPath', value:cloneBagPath ? cloneBagPath : selectedBagPath})}}>...</button>
             <br>
             <br>
+
+            <!-- Clone trim -->
             <b>Trim clone:</b>
             <div class="buttons-flex">
                 <input type="number" bind:value={range[0]} style="width: 50px">
                 <input type="number" bind:value={range[1]} style="width: 50px">
             </div> 
-            <Slider max="100" step="1" bind:value={range} range order style="margin-right:20px"/>
+            <Slider max={bagDuration} step={1} bind:value={range} range order style="margin-right:20px"/>
 
+            <!-- Topics -->
             <button class="accordion-button" on:click={toggle} aria-expanded={isAccordionOpen}><svg style="tran"  width="20" height="20" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 30 10" stroke="currentColor"><path d="M9 5l7 7-7 7"></path></svg><b>Filter Topics</b></button>
+            
             {#if isAccordionOpen}
+                <ul><button class="bag-buttons" on:click={() => {topics.length === selectedTopic.length ? selectedTopic = [] : selectedTopic = topics}}>Select all</button></ul>
                 <ul style="list-style: none" transition:slide={{ duration: 300 }}>
                     {#each topics as item}
-                        <li><input type=checkbox>{item}</li>
+                        <li><label><input type=checkbox bind:group={selectedTopic} value={item}>{item}</label></li>
                     {/each}
                 </ul>
             {/if}
 
+            <br><label><input type=checkbox bind:checked={verbose}>Verbose output</label>
+
             <br>
             <div class="buttons-flex">
-                <button class="bag-buttons" on:click={() => {isAccordionOpen = false; isBagManagerOpen = true; isCloneMenuOpen = false}}>Cancel</button>
-                <button class="bag-buttons" on:click={() => {isCloneMenuOpen = true;}}>Clone</button>
+                <!-- Cancel -->
+                <button class="bag-buttons" on:click={() => {isAccordionOpen = false; isBagManagerOpen = true; isCloneMenuOpen = false; }}>Cancel</button>
+
+                <!-- Copy command -->
+                <button class="bag-buttons" on:click={() => {isCloneMenuOpen = true; 
+                    vscode.postMessage({type: "cloneConfirm", values: {
+                        newBagPath: cloneBagPath + "/" +(cloneName.endsWith(".bag") ? cloneName : cloneName + ".bag"),
+                        startTime: {sec: Math.trunc(range[0]), nsec: range[0] - Math.trunc(range[0])},
+                        endTime: {sec: Math.trunc(range[1]), nsec: range[1] - Math.trunc(range[1])},
+                        verbose: verbose,
+                        topics: selectedTopic,
+                        copy: true
+                    }})}}>Copy Command</button>
+
+                <!-- Clone confirm -->
+                <button class="bag-buttons" on:click={() => {isCloneMenuOpen = true; 
+                vscode.postMessage({type: "cloneConfirm", values: {
+                    newBagPath: cloneBagPath + "/" +(cloneName.endsWith(".bag") ? cloneName : cloneName + ".bag"),
+                    startTime: {sec: Math.trunc(range[0]), nsec: range[0] - Math.trunc(range[0])},
+                    endTime: {sec: Math.trunc(range[1]), nsec: range[1] - Math.trunc(range[1])},
+                    verbose: verbose,
+                    topics: selectedTopic,
+                    copy: false
+                }})}}>Clone</button>
             </div>
         {/if}
     {/if}
+{:else}
+
+    <!--
+        recordBag { 
+            topics: [],
+            recordAll: false,
+            regex: null,
+            regexExclude: null,
+            quiet: true,
+            duration: null,
+            prefix: null,
+            name: null,
+            split: null,
+            maxSplits: null,
+            bufferSize: null,
+            node: null
+        }
+    } -->
+
+    <!-- Name bag -->
+    <label for="bag-name">Name the bag</label>
+    <input bind:value={recordBag.name} disabeld={isRecording}>
+    <br>
+
+    <!-- Record Topics -->
+    <label for="record-all">Record all topics</label>
+    <input type=checkbox bind:checked={recordBag.recordAll} name="record-all" disabled={isRecording}>
+
+    <button class="accordion-button" on:click={toggle} aria-expanded={isAccordionOpen}><svg style="tran"  width="20" height="20" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 30 10" stroke="currentColor"><path d="M9 5l7 7-7 7"></path></svg><b>Active Topics</b></button>
+    {#if isAccordionOpen}
+        <ul><button class="bag-buttons" on:click={() => {topics.length === selectedTopic.length ? selectedTopic = [] : selectedTopic = topics}} disabled={isRecording}>Select all</button></ul>
+        <ul style="list-style: none" transition:slide={{ duration: 300 }}>
+            {#each topics as item}
+                <li><label><input type=checkbox bind:group={selectedTopic} value={item} disabled={isRecording}>{item}</label></li>
+            {/each}
+        </ul>
+    {/if}
+
+    <label for="quiet">Quiet Output</label>
+    <input type=checkbox bind:checked={recordBag.quiet} name="quiet" disabled={isRecording}>
+
+    <br>
+    <button class="bag-buttons" on:click={() => {recordMenuOpen = false; isBagManagerOpen = false;}} disabled={isRecording}>Cancel</button>
+
+    <!-- Start recording -->
+    <!-- TODO: Error checking and disable button on error? -->
+    <button class="bag-buttons" on:click={() => {
+        if (!isRecording) {
+            vscode.postMessage({type: "recordBag", values:recordBag})
+        } else {
+            vscode.postMessage({type: "stopRecording"});
+        }
+
+        isRecording = !isRecording;
+        
+        }}>{isRecording ? "Stop Recording" : "Record"}</button>
+    
 {/if}
 
 
