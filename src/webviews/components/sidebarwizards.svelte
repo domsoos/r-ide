@@ -16,17 +16,21 @@
 		window.addEventListener('message', event => {
 		const message = event.data; // The JSON data our extension sent
 			switch (message.type) {
-				case 'setWorkspace':
-					workspaceDirectory = message.value;
+				case 'setWorkspace': {
+					const { name, path } = message.value;
+					workspaceDirectory = path;
+					packageName = name;
 					break;
+				}
 			}
 		});
 
-  // Get Workspace Directory
-  vscode.postMessage({ 
-	type: 'getWorkspace' 
-});
- });
+		// Get Workspace Directory
+		vscode.postMessage({ 
+			type: 'getWorkspace' 
+		});
+		
+ 	});
 
 
 
