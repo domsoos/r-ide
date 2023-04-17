@@ -175,8 +175,8 @@ export function activate(context: vscode.ExtensionContext) {
 export async function deactivate() {
 	dbcontroller.closeConnection();
 	
-	stopROSBridge();
-	stopROSMaster();
+	//stopROSBridge();
+	//stopROSMaster();
 }
 
 function stopROSMaster(){
