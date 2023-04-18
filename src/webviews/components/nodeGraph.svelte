@@ -171,6 +171,7 @@
             processNode(initialNode);
         }
 
+        /*
         const mynodes = new DataSet([
             { id: 1, label: "Node 1" },
             { id: 2, label: "Node 2" },
@@ -197,6 +198,7 @@
 
         const options = {};
         const network = new Network(container, data, options);
+        */
     }
 
     function refreshNodeGraph(){
