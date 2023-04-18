@@ -9,17 +9,6 @@ describe('Rosbag class', () => {
     //path of ros bag for testing 
     const bagPath = 'test bag path';
   
-    // Create a fake Webview object
-    const fakeWebView: Webview = {
-      asWebviewUri: () => { throw new Error("Not implemented"); },
-      postMessage: () => { throw new Error("Not implemented"); },
-      onDidReceiveMessage: new EventEmitter<any>().event,
-      cspSource: "",
-      html: "",
-      options: { enableScripts: false },
-      onDidChange: new EventEmitter<any>().event,
-    };
-  
     before(async () => {
       // instance of the Rosbag class with a sample bag path and a fake WebView object
       rosbag = new Rosbag(bagPath);
