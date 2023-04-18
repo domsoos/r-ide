@@ -119,6 +119,7 @@ export class SidebarBagsProvider implements vscode.WebviewViewProvider {
           break;
         }
         case "closeBag": {
+          this.bag!.isPaused = true;
           this.bag?.clearBag();
           break;
         }
