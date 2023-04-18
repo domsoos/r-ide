@@ -28,6 +28,7 @@
 
     let recordBag = {
         topics: [],
+        location: null,
         recordAll: false,
         regex: null,
         regexExclude: null,
@@ -44,7 +45,7 @@
     let range = [0,1]; 
 
     window.addEventListener('message', event => {
-        // console.log(event);
+        console.log(event);
 		const message = event.data; // The JSON data our extension sent
 		switch (message.type) {
 			case 'setSelectedBag':{
@@ -84,10 +85,12 @@
             case 'createdConnections': {
                 connectionsLoaded = true;
                 topics = [...message.value];
+                console.log(connectionsLoaded);
                 break;
             }
             case 'createdMessages': {
                 messagesLoaded = true;
+                console.log(messagesLoaded);
                 break;
             }
             case "finishedPlaying": {
@@ -110,6 +113,10 @@
             case "stoppedRecording": {
                 isRecording = false;
                 break;
+            }
+            case "getRecordPath": {
+                console.log(message);
+                recordBag.location = message.value;
             }
 		}
 	});
@@ -186,7 +193,7 @@
             <!-- Play menu-->
             <div class="play-menu">
                 {#if !isPlaying}
-                    <button class="icon-button" on:click={() => {isROSConnected();}} disabled={!(connectionsLoaded && messagesLoaded)}>
+                    <button class="icon-button" on:click={() => {isROSConnected(); vscode.postMessage({type: 'playBag'})}}>
                         <svg class="icon" fill="#000000" viewBox="0 0 24 24" id="play" data-name="Flat Color" xmlns="http://www.w3.org/2000/svg"><circle id="primary" cx="12" cy="12" r="10" style="fill: rgb(0, 0, 0);"></circle><path id="secondary" d="M14.75,12.83,11.55,15A1,1,0,0,1,10,14.13V9.87A1,1,0,0,1,11.55,9l3.2,2.13A1,1,0,0,1,14.75,12.83Z" style="fill: rgb(44, 169, 188);"></path></svg>
                     </button>
                 {:else}
@@ -308,8 +315,14 @@
     } -->
 
     <!-- Name bag -->
-    <label for="bag-name">Name the bag</label>
-    <input bind:value={recordBag.name} disabeld={isRecording}>
+    <label for="bag-name">Bag name</label>
+    <input bind:value={recordBag.name} disabled={isRecording}>
+    <br>
+
+    <!-- Bag location -->
+    <label for="bag_location"><b>New bag location:</b></label>
+    <input id="bag_location" type="text" class="margin-top-5 location-input" bind:value={recordBag.location} style="border:solid 1px black; width:88%">
+    <button class="location-btn" on:click={() => {vscode.postMessage({type: 'setRecordPath', value:recordBag.location})}}>...</button>
     <br>
 
     <!-- Record Topics -->
@@ -321,7 +334,7 @@
         <ul><button class="bag-buttons" on:click={() => {topics.length === selectedTopic.length ? selectedTopic = [] : selectedTopic = topics}} disabled={isRecording}>Select all</button></ul>
         <ul style="list-style: none" transition:slide={{ duration: 300 }}>
             {#each topics as item}
-                <li><label><input type=checkbox bind:group={selectedTopic} value={item} disabled={isRecording}>{item}</label></li>
+                <li><label><input type=checkbox bind:group={recordBag.topics} value={item} disabled={isRecording || recordBag.recordAll}>{item}</label></li>
             {/each}
         </ul>
     {/if}
@@ -329,14 +342,18 @@
     <label for="quiet">Quiet Output</label>
     <input type=checkbox bind:checked={recordBag.quiet} name="quiet" disabled={isRecording}>
 
+    <div class="buttons-flex">
+
     <br>
     <button class="bag-buttons" on:click={() => {recordMenuOpen = false; isBagManagerOpen = false;}} disabled={isRecording}>Cancel</button>
+
+    <button class="bag-buttons" on:click={() => {vscode.postMessage({type: "recordBag", values: {recordBag: recordBag, copy: true}})}}>Copy Command</button>
 
     <!-- Start recording -->
     <!-- TODO: Error checking and disable button on error? -->
     <button class="bag-buttons" on:click={() => {
         if (!isRecording) {
-            vscode.postMessage({type: "recordBag", values:recordBag})
+            vscode.postMessage({type: "recordBag", values:{recordBag: recordBag, copy: false}})
         } else {
             vscode.postMessage({type: "stopRecording"});
         }
@@ -344,6 +361,9 @@
         isRecording = !isRecording;
         
         }}>{isRecording ? "Stop Recording" : "Record"}</button>
+
+    </div>
+    
     
 {/if}
 

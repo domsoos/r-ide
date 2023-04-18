@@ -47,6 +47,7 @@ export class Rosbag {
 
     public static setView(view: vscode.Webview) {
         Rosbag.view = view;
+        console.log(Rosbag.view);
     }
 
     public async openBag() {
@@ -54,8 +55,7 @@ export class Rosbag {
 
         this.bag = await open(this.bagPath);
 
-        this.checkPublishers(true);
-
+        await this.checkPublishers(true);
 
         this.beginningOfBagCache = await this.getMessages(this.bag.startTime!);
 
@@ -63,9 +63,9 @@ export class Rosbag {
         this.buffer = [
             this.beginningOfBagCache,
             await this.getMessages(TimeUtil.add(this.bag.startTime!, bufferTime(1))),
-        ];       
+        ];
 
-        Rosbag.view.postMessage({type: "createdMessages"});
+        await Rosbag.view.postMessage({type: 'createdMessages'});
     }
 
     public async getMessages(startTime: Time) {
@@ -147,7 +147,6 @@ export class Rosbag {
     }
 
     public getBagDuration(): number {
-        console.log(this.bag);
         let duration = {sec: this.bag!.endTime!.sec - this.bag!.startTime!.sec, nsec: this.bag!.endTime!.nsec - this.bag!.startTime!.nsec};
 
         if (duration.nsec < 0) {
@@ -170,7 +169,7 @@ export class Rosbag {
         this.buffer = undefined;
     }
 
-    public checkPublishers(forceRepublish: boolean = false) {
+    public async checkPublishers(forceRepublish: boolean = false) {
         if (!Rosbag.rosapi.isConnected || forceRepublish) {
             if (!Rosbag.rosapi.isConnected){
                 Rosbag.connect();
@@ -209,9 +208,7 @@ export class Rosbag {
                 newPublisher.advertise();
             }
 
-            // console.log([...this.publishers.values()]);
-            console.log('read all connections');
-            Rosbag.view.postMessage({type: 'createdConnections', value: [...this.publishers.keys()]});
+            await Rosbag.view.postMessage({type: 'createdConnections', value: [...this.publishers.keys()]});
 
             setTimeout(() => {
                 if (Rosbag.unpublishNotify.size > 0) {
