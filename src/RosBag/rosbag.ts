@@ -95,6 +95,14 @@ export class Rosbag {
         return buffer;
     }
 
+    public getCurrentIndex(): number {
+        return this.currentIndex;
+      }
+      
+      public setCurrentIndex(value: number): void {
+        this.currentIndex = value;
+      }
+      
     private currentIndex: number = 0;
     private leadupRemaining: number = 0;
     

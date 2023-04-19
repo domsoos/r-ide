@@ -1,13 +1,15 @@
 import { Rosbag } from '../../RosBag/rosbag';
-import { describe, it, beforeEach, afterEach } from "mocha";
+import { describe, it, before, afterEach } from "mocha";
 import { expect } from "chai";
-import { Webview, EventEmitter } from 'vscode';
+import Bag from "rosbag";
+import { createWriteStream } from 'fs';
+
 
 describe('Rosbag class', () => {
     let rosbag: Rosbag;
 
     //path of ros bag for testing 
-    const bagPath = 'test bag path';
+    const bagPath = '../2023-03-17-20-22-17.bag';
   
     before(async () => {
       // instance of the Rosbag class with a sample bag path and a fake WebView object
@@ -50,16 +52,16 @@ describe('Rosbag class', () => {
     });
   
     it('should stop playing the ROS bag', async () => {
-      rosbag.currentIndex = 10;
+      rosbag.setCurrentIndex(10);
       rosbag.stopBag();
-      expect(rosbag.currentIndex).to.equal(0);
+      expect(rosbag.getCurrentIndex()).to.equal(0);
       expect(rosbag.isPaused).to.be.true;
     });
   
     it('should replay the ROS bag', async () => {
-      rosbag.currentIndex = 10;
+      rosbag.setCurrentIndex(10);
       await rosbag.replayBag();
-      expect(rosbag.currentIndex).to.equal(0);
+      expect(rosbag.getCurrentIndex()).to.equal(0);
       expect(rosbag.buffer?.[0]).to.deep.equal(rosbag.beginningOfBagCache);
       expect(rosbag.buffer?.[1].start).to.deep.equal({ sec: 1, nsec: 0 });
       expect(rosbag.buffer?.[1].messages.length).to.be.greaterThan(0);
@@ -71,7 +73,7 @@ describe('Rosbag class', () => {
       const endTime = { sec: 2, nsec: 0 };
       const verbose = true;
       const topics = ['topic1', 'topic2'];
-    
+
       // Clone the bag
       await rosbag.cloneBag(newBagPath, startTime, endTime, verbose, topics);
     
@@ -104,7 +106,7 @@ describe('Rosbag class', () => {
       }
     
       // Get messages from the cloned bag
-      const clonedMessages = await rosbag.getMessages(startTime, endTime, verbose, topics, 'test new bag path');
+      const clonedMessages = await rosbag.getMessages(startTime, endTime, verbose, topics, '../2023-03-17-20-22-17.bag');
     
       // Check if the cloned messages are within the specified time range and topics
       expect(clonedMessages.length).to.be.greaterThan(0);
