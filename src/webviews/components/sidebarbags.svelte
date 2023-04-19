@@ -28,7 +28,7 @@
 
     let recordBag = {
         topics: [],
-        location: null,
+        location: "",
         recordAll: false,
         regex: null,
         regexExclude: null,
@@ -331,7 +331,7 @@
 
     <button class="accordion-button" on:click={toggle} aria-expanded={isAccordionOpen}><svg style="tran"  width="20" height="20" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 30 10" stroke="currentColor"><path d="M9 5l7 7-7 7"></path></svg><b>Active Topics</b></button>
     {#if isAccordionOpen}
-        <ul><button class="bag-buttons" on:click={() => {topics.length === selectedTopic.length ? selectedTopic = [] : selectedTopic = topics}} disabled={isRecording}>Select all</button></ul>
+        <ul><button class="bag-buttons" on:click={() => {topics.length === recordBag.topics.length ? recordBag.topics = [] : recordBag.topics = topics}} disabled={isRecording}>Select all</button></ul>
         <ul style="list-style: none" transition:slide={{ duration: 300 }}>
             {#each topics as item}
                 <li><label><input type=checkbox bind:group={recordBag.topics} value={item} disabled={isRecording || recordBag.recordAll}>{item}</label></li>
@@ -360,12 +360,9 @@
 
         isRecording = !isRecording;
         
-        }}>{isRecording ? "Stop Recording" : "Record"}</button>
+        }} disabled={((!recordBag.recordAll && recordBag.topics.length === 0) || (recordBag.location === ""))}>{isRecording ? "Stop Recording" : "Record"}</button>
 
     </div>
     
     
 {/if}
-
-
-

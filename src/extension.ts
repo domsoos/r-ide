@@ -56,6 +56,16 @@ export function activate(context: vscode.ExtensionContext) {
 		});
 	});
 
+	const bagSniffer = vscode.workspace.createFileSystemWatcher("**/*.bag");
+	bagSniffer.onDidCreate((uri) => {
+		let root = vscode.Uri.joinPath(uri, "..");
+		vscode.window.showInformationMessage(`The bag ${uri.fsPath.split('/').at(-1)} has been created in ${root}`, "Open the folder").then(res => {
+			if (res === "Open the folder") {
+				vscode.commands.executeCommand("revealInExplorer", root);
+			}
+		});
+	});
+
 	context.subscriptions.push(
 		// Webviews
 		vscode.window.registerWebviewViewProvider(
