@@ -1,9 +1,7 @@
-import { Rosbag } from '../../RosBag/rosbag';
+import { Rosbag, Time } from '../../RosBag/rosbag';
 import { describe, it, before, afterEach } from "mocha";
 import { expect } from "chai";
-import Bag from "rosbag";
 import { createWriteStream } from 'fs';
-
 
 describe('Rosbag class', () => {
     let rosbag: Rosbag;
@@ -68,20 +66,25 @@ describe('Rosbag class', () => {
     });
 
     it('should clone the ROS bag', async () => {
-      const newBagPath = 'test new bag path';
+      const newBagPath = '../2023-03-17-20-22-17.bag';
       const startTime = { sec: 1, nsec: 0 };
-      const endTime = { sec: 2, nsec: 0 };
+      const endTime: Time = {sec: 2, nsec: 0};
       const verbose = true;
       const topics = ['topic1', 'topic2'];
 
       // Clone the bag
-      await rosbag.cloneBag(newBagPath, startTime, endTime, verbose, topics);
+      await rosbag.clone(newBagPath, startTime, endTime, verbose, topics);
     
       // Check if the cloned bag exists
-      const clonedBag = await rosbag.openBag(newBagPath);
+      const clonedBagRosbag = new Rosbag(newBagPath);
+      await clonedBagRosbag.openBag();
+      const clonedBag = clonedBagRosbag.bag;
       expect(clonedBag).to.exist;
       expect(clonedBag.readMessages).to.exist;
+
     
+
+     
       // Check if the messages in the cloned bag are within the specified time range
       const messages = await rosbag.getMessages(startTime, endTime, verbose, topics);
       const clonedMessages = await rosbag.getMessages(startTime, endTime, verbose, topics, newBagPath);
@@ -145,7 +148,7 @@ describe('Rosbag class', () => {
       const topics = ['topic1', 'topic2'];
     
       // Clone the bag to a new path
-      await expect(rosbag.cloneBag(newBagPath, startTime, endTime, verbose, topics)).to.be.rejectedWith(Error, `Cannot clone bag to existing path: ${newBagPath}`);
+      await expect(rosbag.clone(newBagPath, startTime, endTime, verbose, topics)).to.be.rejectedWith(Error, `Cannot clone bag to existing path: ${newBagPath}`);
     });
     
     it('should clone the ROS bag to a new path', async () => {
@@ -156,7 +159,7 @@ describe('Rosbag class', () => {
       const topics = ['topic1', 'topic2'];
     
       // Clone the bag to a new path
-      await rosbag.cloneBag(newBagPath, startTime, endTime, verbose, topics);
+      await rosbag.clone(newBagPath, startTime, endTime, verbose, topics);
     
       // Check that the new bag file exists
       const newBagExists = await rosbag.fileExists(newBagPath);

@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import Bag, { TimeUtil, open } from 'rosbag';
 import * as ROSLIB from 'roslib';
 
-interface Time {
+export interface Time {
     sec: number,
     nsec: number
 }
@@ -246,7 +246,7 @@ export class Rosbag {
             this.buffer![1] = mb;
         });
     }
-
+    
     public clone(newBagPath: string, start: Time, end: Time, verbose: boolean, topics: string[]) {
         let cmd = `rosbag filter ${this.bagPath} ${newBagPath}`;
         let filter = ` "${this.bag!.startTime!.sec + start.sec} <= t.secs <= ${this.bag!.startTime!.sec + end.sec} and topic in ('${topics.join("', '")}')"`;
