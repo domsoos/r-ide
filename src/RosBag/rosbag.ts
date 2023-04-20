@@ -6,14 +6,13 @@ export interface Time {
     sec: number,
     nsec: number
 }
+  
 
 interface MessageBuffer {
     start?: Time,
     end?: Time,
     messages: any[]
 }
-
-
 
 export class Rosbag {
 

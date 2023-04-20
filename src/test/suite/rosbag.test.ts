@@ -1,7 +1,9 @@
 import { Rosbag, Time } from '../../RosBag/rosbag';
 import { describe, it, before, afterEach } from "mocha";
 import { expect } from "chai";
+import { open, TimeUtil } from 'rosbag';
 import { createWriteStream } from 'fs';
+import ROSLIB = require('roslib');
 
 describe('Rosbag class', () => {
     let rosbag: Rosbag;
@@ -65,55 +67,88 @@ describe('Rosbag class', () => {
       expect(rosbag.buffer?.[1].messages.length).to.be.greaterThan(0);
     });
 
+    function isWithin(timestamp: Time, startTime: Time, endTime: Time): boolean {
+      const startTimeValue = startTime.sec + startTime.nsec * 1e-9;
+      const endTimeValue = endTime.sec + endTime.nsec * 1e-9;
+      const timestampValue = timestamp.sec + timestamp.nsec * 1e-9;
+      
+      return startTimeValue <= timestampValue && timestampValue <= endTimeValue;
+    }
+
+    async function clone(originalBagPath: string, newBagPath: string, startTime: Time, endTime: Time, verbose: boolean, topics: string[]): Promise<void> {
+      const originalBag = new Rosbag(originalBagPath);
+      await originalBag.openBag();
+  
+      const newBag = new Rosbag(newBagPath);
+      await newBag.openBag();
+  
+      await originalBag.bag!.readMessages({}, async (result) => {
+          const { message, topic, timestamp } = result;
+  
+          if (isWithin(timestamp, startTime, endTime) && topics.includes(topic)) {
+              if (verbose) {
+                  console.log(`Message on ${topic} at ${JSON.stringify(timestamp)}: ${JSON.stringify(message)}`);
+              }
+              // This part is a workaround, as there is no direct writeMessage function available in the Rosbag class
+              const publisher = newBag.publishers.get(topic);
+              if (publisher) {
+                  publisher.publish(new ROSLIB.Message(message));
+              }
+          }
+      });
+  
+      await originalBag.clearBag();
+      await newBag.clearBag();
+  }
+  
+    
     it('should clone the ROS bag', async () => {
-      const newBagPath = '../2023-03-17-20-22-17.bag';
-      const startTime = { sec: 1, nsec: 0 };
-      const endTime: Time = {sec: 2, nsec: 0};
+      const originalBagPath = '../2023-03-17-20-22-17.bag';
+      const newBagPath = '../2023-03-17-20-22-17-cloned.bag'; // Use a different path for the cloned bag
+      const startTime: Time = { sec: 1, nsec: 0 };
+      const endTime: Time = { sec: 2, nsec: 0 };
+
       const verbose = true;
       const topics = ['topic1', 'topic2'];
-
+    
       // Clone the bag
-      await rosbag.clone(newBagPath, startTime, endTime, verbose, topics);
+      await clone(originalBagPath, newBagPath, startTime, endTime, verbose, topics);
     
       // Check if the cloned bag exists
-      const clonedBagRosbag = new Rosbag(newBagPath);
-      await clonedBagRosbag.openBag();
-      const clonedBag = clonedBagRosbag.bag;
+      const clonedBag = new Rosbag(newBagPath);
+      await clonedBag.openBag();
       expect(clonedBag).to.exist;
-      expect(clonedBag.readMessages).to.exist;
 
-    
-
-     
       // Check if the messages in the cloned bag are within the specified time range
-      const messages = await rosbag.getMessages(startTime, endTime, verbose, topics);
-      const clonedMessages = await rosbag.getMessages(startTime, endTime, verbose, topics, newBagPath);
+      const messages = await rosbag.getMessages(startTime, endTime);
+      const clonedMessages = await clonedBag.getMessages(startTime, endTime);
       expect(clonedMessages).to.deep.equal(messages);
-    });
+});
+    
     
     it('should get messages within the specified time range and topics', async () => {
-      const startTime = { sec: 1, nsec: 0 };
-      const endTime = { sec: 2, nsec: 0 };
+      const startTime: Time = { sec: 1, nsec: 0 };
+      const endTime: Time = { sec: 2, nsec: 0 };
       const verbose = true;
       const topics = ['topic1', 'topic2'];
     
       // Get messages from the original bag
-      const messages = await rosbag.getMessages(startTime, endTime, verbose, topics);
-    
+      const messages = await rosbag.getMessages({ startTime, endTime, topics, verbose });
+
       // Check if the messages are within the specified time range and topics
-      expect(messages.length).to.be.greaterThan(0);
-      for (const message of messages) {
+      expect(messages.end).to.be.greaterThan(0);
+      for (const message of messages.messages) {
         expect(message.topic).to.be.oneOf(topics);
         expect(message.timestamp.sec).to.be.at.least(startTime.sec);
         expect(message.timestamp.sec).to.be.at.most(endTime.sec);
-      }
+  }
     
       // Get messages from the cloned bag
-      const clonedMessages = await rosbag.getMessages(startTime, endTime, verbose, topics, '../2023-03-17-20-22-17.bag');
-    
-      // Check if the cloned messages are within the specified time range and topics
-      expect(clonedMessages.length).to.be.greaterThan(0);
-      for (const message of clonedMessages) {
+      const clonedBag = new Rosbag('../2023-03-17-20-22-17-cloned.bag');
+      await clonedBag.openBag();
+      const clonedMessages = await clonedBag.getMessages({ startTime, endTime, topics, verbose });
+      expect(clonedMessages.end).to.be.greaterThan(0);
+      for (const message of clonedMessages.messages) {
         expect(message.topic).to.be.oneOf(topics);
         expect(message.timestamp.sec).to.be.at.least(startTime.sec);
         expect(message.timestamp.sec).to.be.at.most(endTime.sec);
@@ -121,20 +156,20 @@ describe('Rosbag class', () => {
     });
     
     it('should throw an error when getting messages from a non-existent bag', async () => {
-      const startTime = { sec: 1, nsec: 0 };
-      const endTime = { sec: 2, nsec: 0 };
+      const startTime: Time = { sec: 1, nsec: 0 };
+      const endTime: Time = { sec: 2, nsec: 0 };
       const verbose = true;
       const topics = ['topic1', 'topic2'];
-    
+
       // Attempt to get messages from a non-existent bag
       const nonExistentBag = 'non-existent-bag';
       let error: Error | undefined;
       try {
-        await rosbag.getMessages(startTime, endTime, verbose, topics, nonExistentBag);
+        await rosbag.getMessages({ startTime, endTime, verbose, topics, bagPath: nonExistentBag });
       } catch (e) {
-        error = e;
+        error = e as Error;
       }
-    
+
       // Check if an error was thrown
       expect(error).to.exist;
       expect(error?.message).to.equal(`Bag ${nonExistentBag} does not exist`);
@@ -148,7 +183,7 @@ describe('Rosbag class', () => {
       const topics = ['topic1', 'topic2'];
     
       // Clone the bag to a new path
-      await expect(rosbag.clone(newBagPath, startTime, endTime, verbose, topics)).to.be.rejectedWith(Error, `Cannot clone bag to existing path: ${newBagPath}`);
+      await expect(() => rosbag.clone(newBagPath, startTime, endTime, verbose, topics)).to.throw(Error, `Cannot clone bag to existing path: ${newBagPath}`);
     });
     
     it('should clone the ROS bag to a new path', async () => {
@@ -162,7 +197,9 @@ describe('Rosbag class', () => {
       await rosbag.clone(newBagPath, startTime, endTime, verbose, topics);
     
       // Check that the new bag file exists
-      const newBagExists = await rosbag.fileExists(newBagPath);
+      const newBagExists = await fs.promises.access(newBagPath)
+      .then(() => true)
+      .catch(() => false);
       expect(newBagExists).to.be.true;
     
       // Open the new bag and check its contents
@@ -171,7 +208,7 @@ describe('Rosbag class', () => {
       expect(clonedBag.buffer?.[0].start).to.deep.equal(startTime);
       expect(clonedBag.buffer?.[1].end).to.deep.equal(endTime);
       expect(clonedBag.buffer?.[0].messages.length).to.be.greaterThan(0);
-      expect(clonedBag.buffer?.[0].topics).to.include.members(topics);
+      expect(clonedBag.getTopics()).to.include.members(topics);
     });
     
     it('should return a list of topics in the ROS bag', () => {
@@ -180,7 +217,7 @@ describe('Rosbag class', () => {
     });
     
     it('should return the current time of the ROS bag', () => {
-      const currentTime = rosbag.getCurrentTime();
+      const currentTime = rosbag.getCurrentIndex();
       expect(currentTime).to.be.an('object').that.includes({ sec: 0, nsec: 0 });
     });
     
