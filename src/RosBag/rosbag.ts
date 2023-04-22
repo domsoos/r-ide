@@ -6,7 +6,11 @@ export interface Time {
     sec: number,
     nsec: number
 }
-  
+interface GetMessagesOptions {
+    startTime: Time;
+    endTime?: Time;
+    topics?: string[];
+  }
 
 interface MessageBuffer {
     start?: Time,
@@ -50,49 +54,54 @@ export class Rosbag {
 
     public async openBag() {
         await Rosbag.connect();
-
+    
         this.bag = await open(this.bagPath);
-
+    
         this.checkPublishers(true);
-
-
-        this.beginningOfBagCache = await this.getMessages(this.bag.startTime!);
-
+    
+        this.beginningOfBagCache = await this.getMessages({ startTime: this.bag.startTime! });
+    
         // Read messages
         this.buffer = [
             this.beginningOfBagCache,
-            await this.getMessages(TimeUtil.add(this.bag.startTime!, bufferTime(1))),
-        ];       
-
-        Rosbag.view.postMessage({type: "createdMessages"});
+            await this.getMessages({
+                startTime: TimeUtil.add(this.bag.startTime!, bufferTime(1))
+            }),
+        ];
+    
+        Rosbag.view.postMessage({ type: "createdMessages" });
     }
 
-    public async getMessages(startTime: Time) {
+      
+
+    public async getMessages(options: GetMessagesOptions) {
+        const { startTime, endTime, topics } = options;
+      
         let buffer: MessageBuffer = {
-            start: startTime,
-            end: TimeUtil.add(startTime, bufferTime(1)),
-            messages: []
+          start: startTime,
+          end: endTime || TimeUtil.add(startTime, bufferTime(1)),
+          messages: []
         };
-
+      
         await this.bag!.readMessages({
-            topics: [...this.publishers.keys()],
-            startTime: startTime,
-            endTime: TimeUtil.add(startTime, bufferTime(1))
+          topics: topics || [...this.publishers.keys()],
+          startTime: startTime,
+          endTime: buffer.end
         }, (result: any) => {
-
-            // Convert Images from UInt8Array into base64 string
-            if ("data" in result.message && result.message.data instanceof Uint8Array) {
-                try {
-                    result.message.data = Buffer.from(result.message.data).toString('base64'); 
-                } catch (error) {
-                    console.log(result);
-                }
+      
+          // Convert Images from UInt8Array into base64 string
+          if ("data" in result.message && result.message.data instanceof Uint8Array) {
+            try {
+              result.message.data = Buffer.from(result.message.data).toString('base64'); 
+            } catch (error) {
+              console.log(result);
             }
-            buffer.messages.push(result);
+          }
+          buffer.messages.push(result);
         });
-
+      
         return buffer;
-    }
+      }
 
     public getCurrentIndex(): number {
         return this.currentIndex;
@@ -119,7 +128,7 @@ export class Rosbag {
             if (this.currentIndex === this.buffer![1].messages.length - 1) {
                 console.log("buffer switch");
                 this.buffer![0] = this.buffer![1];
-                this.getMessages(TimeUtil.add(this.buffer![0].end!, bufferTime(1))).then(mb => {
+                this.getMessages({ startTime: TimeUtil.add(this.buffer![0].end!, bufferTime(1)) }).then(mb => {
                     console.log(mb.messages.length);
                     console.log("loaded");
                     this.buffer![1] = mb;
@@ -238,10 +247,10 @@ export class Rosbag {
         this.pauseBag();
     }
 
-    public replayBag(){
+    public replayBag() {
         this.currentIndex = 0;
         this.buffer![0] = this.beginningOfBagCache!;
-        this.getMessages(TimeUtil.add(this.bag!.startTime!, bufferTime(1))).then(mb => {
+        this.getMessages({ startTime: TimeUtil.add(this.bag!.startTime!, bufferTime(1)) }).then(mb => {
             this.buffer![1] = mb;
         });
     }

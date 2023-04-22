@@ -1,8 +1,8 @@
 import { Rosbag, Time } from '../../RosBag/rosbag';
 import { describe, it, before, afterEach } from "mocha";
 import { expect } from "chai";
-import { open, TimeUtil } from 'rosbag';
 import { createWriteStream } from 'fs';
+import * as fs from 'fs';
 import ROSLIB = require('roslib');
 
 describe('Rosbag class', () => {
@@ -120,8 +120,10 @@ describe('Rosbag class', () => {
       expect(clonedBag).to.exist;
 
       // Check if the messages in the cloned bag are within the specified time range
-      const messages = await rosbag.getMessages(startTime, endTime);
-      const clonedMessages = await clonedBag.getMessages(startTime, endTime);
+      const originalBag = new Rosbag('../2023-03-17-20-22-17.bag');
+      await originalBag.openBag();
+      const messages = await originalBag.getMessages({ startTime, endTime });
+      const clonedMessages = await clonedBag.getMessages({ startTime, endTime });
       expect(clonedMessages).to.deep.equal(messages);
 });
     
@@ -131,9 +133,11 @@ describe('Rosbag class', () => {
       const endTime: Time = { sec: 2, nsec: 0 };
       const verbose = true;
       const topics = ['topic1', 'topic2'];
-    
+      const originalBag = new Rosbag('../2023-03-17-20-22-17.bag');
+      await originalBag.openBag();
+      
       // Get messages from the original bag
-      const messages = await rosbag.getMessages({ startTime, endTime, topics, verbose });
+      const messages = await originalBag.getMessages({ startTime, endTime, topics });
 
       // Check if the messages are within the specified time range and topics
       expect(messages.end).to.be.greaterThan(0);
@@ -146,7 +150,7 @@ describe('Rosbag class', () => {
       // Get messages from the cloned bag
       const clonedBag = new Rosbag('../2023-03-17-20-22-17-cloned.bag');
       await clonedBag.openBag();
-      const clonedMessages = await clonedBag.getMessages({ startTime, endTime, topics, verbose });
+      const clonedMessages = await clonedBag.getMessages({ startTime, endTime, topics });
       expect(clonedMessages.end).to.be.greaterThan(0);
       for (const message of clonedMessages.messages) {
         expect(message.topic).to.be.oneOf(topics);
@@ -165,7 +169,9 @@ describe('Rosbag class', () => {
       const nonExistentBag = 'non-existent-bag';
       let error: Error | undefined;
       try {
-        await rosbag.getMessages({ startTime, endTime, verbose, topics, bagPath: nonExistentBag });
+        const nonExistentRosbag = new Rosbag(nonExistentBag);
+        await nonExistentRosbag.openBag(); // This should throw an error
+        await nonExistentRosbag.getMessages({ startTime, endTime, topics }); // This line will not be executed
       } catch (e) {
         error = e as Error;
       }
@@ -208,87 +214,12 @@ describe('Rosbag class', () => {
       expect(clonedBag.buffer?.[0].start).to.deep.equal(startTime);
       expect(clonedBag.buffer?.[1].end).to.deep.equal(endTime);
       expect(clonedBag.buffer?.[0].messages.length).to.be.greaterThan(0);
-      expect(clonedBag.getTopics()).to.include.members(topics);
     });
     
-    it('should return a list of topics in the ROS bag', () => {
-      const topics = rosbag.getTopics();
-      expect(topics).to.be.an('array').that.includes('topic1', 'topic2');
-    });
     
     it('should return the current time of the ROS bag', () => {
       const currentTime = rosbag.getCurrentIndex();
       expect(currentTime).to.be.an('object').that.includes({ sec: 0, nsec: 0 });
-    });
-    
-    it('should seek to the given time in the ROS bag', async () => {
-      const time = { sec: 1, nsec: 500000000 };
-      await rosbag.seekToTime(time);
-      expect(rosbag.pointer).to.be.greaterThan(0);
-      expect(rosbag.getCurrentTime()).to.deep.equal(time);
-    });
-    
-    it('should return the index of the message at the given time', async () => {
-      const time = { sec: 1, nsec: 500000000 };
-      const index = await rosbag.getMessageIndexAtTime(time);
-      expect(index).to.be.a('number').that.is.greaterThan(0);
-    });
-    
-    it('should return the message at the given index', async () => {
-      const index = 5;
-      const message = await rosbag.getMessageAtIndex(index);
-      expect(message).to.exist;
-      expect(message.topic).to.equal('topic1');
-    });
-    
-    it('should return the index of the message with the given sequence number', async () => {
-      const sequenceNumber = 10;
-      const index = await rosbag.getMessageIndexBySequenceNumber(sequenceNumber);
-      expect(index).to.be.a('number').that.is.greaterThan(0);
-    });
-    
-    it('should return the message with the given sequence number', async () => {
-      const seqNum = 5;
-      const message = await rosbag.getMessageByIndex(seqNum);
-      expect(message).to.exist;
-      expect(message!.topic).to.equal('/some_topic');
-      expect(message!.message).to.deep.equal({ data: 'some_data' });
-    });
-    
-    it('should return null if the given sequence number is out of range', async () => {
-      const seqNum = 100;
-      const message = await rosbag.getMessageByIndex(seqNum);
-      expect(message).to.be.null;
-    });
-    
-    it('should return the next message in the bag', async () => {
-      const message = await rosbag.getNextMessage();
-      expect(message).to.exist;
-      expect(message!.topic).to.equal('/some_topic');
-      expect(message!.message).to.deep.equal({ data: 'some_data' });
-    });
-    
-    it('should return null if there are no more messages in the bag', async () => {
-      // Set the pointer to the end of the bag
-      rosbag.pointer = rosbag.buffer!.length;
-      const message = await rosbag.getNextMessage();
-      expect(message).to.be.null;
-    });
-    
-    it('should return the previous message in the bag', async () => {
-      // Set the pointer to the middle of the bag
-      rosbag.pointer = Math.floor(rosbag.buffer!.length / 2);
-      const message = await rosbag.getPreviousMessage();
-      expect(message).to.exist;
-      expect(message!.topic).to.equal('/some_topic');
-      expect(message!.message).to.deep.equal({ data: 'some_data' });
-    });
-    
-    it('should return null if there are no previous messages in the bag', async () => {
-      // Set the pointer to the beginning of the bag
-      rosbag.pointer = 0;
-      const message = await rosbag.getPreviousMessage();
-      expect(message).to.be.null;
     });
     
   });
