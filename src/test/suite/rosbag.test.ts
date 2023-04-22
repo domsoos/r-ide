@@ -9,7 +9,7 @@ describe('Rosbag class', () => {
     let rosbag: Rosbag;
 
     //path of ros bag for testing 
-    const bagPath = '../2023-03-17-20-22-17.bag';
+    const bagPath = '/Users/gavinst.clair/Library/Mobile\ Documents/com\~apple\~CloudDocs/ODU/Spring\ 2023/411/r-ide/src/test/2023-03-17-20-22-17.bag';
   
     before(async () => {
       // instance of the Rosbag class with a sample bag path and a fake WebView object
@@ -103,8 +103,8 @@ describe('Rosbag class', () => {
   
     
     it('should clone the ROS bag', async () => {
-      const originalBagPath = '../2023-03-17-20-22-17.bag';
-      const newBagPath = '../2023-03-17-20-22-17-cloned.bag'; // Use a different path for the cloned bag
+      const originalBagPath = '/Users/gavinst.clair/Library/Mobile\ Documents/com\~apple\~CloudDocs/ODU/Spring\ 2023/411/r-ide/src/test/2023-03-17-20-22-17.bag';
+      const newBagPath = '/Users/gavinst.clair/Library/Mobile\ Documents/com\~apple\~CloudDocs/ODU/Spring\ 2023/411/r-ide/src/test/2023-03-17-20-22-17.bag'; // Use a different path for the cloned bag
       const startTime: Time = { sec: 1, nsec: 0 };
       const endTime: Time = { sec: 2, nsec: 0 };
 
@@ -120,7 +120,7 @@ describe('Rosbag class', () => {
       expect(clonedBag).to.exist;
 
       // Check if the messages in the cloned bag are within the specified time range
-      const originalBag = new Rosbag('../2023-03-17-20-22-17.bag');
+      const originalBag = new Rosbag('/Users/gavinst.clair/Library/Mobile\ Documents/com\~apple\~CloudDocs/ODU/Spring\ 2023/411/r-ide/src/test/2023-03-17-20-22-17.bag');
       await originalBag.openBag();
       const messages = await originalBag.getMessages({ startTime, endTime });
       const clonedMessages = await clonedBag.getMessages({ startTime, endTime });
@@ -133,7 +133,7 @@ describe('Rosbag class', () => {
       const endTime: Time = { sec: 2, nsec: 0 };
       const verbose = true;
       const topics = ['topic1', 'topic2'];
-      const originalBag = new Rosbag('../2023-03-17-20-22-17.bag');
+      const originalBag = new Rosbag('/Users/gavinst.clair/Library/Mobile\ Documents/com\~apple\~CloudDocs/ODU/Spring\ 2023/411/r-ide/src/test/2023-03-17-20-22-17.bag');
       await originalBag.openBag();
       
       // Get messages from the original bag
@@ -148,7 +148,7 @@ describe('Rosbag class', () => {
   }
     
       // Get messages from the cloned bag
-      const clonedBag = new Rosbag('../2023-03-17-20-22-17-cloned.bag');
+      const clonedBag = new Rosbag('/Users/gavinst.clair/Library/Mobile\ Documents/com\~apple\~CloudDocs/ODU/Spring\ 2023/411/r-ide/src/test/2023-03-17-20-22-17.bag');
       await clonedBag.openBag();
       const clonedMessages = await clonedBag.getMessages({ startTime, endTime, topics });
       expect(clonedMessages.end).to.be.greaterThan(0);
