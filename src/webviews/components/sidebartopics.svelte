@@ -28,9 +28,16 @@
             type: 'killNode',
         });
     }
+
+    function srcCatkinSetup(){
+        vscode.postMessage({
+            type: 'srcCatkinSetup',
+        });
+    }
 </script>
 
 <button style="margin-top:5px;" on:click={() => {openTopicMonitor()}}>ROS Topic Monitor</button>
+<button style="margin-top:5px;" on:click={() => {srcCatkinSetup()}}>Source Catkin Setup.bash</button>
 
 <!-- Commented out Debug ROS node and Topic publisher button for Beta 
 
