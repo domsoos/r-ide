@@ -6,11 +6,6 @@ export interface Time {
     sec: number,
     nsec: number
 }
-interface GetMessagesOptions {
-    startTime: Time;
-    endTime?: Time;
-    topics?: string[];
-  }
 
 interface MessageBuffer {
     start?: Time,
@@ -74,7 +69,7 @@ export class Rosbag {
 
       
 
-    public async getMessages(startTime: Time) {
+    private async getMessages(startTime: Time) {
         let buffer: MessageBuffer = {
             start: startTime,
             end: TimeUtil.add(startTime, bufferTime(1)),
