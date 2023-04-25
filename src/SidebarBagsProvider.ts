@@ -1,24 +1,22 @@
 import * as vscode from "vscode";
 import { getNonce } from "./getNonce";
 import { Rosbag } from "./RosBag/rosbag";
-import { toNamespacedPath } from "path";
+import { ChildProcess, spawn } from "child_process";
 
 export class SidebarBagsProvider implements vscode.WebviewViewProvider {
   _view?: vscode.WebviewView;
   _doc?: vscode.TextDocument;
 
   bag: Rosbag | undefined;
-  term: vscode.Terminal | undefined;
+  recordChild: ChildProcess | undefined;
 
   constructor(private readonly _extensionUri: vscode.Uri) {
     this.bag = undefined;
     Rosbag.connect();
-    this.term = vscode.window.createTerminal();
   }
 
   public resolveWebviewView(webviewView: vscode.WebviewView) {
     this._view = webviewView;
-    Rosbag.setView(this._view?.webview!);
 
     webviewView.webview.options = {
       // Allow scripts in the webview
@@ -30,7 +28,7 @@ export class SidebarBagsProvider implements vscode.WebviewViewProvider {
     webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
 
     webviewView.webview.onDidReceiveMessage(async (data) => {
-      console.log(data);
+      console.log(data.type);
       switch (data.type) {
         case "onInfo": {
           if (!data.value) {
@@ -52,7 +50,7 @@ export class SidebarBagsProvider implements vscode.WebviewViewProvider {
             canSelectFolders: false, 
             canSelectMany: false,
             // eslint-disable-next-line @typescript-eslint/naming-convention
-            // filters: {'Bags': ['.bag']}
+            // filters: {'Files': ['.bag']}
           }).then(async (result) =>{
             if(result && result[0].path){
               await this.bag?.clearBag();
@@ -121,6 +119,7 @@ export class SidebarBagsProvider implements vscode.WebviewViewProvider {
           break;
         }
         case "closeBag": {
+          this.bag!.isPaused = true;
           this.bag?.clearBag();
           break;
         }
@@ -150,37 +149,62 @@ export class SidebarBagsProvider implements vscode.WebviewViewProvider {
           break;
         }
         case "recordBag": {
-          const {name, topics, recordAll, quiet} = data.values;
+          const {name, topics, recordAll, quiet, location} = data.values.recordBag;
+          const copy = data.values.copy;
 
-          let cmd = `rosbag record`;
+          let options: string[] = [];
 
-          if (name !== null) {
-            cmd += ` --output-prefix ${name.replace(".bag", "")}`;
+          if (name !== null && name !== "") {
+            options.push(`--output-prefix`, `${name.replace(".bag", "")}`);
           }
 
           if (quiet) {
-            cmd += " --quiet";
+            options.push("--quiet");
           }
-          this.term = vscode.window.createTerminal("Recording a rosbag");
-          this.term.show();
-          this.term.sendText(cmd + ` ${recordAll ? "--all" : topics.join(" ")}`);
+
+          if (recordAll) {
+            options.push("--all");
+          } else {
+            options.push(...topics);
+          }
+
+          if (copy) {
+            vscode.env.clipboard.writeText(`rosbag record ${options.join(" ")}`);
+          } else {
+            this.recordChild = spawn("rosbag", ["record", ...options], {detached: true, cwd: location});
+            this.recordChild.on('exit', (code, signal) => {
+              // Handle process exit
+              console.log(`Child process exited with code: ${code}, signal: ${signal}`);
+              this._view?.webview.postMessage({type: "stoppedRecording"});
+            });
+          }
+          
+          break;
+        } 
+        case "stopRecording": {
+          this.recordChild?.kill('SIGINT');
           break;
         }
-        case "stopRecording": {
-          this.term!.show();
-          this.term!.sendText(String.fromCharCode(3));
-          this.term!.dispose();
+        case "setRecordPath": {
+          vscode.window.showOpenDialog({
+            canSelectFiles: false, 
+            canSelectFolders: true, 
+            canSelectMany: false, 
+            // defaultUri: vscode.Uri.file(data.value),
+          }).then((result) =>{
+            if(result && result[0].path){
+              webviewView.webview.postMessage({
+                type: 'getRecordPath',
+                value: result[0].fsPath,
+              });
+            }
+          });
           break;
         }
       }
     });
 
-    vscode.window.onDidCloseTerminal(t => {
-      console.log(t);
-      if (t.name === "Recording a rosbag") {
-        this._view?.webview.postMessage({type: "stoppedRecording"});
-      }
-    });
+    Rosbag.setView(webviewView.webview);
   }
 
   private async isROSConnected(){

@@ -15,7 +15,8 @@ interface GetMessagesOptions {
 interface MessageBuffer {
     start?: Time,
     end?: Time,
-    messages: any[]
+    messages: any[],
+    toEnd: number
 }
 
 export class Rosbag {
@@ -50,41 +51,41 @@ export class Rosbag {
 
     public static setView(view: vscode.Webview) {
         Rosbag.view = view;
+        console.log(Rosbag.view);
     }
 
     public async openBag() {
         await Rosbag.connect();
     
         this.bag = await open(this.bagPath);
-    
-        this.checkPublishers(true);
-    
-        this.beginningOfBagCache = await this.getMessages({ startTime: this.bag.startTime! });
-    
+
+        await this.checkPublishers(true);
+
+        this.beginningOfBagCache = await this.getMessages(this.bag.startTime!);
+
         // Read messages
         this.buffer = [
             this.beginningOfBagCache,
-            await this.getMessages({
-                startTime: TimeUtil.add(this.bag.startTime!, bufferTime(1))
-            }),
+            await this.getMessages(TimeUtil.add(this.bag.startTime!, bufferTime(1))),
         ];
-    
-        Rosbag.view.postMessage({ type: "createdMessages" });
+
+        await Rosbag.view.postMessage({type: 'createdMessages'});
     }
 
       
 
-    public async getMessages(options: GetMessagesOptions) {
-        const { startTime, endTime, topics } = options;
-      
+    public async getMessages(startTime: Time) {
         let buffer: MessageBuffer = {
-          start: startTime,
-          end: endTime || TimeUtil.add(startTime, bufferTime(1)),
-          messages: []
+            start: startTime,
+            end: TimeUtil.add(startTime, bufferTime(1)),
+            messages: [],
+            toEnd: 0
         };
-      
+
+        let prev = startTime;
+
         await this.bag!.readMessages({
-          topics: topics || [...this.publishers.keys()],
+          topics:   [...this.publishers.keys()],
           startTime: startTime,
           endTime: buffer.end
         }, (result: any) => {
@@ -95,9 +96,14 @@ export class Rosbag {
               result.message.data = Buffer.from(result.message.data).toString('base64'); 
             } catch (error) {
               console.log(result);
+            }}
+            result.leadup = (result.timestamp.sec - prev.sec) * 1e3 + ((result.timestamp.nsec - prev.nsec) >> 20);
+            if (result.leadup.nsec < 0) {
+                result.leadup.nsec += 1e9;
             }
-          }
-          buffer.messages.push(result);
+            prev = result.timestamp;
+            buffer.messages.push(result);
+            buffer.toEnd = (buffer.end!.sec - prev.sec) * 1e3 + ((buffer.end!.nsec - prev.nsec) >> 20);
         });
       
         return buffer;
@@ -112,10 +118,8 @@ export class Rosbag {
       }
       
     private currentIndex: number = 0;
-    private leadupRemaining: number = 0;
     
     public async playBag() {
-        let leadup: number;
         this.isPaused = false;
 
         this.checkPublishers();
@@ -123,27 +127,21 @@ export class Rosbag {
         // console.log(this.messages.length);
         // console.log(this.currentIndex);
         while (TimeUtil.isLessThan(this.buffer![0].start!, this.bag!.endTime!) && !this.isPaused) {
-            const {message, topic, timestamp} = this.buffer![1].messages[this.currentIndex];
-            
-            if (this.currentIndex === this.buffer![1].messages.length - 1) {
+            if (this.currentIndex === this.buffer![0].messages.length || this.buffer![0].messages[this.currentIndex] === undefined) {
                 console.log("buffer switch");
+                const wait = this.buffer![0].toEnd;
                 this.buffer![0] = this.buffer![1];
-                this.getMessages({ startTime: TimeUtil.add(this.buffer![0].end!, bufferTime(1)) }).then(mb => {
+                this.getMessages(  TimeUtil.add(this.buffer![0].end!, bufferTime(1)) ).then(mb => {
                     console.log(mb.messages.length);
                     console.log("loaded");
                     this.buffer![1] = mb;
                 });
                 this.currentIndex = 0;
-                const nextTimeStamp = this.buffer![1].messages[0].timestamp;
-                leadup = ((nextTimeStamp.sec - timestamp.sec) * 1000) + ((nextTimeStamp.nsec >> 20) - (timestamp.nsec >> 20));
-            } else if (this.leadupRemaining === 0) {
-                const nextTimeStamp = this.buffer![1].messages[this.currentIndex + 1].timestamp;
-                leadup = ((nextTimeStamp.sec - timestamp.sec) * 1000) + ((nextTimeStamp.nsec >> 20) - (timestamp.nsec >> 20));
-            } else {
-                leadup = this.leadupRemaining;
-                this.leadupRemaining = 0;
+                await Rosbag.waitForLeadup(wait);
+                continue;
             }
-            
+
+            const {message, topic, leadup} = this.buffer![0].messages[this.currentIndex];
             await Rosbag.waitForLeadup(leadup);
     
             this.publishers.get(topic)?.publish(new ROSLIB.Message(message));
@@ -163,7 +161,6 @@ export class Rosbag {
     }
 
     public getBagDuration(): number {
-        console.log(this.bag);
         let duration = {sec: this.bag!.endTime!.sec - this.bag!.startTime!.sec, nsec: this.bag!.endTime!.nsec - this.bag!.startTime!.nsec};
 
         if (duration.nsec < 0) {
@@ -186,7 +183,7 @@ export class Rosbag {
         this.buffer = undefined;
     }
 
-    public checkPublishers(forceRepublish: boolean = false) {
+    public async checkPublishers(forceRepublish: boolean = false) {
         if (!Rosbag.rosapi.isConnected || forceRepublish) {
             if (!Rosbag.rosapi.isConnected){
                 Rosbag.connect();
@@ -225,9 +222,7 @@ export class Rosbag {
                 newPublisher.advertise();
             }
 
-            // console.log([...this.publishers.values()]);
-            console.log('read all connections');
-            Rosbag.view.postMessage({type: 'createdConnections', value: [...this.publishers.keys()]});
+            await Rosbag.view.postMessage({type: 'createdConnections', value: [...this.publishers.keys()]});
 
             setTimeout(() => {
                 if (Rosbag.unpublishNotify.size > 0) {
@@ -250,7 +245,7 @@ export class Rosbag {
     public replayBag() {
         this.currentIndex = 0;
         this.buffer![0] = this.beginningOfBagCache!;
-        this.getMessages({ startTime: TimeUtil.add(this.bag!.startTime!, bufferTime(1)) }).then(mb => {
+        this.getMessages( TimeUtil.add(this.bag!.startTime!, bufferTime(1)) ).then(mb => {
             this.buffer![1] = mb;
         });
     }
@@ -348,5 +343,5 @@ export class Rosbag {
 }
 
 function bufferTime(n: number): Time {
-    return {sec: 0 * n, nsec: 500_000_000 * n};
+    return {sec: 0 * n, nsec: 5e8 * n};
 }

@@ -73,6 +73,16 @@ export class SidebarTopicsProvider implements vscode.WebviewViewProvider {
           this.node?.kill();
           break;
         }
+        case "srcCatkinSetup" :{
+          const terminal = vscode.window.activeTerminal;
+
+          if (!terminal) {
+              vscode.window.showErrorMessage('No active terminal found.');
+              return;
+          }
+      
+          terminal.sendText(". ~/catkin_ws/devel/setup.bash");
+        }
       }
     });
   }
