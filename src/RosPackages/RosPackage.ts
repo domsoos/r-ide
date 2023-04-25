@@ -327,6 +327,12 @@ export class RosPackage {
         const regex = /^[^\n#]*find_package\(catkin\s+REQUIRED\s+COMPONENTS\s+(.*?)\s*\)/sgmi;
         const replace = `find_package(catkin REQUIRED ${["COMPONENTS", ...newPackage].join('\n  ')}\n)`;
         replaceTextInDocument(cmake, {regexp: regex, replaceText: replace});
+
+        const xml = vscode.Uri.joinPath(this.rootDirectory, "package.xml");
+        const xmlRegex = /^(?<!<!--)\s*<\w*?depend>[\s\w<>\/]*<\/\w*?depend>\s*/gm;
+        const xmlReplace = `  <buildtool_depend>catkin<\/buildtool_depend>\n  \<depend\>${newPackage.join("</depend>\n  <depend>")}<\/depend>\n`;
+
+        replaceTextInDocument(xml, {regexp: xmlRegex, replaceText: xmlReplace});
     }
 }
 
