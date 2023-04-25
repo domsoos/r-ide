@@ -7,14 +7,37 @@ import Bag, { open } from 'rosbag';
 import { TIMEOUT } from 'dns';
 import { set } from 'mongoose';
 
+import * as vscode from 'vscode';
+
 describe('Rosbag class', () => {
     let rosbag: Rosbag;
 
+    const fakeWebviewView: vscode.WebviewView = {
+      webview: {
+        asWebviewUri: (uri) => uri,
+        postMessage: (message) => Promise.resolve(true),
+        onDidReceiveMessage: new vscode.EventEmitter<any>().event,
+        cspSource: '',
+        html: '',
+        options: { enableScripts: false },
+      },
+      viewType: '',
+      title: '',
+      description: '',
+      visible: false,
+      onDidChangeVisibility: new vscode.EventEmitter<void>().event,
+      onDidDispose: new vscode.EventEmitter<void>().event,
+      show: function (preserveFocus?: boolean | undefined): void {
+        throw new Error('Function not implemented.');
+      }
+    };
+
     //path of ros bag for testing 
-    const bagPath = '/Users/gavinst.clair/Library/Mobile\ Documents/com\~apple\~CloudDocs/ODU/Spring\ 2023/411/r-ide/src/test/2023-03-17-20-22-17.bag';
+    const bagPath = '/mnt/c/Users/Josh/Desktop/CS-411/ridev3/r-ide/src/test/2023-03-17-20-22-17.bag';
   
     before(async () => {
       // instance of the Rosbag class with a sample bag path and a fake WebView object
+      Rosbag.setView(fakeWebviewView.webview);
       rosbag = new Rosbag(bagPath);
       await rosbag.openBag();
       setTimeout(() => {}, 500 ) ;
@@ -106,8 +129,8 @@ describe('Rosbag class', () => {
   
     
     it('should clone the ROS bag', async () => {
-      const originalBagPath = '/Users/gavinst.clair/Library/Mobile\ Documents/com\~apple\~CloudDocs/ODU/Spring\ 2023/411/r-ide/src/test/2023-03-17-20-22-17.bag';
-      const newBagPath = '/Users/gavinst.clair/Library/Mobile\ Documents/com\~apple\~CloudDocs/ODU/Spring\ 2023/411/r-ide/src/test/2023-03-17-20-22-17.bag'; // Use a different path for the cloned bag
+      const originalBagPath = '/mnt/c/Users/Josh/Desktop/CS-411/ridev3/r-ide/src/test/2023-03-17-20-22-17.bag';
+      const newBagPath = '/mnt/c/Users/Josh/Desktop/CS-411/ridev3/r-ide/src/test/2023-03-17-20-23-17.bag'; // Use a different path for the cloned bag
       // maybe say cloned messages is a subset of messages
       const startTime: Time = { sec: 1, nsec: 0 };
       const endTime: Time = { sec: 2, nsec: 0 };
