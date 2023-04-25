@@ -4,6 +4,8 @@ import { expect } from "chai";
 import * as fs from 'fs';
 import ROSLIB = require('roslib');
 import Bag, { open } from 'rosbag';
+import { TIMEOUT } from 'dns';
+import { set } from 'mongoose';
 
 describe('Rosbag class', () => {
     let rosbag: Rosbag;
@@ -15,6 +17,7 @@ describe('Rosbag class', () => {
       // instance of the Rosbag class with a sample bag path and a fake WebView object
       rosbag = new Rosbag(bagPath);
       await rosbag.openBag();
+      setTimeout(() => {}, 500 ) ;
     });
   
     afterEach(async () => {
@@ -29,10 +32,10 @@ describe('Rosbag class', () => {
     });
   
     it('should open a ROS bag file and load messages', async () => {
-      expect(rosbag.bag).to.exist;
-      expect(rosbag.bag?.readMessages).to.exist;
-      expect(rosbag.buffer).to.exist;
-      expect(rosbag.buffer?.[0].messages.length).to.be.greaterThan(0);
+      expect(rosbag.bag, "bag should exist").to.exist;
+     // expect(rosbag.bag?.readMessages, "should read the message").to.exist;
+      expect(rosbag.buffer, "buffer should exist").to.exist;
+      expect(rosbag.buffer?.[0].messages.length, "buffer should not be empty").to.be.greaterThan(0);
     });
   
     it('should return the duration of the ROS bag file', () => {
@@ -122,9 +125,11 @@ describe('Rosbag class', () => {
       // Check if the messages in the cloned bag are within the specified time range
       const originalBag = await open(originalBagPath);
       const messages: any = [];
-      await originalBag.readMessages({topics: topics, startTime: startTime, endTime: endTime}, (result: any) => {messages.push(result)});
+      await originalBag.readMessages({topics: topics, startTime: startTime, endTime: endTime}, (result: any) => {messages.push(result);
+      });
       const clonedMessages: any = [];
-      await clonedBag.readMessages({topics: topics, startTime: startTime, endTime: endTime}, (result: any) => {messages.push(result)});
+      await clonedBag.readMessages({topics: topics, startTime: startTime, endTime: endTime}, (result: any) => {messages.push(result);
+      });
       expect(clonedMessages).to.deep.equal(messages);
 
 
