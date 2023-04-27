@@ -140,7 +140,7 @@
                             from: nodeDataItem.id,
                             to: subscribingNode.id,
                             label: topic,
-                            length: 200
+                            length: 300
                         });
                         console.log(`Edge from ${nodeDataItem.id} to ${subscribingNode.id} with label ${topic} added.`)
                     }
