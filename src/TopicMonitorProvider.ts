@@ -155,9 +155,9 @@ export class TopicMonitorProvider {
         return Object.assign({}, ...results);
       });
 
-      console.log(messageFields);
+      
     } catch (error) {
-      console.log(error);
+      
     }
   }
 

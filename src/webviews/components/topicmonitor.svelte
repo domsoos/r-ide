@@ -96,12 +96,12 @@
                     updateTopicTree(res);
                     topicsStatus = "Connected";
                 } else {
-                    console.log("failed");
+                    
                     isConnected = false;
                 }
                 isLoading = false;
             }, (err)=>{
-                console.log(err);
+                
                 vscode.postMessage({
                     type: 'r-ide.noConnection',
 			    });
@@ -126,7 +126,7 @@
                         console.log("failed")
                     }
                 }, (err)=>{
-                    console.log(err);
+                    
                 });
             }
         }, 3000);
@@ -160,7 +160,7 @@
 		const message = event.data; // The JSON data our extension sent
 		switch (message.type) {
             case 'example':{
-                console.log(message.data);
+                
                 break;
             }
             case 'setPublishMessageFormat': {
@@ -282,9 +282,9 @@
         }
 
         // rosApi.getMessageDetails(item.type, (details) => {
-        //     console.log(rosApi.decodeTypeDefs(details));
+        //     
         // }, (error) => {
-        //     console.log(error);
+        //     
         // });
     
         let newMediaTopic = new ROSLIB.Topic({
@@ -302,7 +302,7 @@
 
     function decodeImageMessage(message){
 
-        // console.log(message);
+        // 
 
         if(message.data){
             let width = message.width;
@@ -476,7 +476,7 @@
                 */
 
                 /*
-                console.log(topics);
+                
                 let item = topics.find(item => item.fulltopic == selectedTopicToPublish[0].fulltopic);
                 myTopic = new rosLib.Topic({
                     ros : rosApi,
@@ -494,7 +494,7 @@
             }
 
         }catch(err){
-            console.log(err);
+            
         }
 
 

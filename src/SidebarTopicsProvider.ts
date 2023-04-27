@@ -56,7 +56,7 @@ export class SidebarTopicsProvider implements vscode.WebviewViewProvider {
 
           childProcess.stdout.on('data', (data: Buffer) => {
             // Handle standard output
-            console.log(data.toString());
+            
           });
         
           childProcess.stderr.on('data', (data: Buffer) => {

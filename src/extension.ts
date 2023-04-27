@@ -194,18 +194,18 @@ function stopROSMaster(){
 
     child?.stdout?.on('data', (data) => {
 		const pid = parseInt(data.toString().trim());
-		console.log(`Found ROS Master process with PID ${pid}`);
+		
   
 		// Send the TERM signal to stop the process
 		process.kill(pid, 'SIGTERM');
-		console.log('ROS Master stopped');
+		
 	});
 
 	child.on('exit', (code, signal) => {
 		if (code !== 0) {
 		  console.error(`ps exited with code ${code}, signal ${signal}`);
 		}else{
-			console.log("Ros Master finder exited gracefully");
+			
 		}
 	});
 }
@@ -215,18 +215,18 @@ function stopROSBridge(){
 
     child?.stdout?.on('data', (data) => {
 		const pid = parseInt(data.toString().trim());
-		console.log(`Found ROS Bridge process with PID ${pid}`);
+		
   
 		// Send the TERM signal to stop the process
 		process.kill(pid, 'SIGTERM');
-		console.log('ROS Bridge stopped');
+		
 	});
 
 	child.on('exit', (code, signal) => {
 		if (code !== 0) {
 		  console.error(`ps exited with code ${code}, signal ${signal}`);
 		}else{
-			console.log("Ros Bridge finder exited gracefully");
+			
 		}
 	});
 }

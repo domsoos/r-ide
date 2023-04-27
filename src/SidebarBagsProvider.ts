@@ -28,7 +28,7 @@ export class SidebarBagsProvider implements vscode.WebviewViewProvider {
     webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
 
     webviewView.webview.onDidReceiveMessage(async (data) => {
-      console.log(data.type);
+      
       switch (data.type) {
         case "onInfo": {
           if (!data.value) {
@@ -128,7 +128,7 @@ export class SidebarBagsProvider implements vscode.WebviewViewProvider {
           let result: any = this.bag!.clone(newBagPath, startTime, endTime, verbose, topics);
 
           if (copy) {
-            console.log(result);
+            
             // Copy the contents to the clipboard
             await vscode.env.clipboard.writeText(result).then(() => {
               vscode.window.showInformationMessage(`Copied ${result} to the clipboard`);
@@ -174,7 +174,7 @@ export class SidebarBagsProvider implements vscode.WebviewViewProvider {
             this.recordChild = spawn("rosbag", ["record", ...options], {detached: true, cwd: location});
             this.recordChild.on('exit', (code, signal) => {
               // Handle process exit
-              console.log(`Child process exited with code: ${code}, signal: ${signal}`);
+              
               this._view?.webview.postMessage({type: "stoppedRecording"});
             });
           }

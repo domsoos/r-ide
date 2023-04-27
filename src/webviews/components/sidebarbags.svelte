@@ -45,22 +45,22 @@
     let range = [0,1]; 
 
     window.addEventListener('message', event => {
-        console.log(event);
+        
 		const message = event.data; // The JSON data our extension sent
 		switch (message.type) {
 			case 'setSelectedBag':{
                 connectionsLoaded = false;
                 messagesLoaded = false;
 
-                console.log(message.value);
+                
 
                 bagDuration = message.value.duration;
                 selectedBagPath = message.value.path;                
                 selectedBag = selectedBagPath.substring(selectedBagPath.lastIndexOf('/'));
                 cloneBagPath = selectedBagPath.substring(0, selectedBagPath.lastIndexOf('/'));
-                console.log(bagDuration);
+                
                 range[1] = bagDuration;
-                console.log(range);
+                
 				break;
             }
             case 'setCloneBagPath':{
@@ -75,22 +75,22 @@
             case 'getMessages': {
                 if (message.legnth === 0) {
                     messages = message.value;
-                    console.log(messages.length);
+                    
                 } else {
                     messages.push(...message.value);
-                    console.log(messages.length);
+                    
                 }
                 break;
             }
             case 'createdConnections': {
                 connectionsLoaded = true;
                 topics = [...message.value];
-                console.log(connectionsLoaded);
+                
                 break;
             }
             case 'createdMessages': {
                 messagesLoaded = true;
-                console.log(messagesLoaded);
+                
                 break;
             }
             case "finishedPlaying": {
@@ -115,7 +115,7 @@
                 break;
             }
             case "getRecordPath": {
-                console.log(message);
+                
                 recordBag.location = message.value;
             }
 		}

@@ -2,8 +2,8 @@ import * as vscode from "vscode";
 
 export async function createFileFromTemplate(path: string, options: any) {
     // DEBUG
-    //console.log(path);
-    //console.log(options);
+    //
+    //
 
     const uri = vscode.Uri.file(path);
     vscode.window.showInformationMessage(uri.path);

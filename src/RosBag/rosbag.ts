@@ -48,7 +48,7 @@ export class Rosbag {
 
     public static setView(view: vscode.Webview) {
         Rosbag.view = view;
-        console.log(Rosbag.view);
+        
     }
 
     public async openBag() {
@@ -90,7 +90,7 @@ export class Rosbag {
                 try {
                     result.message.data = Buffer.from(result.message.data).toString('base64'); 
                 } catch (error) {
-                    console.log(result);
+                    
                 }
             }
             result.leadup = (result.timestamp.sec - prev.sec) * 1e3 + ((result.timestamp.nsec - prev.nsec) >> 20);
@@ -112,16 +112,16 @@ export class Rosbag {
 
         this.checkPublishers();
     
-        // console.log(this.messages.length);
-        // console.log(this.currentIndex);
+        // 
+        // 
         while (TimeUtil.isLessThan(this.buffer![0].start!, this.bag!.endTime!) && !this.isPaused) {
             if (this.currentIndex === this.buffer![0].messages.length || this.buffer![0].messages[this.currentIndex] === undefined) {
-                console.log("buffer switch");
+                
                 const wait = this.buffer![0].toEnd;
                 this.buffer![0] = this.buffer![1];
                 this.getMessages(TimeUtil.add(this.buffer![0].end!, bufferTime(1))).then(mb => {
-                    console.log(mb.messages.length);
-                    console.log("loaded");
+                    
+                    
                     this.buffer![1] = mb;
                 });
                 this.currentIndex = 0;
@@ -141,7 +141,7 @@ export class Rosbag {
         if (this.isPaused) {
             Rosbag.view.postMessage({type: 'pausedPlaying'});
         } else {
-            console.log('finished playing');
+            
             Rosbag.view.postMessage({type: 'finishedPlaying'});
             this.currentIndex = 0;
             this.isPaused;
@@ -249,7 +249,7 @@ export class Rosbag {
     }
 
     private static async waitForLeadup (leadup: number) {
-        // console.log(leadup);
+        // 
         return new Promise((resolve) => {
             setTimeout(() => {resolve(true);}, leadup  );
         });
@@ -260,7 +260,7 @@ export class Rosbag {
         const regex = /\[Client \d+\] \[id: (publish|advertise):(?<topic>.*?):\d+\] (?<error_code>.*)/;
         let match = message.msg.match(regex);
         if (match) {
-            // console.log(message.msg);
+            // 
             this.publishers.get(match.groups.topic)?.unadvertise();
             this.publishers.delete(match.groups.topic);
             Rosbag.unpublishNotify.add(message.msg);
@@ -276,11 +276,11 @@ export class Rosbag {
                 });
                 
                 Rosbag.rosapi.on('connection', () => {
-                    console.log('connected');
+                    
                 });
 
                 Rosbag.rosapi.on('error', () => {
-                    console.log('failed');
+                    
                 });
             }
         } catch (err) {
@@ -289,11 +289,11 @@ export class Rosbag {
             });
             
             Rosbag.rosapi.on('connection', () => {
-                console.log('connected');
+                
             });
 
             Rosbag.rosapi.on('error', () => {
-                console.log('failed');
+                
             });
         }
     }
@@ -322,10 +322,10 @@ export class Rosbag {
     static getPublishedTopics() {
         Rosbag.rosapi.getTopics((res) => {
             let {topics} = res;
-            console.log(topics);
-            console.log(Rosbag.view);
+            
+            
             Rosbag.view.postMessage({type: "publishedTopics", value: topics});
-            console.log("Success!");
+            
         });
     }
 }

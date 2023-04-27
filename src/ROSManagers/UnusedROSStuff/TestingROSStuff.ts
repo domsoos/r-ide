@@ -11,7 +11,7 @@ export async function roslibTest() {
       });
 
       ros.on('connection', () => {
-        console.log('Connected to ROS server');
+        
       });
 
       ros.on('error', (error: any) => {
@@ -19,11 +19,11 @@ export async function roslibTest() {
       });
 
       ros.on('close', () => {
-        console.log('Connection to ROS server closed');
+        
       });
 
       ros.getTopics((topics: any) => {
-        console.log('Available ROS topics:', topics);
+        
       });
 }
 
@@ -72,7 +72,7 @@ export class XmlRpcApi {
 
     public getTopics(): any{
         return this.methodCall("getPublishedTopics", "").then((res) =>{
-            console.log(res);
+            
         });
     }
 

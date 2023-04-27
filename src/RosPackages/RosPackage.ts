@@ -41,7 +41,7 @@ export class RosPackage {
         this.fsWatcher = vscode.workspace.createFileSystemWatcher(`${directory.fsPath}/**`);
 
         this.fsWatcher.onDidCreate((uri) => {
-            console.log(uri);
+            
             if (uri.fsPath.endsWith('.msg')) {
                 this.msg.add(uri.fsPath);
                 this.updateMsgFiles();
@@ -57,7 +57,7 @@ export class RosPackage {
         });
 
         this.fsWatcher.onDidChange((uri) => {
-            console.log(uri);
+            
             if (uri.fsPath.endsWith('.msg')) {
                 this.msg.add(uri.fsPath);
                 this.updateMsgFiles();
@@ -68,7 +68,7 @@ export class RosPackage {
         });
 
         this.fsWatcher.onDidDelete((uri) => {
-            console.log(uri);
+            
             if (uri.fsPath.endsWith('.msg')) {
                 this.msg.delete(uri.fsPath);
                 this.updateMsgFiles();
@@ -86,7 +86,7 @@ export class RosPackage {
         const relativePattern = new vscode.RelativePattern(vscode.workspace.getWorkspaceFolder(this.rootDirectory)!, `src/${this.projectName}/**/*.{msg,srv,py,cpp}`);
         vscode.workspace.findFiles(relativePattern).then((files) => {
             for (let uri of files) {
-                // console.log(uri);
+                // 
                 if (uri.fsPath.endsWith('.msg')) {
                     this.msg.add(uri.fsPath);
                 } else if (uri.fsPath.endsWith('.srv')) {
@@ -98,11 +98,11 @@ export class RosPackage {
                 }
             }
 
-            console.log(this.projectName);
-            console.log(this.msg.entries());
-            console.log(this.srv.entries());
-            console.log(this.pyFiles.entries());
-            console.log(this.cppFiles.entries());
+            
+            
+            
+            
+            
         });
     } 
 
@@ -112,7 +112,7 @@ export class RosPackage {
             files.push(relative(this.rootDirectory.fsPath, uri));
         });
 
-        console.log(files);
+        
 
         let regex = /^\s*?#?\s*?add_message_files\s*?\(.*?\)/sgmi;
 
@@ -137,7 +137,7 @@ export class RosPackage {
 
                 let matches = [...text.matchAll(msgRegex)];
                 for (let match of matches) {
-                    console.log(match);
+                    
                     if (match.groups?.dependency) {
                         dependencies.add(match.groups?.dependency.slice(0, -1));
                     } else if (match.groups?.type === "Header") {
@@ -147,7 +147,7 @@ export class RosPackage {
             });
         } 
 
-        console.log(dependencies);
+        
 
         let generateReplace;
         if (this.msg.size > 0) {
@@ -156,7 +156,7 @@ export class RosPackage {
             generateReplace = "# generate_messages()";
         }
 
-        console.log(generateReplace);
+        
 
         replaceTextInDocument(cmake, {regexp: regex, replaceText: replace}, {regexp: generateRegex, replaceText: generateReplace});
     }
@@ -167,7 +167,7 @@ export class RosPackage {
             files.push(relative(this.rootDirectory.fsPath, uri));
         });
 
-        console.log(files);
+        
 
         const regex = /^\s*?#?\s*?add_service_files\s*?\(.*?\)/sgmi;
 
@@ -186,7 +186,7 @@ export class RosPackage {
             files.push(relative(this.rootDirectory.fsPath, uri));
         });
 
-        console.log(files);
+        
 
         const regex = /^\s*?#?\s*?catkin_install_python\s*?\(.*?\)/sgmi;
         let replace;
@@ -204,14 +204,14 @@ export class RosPackage {
             files.push(relative(this.rootDirectory.fsPath, uri));
         });
 
-        console.log(files);
+        
 
         const regex = /^(\s*?#?\s*?add_(executable|library)\((.*?)\)\s+target_link_libraries\((.*?)\))*/sgmi;
         vscode.workspace.openTextDocument(vscode.Uri.joinPath(this.rootDirectory, 'CMakeLists.txt')).then((document) => {
             const text = document.getText();
 
             let match = text.matchAll(regex);
-            console.log(match);
+            
 
         });
     }
@@ -300,10 +300,10 @@ export class RosPackage {
         await vscode.workspace.openTextDocument(cmake).then(document => {
             const text = [...document.getText().matchAll(regex)][0][1];
 
-            console.log(text);
+            
 
             packages = new Set(text.split(/\s+/));
-            console.log([...packages.keys()]);
+            
             
         });
 
@@ -352,7 +352,7 @@ export async function selectExistingPackages(picked: Set<String> = new Set()) {
             picked: picked.has(p)
         });
     }
-    console.log(options);
+    
     let selectedPackage = await vscode.window.showQuickPick(
         [...options], 
         {
@@ -418,7 +418,7 @@ export async function RosPackageQuickPick(newPackage: boolean = true) {
  */
 export async function identifyPackages(root: vscode.Uri) {
     RosPackage.packages.clear();
-    console.log(root.fsPath.endsWith("/catkin_ws"));
+    
     if (root.fsPath.endsWith("/catkin_ws")) {
         // catkin_ws is the workspace
         root = vscode.Uri.joinPath(root, '/src/');
@@ -480,16 +480,16 @@ async function replaceTextInDocument(uri: vscode.Uri, ...replacementOptions: {re
     let start: vscode.Position;
     let end: vscode.Position;
 
-    console.log(replacementOptions);
+    
 
     vscode.workspace.openTextDocument(uri).then(document => {
         const edit = new vscode.WorkspaceEdit();
         let edits = [];
         for (const {regexp, replaceText, addBelow} of replacementOptions) {
-            // console.log(regexp);
+            // 
             let match = regexp.exec(document.getText());
 
-            // console.log(match?.index);
+            // 
     
             if (match?.index) {
     

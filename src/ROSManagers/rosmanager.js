@@ -12,14 +12,14 @@ class ROS {
                 ROS.rosAPI = new ROSLIB.Ros({
                     url: "ws://localhost:9090"
                 });
-                console.log('connected');
+                
                 ROS.rosAPI.on('connection', () => {
-                    console.log('ROS connected');
+                    
                     ROS.rosLib = ROSLIB;
                     resolve();
                 });
                 ROS.rosAPI.on('error', (error) => {
-                    console.log(error);
+                    
                     reject(error);
                 });
             });
@@ -42,12 +42,12 @@ class ROS {
 
         return new Promise((resolve, reject) => {
             ROS.rosAPI.on('connection', () => {
-                console.log('ROS connected');
+                
                 ROS.rosLib = ROSLIB;
                 resolve();
             });
             ROS.rosAPI.on('error', (error) => {
-                console.log(error);
+                
                 reject(error);
             });
         });

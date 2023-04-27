@@ -14,7 +14,7 @@ export async function connectToDB(){
     const db = mongoose.connection;
     db.on('error', console.error.bind(console, 'connection error: '));
     db.once('open', () => {
-        console.log('connected to mongodb');
+        
     });
 }
 
@@ -30,7 +30,7 @@ export async function addNewEvent(desc: String, success: boolean){
 
     try {
         await newEvent.save();
-        console.log(`Created new event: ${desc}`);
+        
     } catch(error) {
         console.error(error);
     }
@@ -45,7 +45,7 @@ async function uploadTemplate(name:String, text:String, success: boolean): Promi
 
     try {
         await newTemplate.save();
-        console.log(`Created new template: ${name}`);
+        
     } catch(error) {
         console.error(error);
     }
