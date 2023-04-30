@@ -1,11 +1,9 @@
 import { Rosbag, Time } from '../../RosBag/rosbag';
-import { describe, it, before, afterEach } from "mocha";
+import { describe, it, beforeEach, afterEach } from "mocha";
 import { expect } from "chai";
 import * as fs from 'fs';
 import ROSLIB = require('roslib');
-import Bag, { open } from 'rosbag';
-import { TIMEOUT } from 'dns';
-import { set } from 'mongoose';
+import { open } from 'rosbag';
 
 import * as vscode from 'vscode';
 
@@ -33,9 +31,9 @@ describe('Rosbag class', () => {
     };
 
     //path of ros bag for testing 
-    const bagPath = '/Users/gavinst.clair/Library/Mobile Documents/com~apple~CloudDocs/ODU/Spring 2023/411/r-ide/src/test/2023-03-17-20-22-17.bag';
+    const bagPath = '/home/dak79/r-ide/src/test/2023-03-17-20-22-17.bag';
   
-    before(async () => {
+    beforeEach(async () => {
       // instance of the Rosbag class with a sample bag path and a fake WebView object
       Rosbag.setView(fakeWebviewView.webview);
       rosbag = new Rosbag(bagPath);
@@ -54,7 +52,7 @@ describe('Rosbag class', () => {
       expect(rosbag.pointer).to.equal(0);
     });
   
-    it('should open a ROS bag file and load messages', async () => {
+    it('should open a ROS bag file and load messages', () => {
       expect(rosbag.bag, "bag should exist").to.exist;
      // expect(rosbag.bag?.readMessages, "should read the message").to.exist;
       expect(rosbag.buffer, "buffer should exist").to.exist;
@@ -129,8 +127,8 @@ describe('Rosbag class', () => {
   
     
     it('should clone the ROS bag', async () => {
-      const originalBagPath = '/Users/gavinst.clair/Library/Mobile Documents/com~apple~CloudDocs/ODU/Spring 2023/411/r-ide/src/test/2023-03-17-20-22-17.bag';
-      const newBagPath = '/Users/gavinst.clair/Library/Mobile Documents/com~apple~CloudDocs/ODU/Spring 2023/411/r-ide/src/test/2023-03-17-20-22-18.bag'; // Use a different path for the cloned bag
+      const originalBagPath = '/home/dak79/r-ide/src/test/2023-03-17-20-22-17.bag';
+      const newBagPath = '/home/dak79/r-ide/src/test/clone-2023-03-17-20-22-17.bag'; // Use a different path for the cloned bag
       // maybe say cloned messages is a subset of messages
       const startTime: Time = { sec: 1, nsec: 0 };
       const endTime: Time = { sec: 2, nsec: 0 };
