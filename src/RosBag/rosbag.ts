@@ -112,8 +112,6 @@ export class Rosbag {
 
         this.checkPublishers();
     
-        // 
-        // 
         while (TimeUtil.isLessThan(this.buffer![0].start!, this.bag!.endTime!) && !this.isPaused) {
             if (this.currentIndex === this.buffer![0].messages.length || this.buffer![0].messages[this.currentIndex] === undefined) {
                 
@@ -124,6 +122,7 @@ export class Rosbag {
                     
                     this.buffer![1] = mb;
                 });
+                Rosbag.view.postMessage({type: "timeProgress", value: this.buffer![0].start!.sec - this.bag?.startTime!.sec!});
                 this.currentIndex = 0;
                 await Rosbag.waitForLeadup(wait);
                 continue;
