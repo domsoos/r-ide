@@ -58,18 +58,18 @@ export class Rosbag {
 
         await this.checkPublishers(true);
 
-        this.beginningOfBagCache = await this.getMessages(this.bag.startTime!);
+        this.beginningOfBagCache = await this.getBufferedMessages(this.bag.startTime!);
 
         // Read messages
         this.buffer = [
             this.beginningOfBagCache,
-            await this.getMessages(TimeUtil.add(this.bag.startTime!, bufferTime(1))),
+            await this.getBufferedMessages(TimeUtil.add(this.bag.startTime!, bufferTime(1))),
         ];
 
         await Rosbag.view.postMessage({type: 'createdMessages'});
     }
 
-    public async getMessages(startTime: Time) {
+    public async getBufferedMessages(startTime: Time) {
         let buffer: MessageBuffer = {
             start: startTime,
             end: TimeUtil.add(startTime, bufferTime(1)),
@@ -119,7 +119,7 @@ export class Rosbag {
                 
                 const wait = this.buffer![0].toEnd;
                 this.buffer![0] = this.buffer![1];
-                this.getMessages(TimeUtil.add(this.buffer![0].end!, bufferTime(1))).then(mb => {
+                this.getBufferedMessages(TimeUtil.add(this.buffer![0].end!, bufferTime(1))).then(mb => {
                     
                     
                     this.buffer![1] = mb;
@@ -233,7 +233,7 @@ export class Rosbag {
     public replayBag(){
         this.currentIndex = 0;
         this.buffer![0] = this.beginningOfBagCache!;
-        this.getMessages(TimeUtil.add(this.bag!.startTime!, bufferTime(1))).then(mb => {
+        this.getBufferedMessages(TimeUtil.add(this.bag!.startTime!, bufferTime(1))).then(mb => {
             this.buffer![1] = mb;
         });
     }
