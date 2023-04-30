@@ -315,7 +315,7 @@
     } -->
 
     <!-- Name bag -->
-    <label for="bag-name">Bag name</label>
+    <label for="bag-name">Bag prefix</label>
     <input bind:value={recordBag.name} disabled={isRecording}>
     <br>
 
