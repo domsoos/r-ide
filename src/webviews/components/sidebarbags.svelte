@@ -167,7 +167,6 @@
 
 
 <h3 style="text-align:center;margin: 10px 0px;">ROS Bag Manager</h3>
-<p style="text-align:center;margin: 10px 0px;color:#ff5a5a;">*Beware: ROS bag manager is currently under development and may not work as intended*</p>
 <hr style="margin-bottom:10px">
 <!-- Recording a new bag UNIMPLEMENTED -->
 {#if !isBagManagerOpen}

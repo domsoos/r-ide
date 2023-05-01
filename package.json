@@ -2,7 +2,7 @@
   "name": "r-ide",
   "displayName": "R-IDE",
   "description": "",
-  "version": "0.0.3",
+  "version": "0.0.5",
   "icon": "styles/rideLogo.png",
   "publisher": "TeamOrangeODU2023",
   "extensionKind": [
