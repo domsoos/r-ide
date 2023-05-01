@@ -25,6 +25,7 @@
     let cloneName = null;
     let verbose = false;
     let bagDuration;
+    let currentTime = 0;
 
     let recordBag = {
         topics: [],
@@ -117,6 +118,11 @@
             case "getRecordPath": {
                 
                 recordBag.location = message.value;
+                break;
+            }
+            case "timeProgress": {
+                currentTime = message.value;
+                break;
             }
 		}
 	});
@@ -188,47 +194,54 @@
     {#if selectedBag !== null}
         <!--<div style="margin:5px 0px;">Selected Bag: .../{selectedBag}</div>-->
         <!-- Play bag -->
-        {#if !isCloneMenuOpen}
-            <!-- Play menu-->
-            <div class="play-menu">
-                {#if !isPlaying}
-                    <button class="icon-button" on:click={() => {isROSConnected(); vscode.postMessage({type: 'playBag'})}}>
-                        <svg class="icon" fill="#000000" viewBox="0 0 24 24" id="play" data-name="Flat Color" xmlns="http://www.w3.org/2000/svg"><circle id="primary" cx="12" cy="12" r="10" style="fill: rgb(0, 0, 0);"></circle><path id="secondary" d="M14.75,12.83,11.55,15A1,1,0,0,1,10,14.13V9.87A1,1,0,0,1,11.55,9l3.2,2.13A1,1,0,0,1,14.75,12.83Z" style="fill: rgb(44, 169, 188);"></path></svg>
-                    </button>
-                {:else}
-                    <button class="icon-button" on:click={() => {vscode.postMessage({type: 'pauseBag'}); isPlaying = false;}}>
-                        <svg class="icon" fill="#000000" viewBox="0 0 24 24" id="pause-circle" data-name="Flat Color" xmlns="http://www.w3.org/2000/svg"><circle id="primary" cx="12" cy="12" r="10" style="fill: rgb(0, 0, 0);"></circle><path id="secondary" d="M14,17a1,1,0,0,1-1-1V8a1,1,0,0,1,2,0v8A1,1,0,0,1,14,17Zm-4,0a1,1,0,0,1-1-1V8a1,1,0,0,1,2,0v8A1,1,0,0,1,10,17Z" style="fill: rgb(44, 169, 188);"></path></svg>               
-                    </button>
-                {/if}
-                <button class="icon-button" on:click={() => {vscode.postMessage({type: 'stopBag'}); isPlaying=false;}}>
-                    <svg class="icon" fill="#000000" viewBox="0 0 24 24" id="stop-circle" data-name="Flat Color" xmlns="http://www.w3.org/2000/svg"><circle id="primary" cx="12" cy="12" r="10" style="fill: rgb(0, 0, 0);"></circle><rect id="secondary" x="9" y="9" width="6" height="6" rx="1" transform="translate(24) rotate(90)" style="fill: rgb(44, 169, 188);"></rect></svg>
+        <!-- {#if !isCloneMenuOpen} -->
+        <!-- Play menu-->
+        <div class="play-menu">
+            {#if !isPlaying}
+                <button class="icon-button" on:click={() => {isROSConnected(); vscode.postMessage({type: 'playBag'})}}>
+                    <svg class="icon" fill="#000000" viewBox="0 0 24 24" id="play" data-name="Flat Color" xmlns="http://www.w3.org/2000/svg"><circle id="primary" cx="12" cy="12" r="10" style="fill: rgb(0, 0, 0);"></circle><path id="secondary" d="M14.75,12.83,11.55,15A1,1,0,0,1,10,14.13V9.87A1,1,0,0,1,11.55,9l3.2,2.13A1,1,0,0,1,14.75,12.83Z" style="fill: rgb(44, 169, 188);"></path></svg>
                 </button>
-                <button class="icon-button" on:click={() => {vscode.postMessage({type:'replayBag'});}}>
-                    <svg class="replay" fill="#000000" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" 
-                        viewBox="0 0 300.003 300.003" xml:space="preserve">
+            {:else}
+                <button class="icon-button" on:click={() => {vscode.postMessage({type: 'pauseBag'}); isPlaying = false;}}>
+                    <svg class="icon" fill="#000000" viewBox="0 0 24 24" id="pause-circle" data-name="Flat Color" xmlns="http://www.w3.org/2000/svg"><circle id="primary" cx="12" cy="12" r="10" style="fill: rgb(0, 0, 0);"></circle><path id="secondary" d="M14,17a1,1,0,0,1-1-1V8a1,1,0,0,1,2,0v8A1,1,0,0,1,14,17Zm-4,0a1,1,0,0,1-1-1V8a1,1,0,0,1,2,0v8A1,1,0,0,1,10,17Z" style="fill: rgb(44, 169, 188);"></path></svg>               
+                </button>
+            {/if}
+            <button class="icon-button" on:click={() => {vscode.postMessage({type: 'stopBag'}); isPlaying=false; currentTime = 0;}}>
+                <svg class="icon" fill="#000000" viewBox="0 0 24 24" id="stop-circle" data-name="Flat Color" xmlns="http://www.w3.org/2000/svg"><circle id="primary" cx="12" cy="12" r="10" style="fill: rgb(0, 0, 0);"></circle><rect id="secondary" x="9" y="9" width="6" height="6" rx="1" transform="translate(24) rotate(90)" style="fill: rgb(44, 169, 188);"></rect></svg>
+            </button>
+            <button class="icon-button" on:click={() => {vscode.postMessage({type:'replayBag'}); currentTime = 0;}}>
+                <svg class="replay" fill="#000000" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" 
+                    viewBox="0 0 300.003 300.003" xml:space="preserve">
+                    <g>
                         <g>
-                            <g>
-                            <path d="M150.005,0C67.164,0,0.001,67.159,0.001,150c0,82.838,67.162,150.003,150.003,150.003S300.002,232.838,300.002,150
-                                C300.002,67.159,232.844,0,150.005,0z M230.091,172.444c-9.921,37.083-43.801,64.477-83.969,64.477
-                                c-47.93,0-86.923-38.99-86.923-86.923s38.99-86.92,86.923-86.92c21.906,0,41.931,8.157,57.228,21.579l-13.637,23.623
-                                c-11-11.487-26.468-18.664-43.594-18.664c-33.294,0-60.38,27.088-60.38,60.38c0,33.294,27.085,60.38,60.38,60.38
-                                c25.363,0,47.113-15.728,56.038-37.937h-20.765l36.168-62.636l36.166,62.641H230.091z"/>
-                            </g>
+                        <path d="M150.005,0C67.164,0,0.001,67.159,0.001,150c0,82.838,67.162,150.003,150.003,150.003S300.002,232.838,300.002,150
+                            C300.002,67.159,232.844,0,150.005,0z M230.091,172.444c-9.921,37.083-43.801,64.477-83.969,64.477
+                            c-47.93,0-86.923-38.99-86.923-86.923s38.99-86.92,86.923-86.92c21.906,0,41.931,8.157,57.228,21.579l-13.637,23.623
+                            c-11-11.487-26.468-18.664-43.594-18.664c-33.294,0-60.38,27.088-60.38,60.38c0,33.294,27.085,60.38,60.38,60.38
+                            c25.363,0,47.113-15.728,56.038-37.937h-20.765l36.168-62.636l36.166,62.641H230.091z"/>
                         </g>
-                    </svg>
-                </button>
-            </div>
+                    </g>
+                </svg>
+            </button>
+        </div>
 
-            <!-- Cancel and Clone buttons -->
-            <div class="buttons-flex">
-                <button class="bag-buttons" on:click={() => {isBagManagerOpen = false; selectedBag = null; isPlaying = false; vscode.postMessage({type: "closeBag"});}}>Cancel</button>
-                <button class="bag-buttons" on:click={() => {isCloneMenuOpen = true;}}>Clone</button>
-                <!-- <button class="bag-buttons" tooltip="Coming soon">Clone</button> -->
-            </div>
+        <div>
+            <label for="progress">{currentTime}s / {bagDuration}s</label>
+            <progress id="progress" max={bagDuration} value={currentTime}></progress>
+        </div>
+
+        {#if !isCloneMenuOpen}
+        <!-- Cancel and Clone buttons -->
+        <div class="buttons-flex">
+            <button class="bag-buttons" on:click={() => {isBagManagerOpen = false; selectedBag = null; isPlaying = false; vscode.postMessage({type: "closeBag"}); currentTime = 0;}}>Cancel</button>
+            <button class="bag-buttons" on:click={() => {isCloneMenuOpen = !isCloneMenuOpen; range[1] = currentTime + 1}}>Clone</button>
+            <!-- <button class="bag-buttons" tooltip="Coming soon">Clone</button> -->
+        </div>
 
         <!-- Clone bag menu -->
         {:else}
             <br>
+            <hr>
             <br>
             <label for="bag_name"><b>New bag name:</b></label>
 
@@ -314,7 +327,7 @@
     } -->
 
     <!-- Name bag -->
-    <label for="bag-name">Bag name</label>
+    <label for="bag-name">Bag prefix</label>
     <input bind:value={recordBag.name} disabled={isRecording}>
     <br>
 
